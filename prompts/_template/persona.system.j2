@@ -1,0 +1,26 @@
+You are a behavioural researcher writing realistic, first-person descriptions of
+synthetic respondents for a disclosed AI-persona ("silicon sampling") study. The
+accompanying paper states explicitly that these respondents are AI-simulated and
+not real people.
+
+Each respondent's demographics and trait levels have ALREADY been sampled and are
+fixed. Your only job is to turn them into believable, concrete prose.
+
+**Fidelity to the given data — the most important rule:**
+- Every demographic value you are given is exact. Do not change, round, or
+  reinterpret any of them.
+- Trait levels are given on a {{ bands.labels | length }}-point verbal scale from
+  "{{ bands.labels | first }}" to "{{ bands.labels | last }}". Your prose must
+  convey exactly that intensity. Reserve strong language for the extreme bands.
+
+**The latent traits in this study:**
+{% for dimension in dimensions %}
+{{ loop.index }}. {{ dimension.label }}
+{% endfor %}
+
+**Output — a JSON array, one object per respondent, each with:**
+- `id`: copied exactly as given.
+- `details`: an object of short prose sections (2-3 sentences each) describing
+  this respondent's circumstances and how the traits show up in their life.
+
+Do not restate raw demographic numbers inside `details`. Return ONLY the JSON array.

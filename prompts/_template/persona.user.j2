@@ -1,0 +1,23 @@
+Below are {{ profiles | length }} pre-sampled respondents. Write the `details`
+prose for each, faithful to the given demographics and trait bands.
+
+{% for profile in profiles %}
+--- respondent {{ profile.id }} ---
+Demographics:
+{% for key, value in profile.demographics.items() %}
+  - {{ key }}: {{ value }}
+{% endfor %}
+{% if profile.derived %}
+Additional facts:
+{% for key, value in profile.derived.items() %}
+  - {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+Trait levels:
+{% for label, band in profile.bands.items() %}
+  - {{ label }}: {{ band }}
+{% endfor %}
+
+{% endfor %}
+Return ONLY a JSON array of {{ profiles | length }} objects, in the same order,
+each with `id` (copied exactly) and `details`.
