@@ -6,6 +6,19 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Changed
+
+- The README is now the complete usage guide: installation, every `.env`
+  setting, survey selection, running the pipeline, the command and make-target
+  reference, the new-questionnaire workflow, a full `survey.yaml` reference,
+  prompt customisation, providers, key pools and quotas, Tor, output formats,
+  quality checks, troubleshooting and development.
+
+### Removed
+
+- `docs/HOWTO_NEW_SURVEY.md` — merged into the README (section 7). The survey
+  template now points there.
+
 ## [3.0.0] — 2026-09-25
 
 The fifteen per-questionnaire copies of PersonaBot 2.x (`PersonaBot-new`,
