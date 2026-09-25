@@ -1,0 +1,57 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "personabot"
+version = "3.0.0"
+description = "Configuration-driven synthetic survey responses (silicon sampling): one codebase, one folder per questionnaire"
+readme = "README.md"
+requires-python = ">=3.11"          # asyncio.TaskGroup
+
+# Pinned deliberately: google-genai and playwright locator semantics both change
+# across majors. Upper bounds are the next major; lower bounds are what the 2.x
+# forks were developed and tested against.
+dependencies = [
+    # --- configuration & validation ---
+    "pydantic>=2.13.4,<3",
+    "pydantic-settings>=2.15.0,<3",
+    "PyYAML>=6.0.3,<7",
+    "python-dotenv>=1.2.2,<2",
+    # --- prompt rendering ---
+    "Jinja2>=3.1.6,<4",
+    # --- LLM backends ---
+    "google-genai>=2.17.0,<3",
+    "openai>=2.53.0,<3",
+    "httpx>=0.27,<1",                # GEMINI_PROXY transport
+    # --- browser automation ---
+    "playwright>=1.62.0,<2",
+    "beautifulsoup4>=4.15.0,<5",
+    # --- answer validation ---
+    "thefuzz>=0.22.1,<1",
+    "Levenshtein>=0.27.3,<1",       # C speedup for thefuzz; without it, it warns
+    # --- tor (optional at runtime, guarded by USE_TOR) ---
+    "stem>=1.8.2,<2",
+    "PySocks>=1.7.1,<2",
+    # --- logging ---
+    "colorlog>=6.12.0,<7",
+]
+
+[project.optional-dependencies]
+# GEMINI_PROXY=socks5://… needs httpx's SOCKS support.
+socks = ["httpx[socks]>=0.27,<1"]
+dev = [
+    "pytest>=9.1.1,<10",
+    "pytest-asyncio>=0.24",
+]
+
+[project.scripts]
+personabot = "personabot.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]
+asyncio_mode = "auto"
