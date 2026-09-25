@@ -1,0 +1,5224 @@
+[
+  {
+    "question_id": "53941844",
+    "question_text": "نام سازمان خود را بنویسید.",
+    "type": "TEXT_INPUT",
+    "options": []
+  },
+  {
+    "question_id": "53942105",
+    "question_text": "سمت سازمانی خود را بنویسید.",
+    "type": "TEXT_INPUT",
+    "options": []
+  },
+  {
+    "question_id": "53941987",
+    "question_text": "نوع سازمان خود را مشخص نمایید.",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "دولتی",
+        "value": "دولتی"
+      },
+      {
+        "text": "نیمه دولتی",
+        "value": "نیمه دولتی"
+      },
+      {
+        "text": "خصوصی",
+        "value": "خصوصی"
+      },
+      {
+        "text": "حرفه ای",
+        "value": "حرفه ای"
+      },
+      {
+        "text": "مردم نهاد",
+        "value": "مردم نهاد"
+      },
+      {
+        "text": "سایر",
+        "value": "سایر"
+      }
+    ]
+  },
+  {
+    "question_id": "53942259",
+    "question_text": "سابقه فعالیت خود در حوزه شهرسازی تهران را مشخص نمایید.",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "3 تا 5 سال",
+        "value": "3 تا 5 سال"
+      },
+      {
+        "text": "5 تا 10 سال",
+        "value": "5 تا 10 سال"
+      },
+      {
+        "text": "10 تا 15 سال",
+        "value": "10 تا 15 سال"
+      },
+      {
+        "text": "15 تا 20 سال",
+        "value": "15 تا 20 سال"
+      },
+      {
+        "text": "بیش از 20 سال",
+        "value": "بیش از 20 سال"
+      }
+    ]
+  },
+  {
+    "question_id": "53942610",
+    "question_text": "شماره تماس خود را بنویسید. (اختیاری)",
+    "type": "TEXT_INPUT",
+    "options": []
+  },
+  {
+    "question_id": "53944059#00",
+    "question_text": "وزارت راه و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#01",
+    "question_text": "شورای عالی شهرسازی و معماری ایران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#02",
+    "question_text": "وزارت کشور",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#03",
+    "question_text": "سازمان شهرداری ها و دهیاری های کشور",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#04",
+    "question_text": "کمیسیون عمران مجلس شورای اسلامی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#05",
+    "question_text": "دیوان عدالت اداری",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#06",
+    "question_text": "سازمان بازرسی کل کشور",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#07",
+    "question_text": "شورای عالی استان ها",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#08",
+    "question_text": "شرکت بازآفرینی شهری ایران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#09",
+    "question_text": "شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#10",
+    "question_text": "شورای اسلامی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#11",
+    "question_text": "استانداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#12",
+    "question_text": "اداره کل راه و شهرسازی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#13",
+    "question_text": "کمیسیون ماده ۵ شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#14",
+    "question_text": "کمیسیون ماده ۱۰۰ شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#15",
+    "question_text": "سازمان نوسازی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#16",
+    "question_text": "سازمان پیشگیری و مدیریت بحران شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#17",
+    "question_text": "مرکز مطالعات و برنامه‌ریزی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#18",
+    "question_text": "سازمان فناوری اطلاعات و ارتباطات شهرداری تهران (فاوا)",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#19",
+    "question_text": "شرکت راه‌آهن شهری تهران و حومه (مترو)",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#20",
+    "question_text": "سازمان املاک و مستغلات شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#21",
+    "question_text": "سازمان مدیریت و برنامه‌ریزی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#22",
+    "question_text": "سازمان نظام مهندسی ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#23",
+    "question_text": "اداره کل میراث‌فرهنگی، گردشگری و صنایع‌دستی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#24",
+    "question_text": "اداره کل حفاظت محیط زیست استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#25",
+    "question_text": "شرکت آب و فاضلاب استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#26",
+    "question_text": "اداره کل جهاد کشاورزی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#27",
+    "question_text": "مرکز تحقیقات راه، مسکن و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#28",
+    "question_text": "بنیاد مسکن انقلاب اسلامی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#29",
+    "question_text": "اداره کل ثبت اسناد و املاک استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#30",
+    "question_text": "انجمن انبوه‌سازان مسکن و ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#31",
+    "question_text": "جامعه مهندسان شهرساز ایران/ سمن های حوزه شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#32",
+    "question_text": "دانشکده های معماری و شهرسازی دانشگاه های تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#33",
+    "question_text": "نهاد راهبری و پایش طرح های توسعه شهری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53944059#34",
+    "question_text": "شرکت‌های مهندسین مشاور شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#00",
+    "question_text": "وزارت راه و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#01",
+    "question_text": "شورای عالی شهرسازی و معماری ایران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#02",
+    "question_text": "وزارت کشور",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#03",
+    "question_text": "سازمان شهرداری ها و دهیاری های کشور",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#04",
+    "question_text": "کمیسیون عمران مجلس شورای اسلامی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#05",
+    "question_text": "دیوان عدالت اداری",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#06",
+    "question_text": "سازمان بازرسی کل کشور",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#07",
+    "question_text": "شورای عالی استان ها",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#08",
+    "question_text": "شرکت بازآفرینی شهری ایران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#09",
+    "question_text": "شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#10",
+    "question_text": "شورای اسلامی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#11",
+    "question_text": "استانداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#12",
+    "question_text": "اداره کل راه و شهرسازی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#13",
+    "question_text": "کمیسیون ماده ۵ شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#14",
+    "question_text": "کمیسیون ماده ۱۰۰ شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#15",
+    "question_text": "سازمان نوسازی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#16",
+    "question_text": "سازمان پیشگیری و مدیریت بحران شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#17",
+    "question_text": "مرکز مطالعات و برنامه‌ریزی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#18",
+    "question_text": "سازمان فناوری اطلاعات و ارتباطات شهرداری تهران (فاوا)",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#19",
+    "question_text": "شرکت راه‌آهن شهری تهران و حومه (مترو)",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#20",
+    "question_text": "سازمان املاک و مستغلات شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#21",
+    "question_text": "سازمان مدیریت و برنامه‌ریزی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#22",
+    "question_text": "سازمان نظام مهندسی ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#23",
+    "question_text": "اداره کل میراث‌فرهنگی، گردشگری و صنایع‌دستی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#24",
+    "question_text": "اداره کل حفاظت محیط زیست استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#25",
+    "question_text": "شرکت آب و فاضلاب استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#26",
+    "question_text": "اداره کل جهاد کشاورزی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#27",
+    "question_text": "مرکز تحقیقات راه، مسکن و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#28",
+    "question_text": "بنیاد مسکن انقلاب اسلامی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#29",
+    "question_text": "اداره کل ثبت اسناد و املاک استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#30",
+    "question_text": "انجمن انبوه‌سازان مسکن و ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#31",
+    "question_text": "جامعه مهندسان شهرساز ایران/ سمن های حوزه شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#32",
+    "question_text": "دانشکده های معماری و شهرسازی دانشگاه های تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#33",
+    "question_text": "نهاد راهبری و پایش طرح های توسعه شهری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945686#34",
+    "question_text": "شرکت‌های مهندسین مشاور شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#00",
+    "question_text": "وزارت راه و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#01",
+    "question_text": "شورای عالی شهرسازی و معماری ایران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#02",
+    "question_text": "وزارت کشور",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#03",
+    "question_text": "سازمان شهرداری ها و دهیاری های کشور",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#04",
+    "question_text": "کمیسیون عمران مجلس شورای اسلامی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#05",
+    "question_text": "دیوان عدالت اداری",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#06",
+    "question_text": "سازمان بازرسی کل کشور",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#07",
+    "question_text": "شورای عالی استان ها",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#08",
+    "question_text": "شرکت بازآفرینی شهری ایران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#09",
+    "question_text": "شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#10",
+    "question_text": "شورای اسلامی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#11",
+    "question_text": "استانداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#12",
+    "question_text": "اداره کل راه و شهرسازی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#13",
+    "question_text": "کمیسیون ماده ۵ شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#14",
+    "question_text": "کمیسیون ماده ۱۰۰ شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#15",
+    "question_text": "سازمان نوسازی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#16",
+    "question_text": "سازمان پیشگیری و مدیریت بحران شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#17",
+    "question_text": "مرکز مطالعات و برنامه‌ریزی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#18",
+    "question_text": "سازمان فناوری اطلاعات و ارتباطات شهرداری تهران (فاوا)",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#19",
+    "question_text": "شرکت راه‌آهن شهری تهران و حومه (مترو)",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#20",
+    "question_text": "سازمان املاک و مستغلات شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#21",
+    "question_text": "سازمان مدیریت و برنامه‌ریزی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#22",
+    "question_text": "سازمان نظام مهندسی ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#23",
+    "question_text": "اداره کل میراث‌فرهنگی، گردشگری و صنایع‌دستی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#24",
+    "question_text": "اداره کل حفاظت محیط زیست استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#25",
+    "question_text": "شرکت آب و فاضلاب استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#26",
+    "question_text": "اداره کل جهاد کشاورزی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#27",
+    "question_text": "مرکز تحقیقات راه، مسکن و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#28",
+    "question_text": "بنیاد مسکن انقلاب اسلامی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#29",
+    "question_text": "اداره کل ثبت اسناد و املاک استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#30",
+    "question_text": "انجمن انبوه‌سازان مسکن و ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#31",
+    "question_text": "جامعه مهندسان شهرساز ایران/ سمن های حوزه شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#32",
+    "question_text": "دانشکده های معماری و شهرسازی دانشگاه های تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#33",
+    "question_text": "نهاد راهبری و پایش طرح های توسعه شهری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945766#34",
+    "question_text": "شرکت‌های مهندسین مشاور شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#00",
+    "question_text": "وزارت راه و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#01",
+    "question_text": "شورای عالی شهرسازی و معماری ایران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#02",
+    "question_text": "وزارت کشور",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#03",
+    "question_text": "سازمان شهرداری ها و دهیاری های کشور",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#04",
+    "question_text": "کمیسیون عمران مجلس شورای اسلامی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#05",
+    "question_text": "دیوان عدالت اداری",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#06",
+    "question_text": "سازمان بازرسی کل کشور",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#07",
+    "question_text": "شورای عالی استان ها",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#08",
+    "question_text": "شرکت بازآفرینی شهری ایران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#09",
+    "question_text": "شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#10",
+    "question_text": "شورای اسلامی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#11",
+    "question_text": "استانداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#12",
+    "question_text": "اداره کل راه و شهرسازی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#13",
+    "question_text": "کمیسیون ماده ۵ شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#14",
+    "question_text": "کمیسیون ماده ۱۰۰ شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#15",
+    "question_text": "سازمان نوسازی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#16",
+    "question_text": "سازمان پیشگیری و مدیریت بحران شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#17",
+    "question_text": "مرکز مطالعات و برنامه‌ریزی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#18",
+    "question_text": "سازمان فناوری اطلاعات و ارتباطات شهرداری تهران (فاوا)",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#19",
+    "question_text": "شرکت راه‌آهن شهری تهران و حومه (مترو)",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#20",
+    "question_text": "سازمان املاک و مستغلات شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#21",
+    "question_text": "سازمان مدیریت و برنامه‌ریزی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#22",
+    "question_text": "سازمان نظام مهندسی ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#23",
+    "question_text": "اداره کل میراث‌فرهنگی، گردشگری و صنایع‌دستی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#24",
+    "question_text": "اداره کل حفاظت محیط زیست استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#25",
+    "question_text": "شرکت آب و فاضلاب استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#26",
+    "question_text": "اداره کل جهاد کشاورزی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#27",
+    "question_text": "مرکز تحقیقات راه، مسکن و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#28",
+    "question_text": "بنیاد مسکن انقلاب اسلامی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#29",
+    "question_text": "اداره کل ثبت اسناد و املاک استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#30",
+    "question_text": "انجمن انبوه‌سازان مسکن و ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#31",
+    "question_text": "جامعه مهندسان شهرساز ایران/ سمن های حوزه شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#32",
+    "question_text": "دانشکده های معماری و شهرسازی دانشگاه های تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#33",
+    "question_text": "نهاد راهبری و پایش طرح های توسعه شهری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53945840#34",
+    "question_text": "شرکت‌های مهندسین مشاور شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      }
+    ]
+  },
+  {
+    "question_id": "53946809",
+    "question_text": "چنانچه با سازمان یا نهاد مؤثر دیگری در حوزه شهرسازی تهران تعامل دارید که نام آن در فهرست 35 تایی قبلی نیامده است، لطفاً در یک پیام صوتی (Voice)، نام آن نهاد(ها) را ذکر کرده و شدت تعامل خود را در ۴ زمینه زیر شرح دهید: ۱. شدت رابطه تبادل اطلاعات ۲. شدت رابطه همکاری رسمی ۳. شدت رابطه تبادل منابع مالی/فنی ۴. شدت رابطه هماهنگی پروژه‌ای",
+    "type": "VOICE",
+    "options": []
+  },
+  {
+    "question_id": "53950069#00",
+    "question_text": "شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950069#01",
+    "question_text": "شورای اسلامی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950069#02",
+    "question_text": "استانداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950069#03",
+    "question_text": "اداره کل راه و شهرسازی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950069#04",
+    "question_text": "سازمان نظام مهندسی ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950069#05",
+    "question_text": "مهندسین مشاور شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950078#00",
+    "question_text": "وزارت راه و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950078#01",
+    "question_text": "شورای اسلامی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950078#02",
+    "question_text": "استانداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950078#03",
+    "question_text": "اداره کل راه و شهرسازی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950078#04",
+    "question_text": "سازمان نظام مهندسی ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950078#05",
+    "question_text": "مهندسین مشاور شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950123#00",
+    "question_text": "وزارت راه و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950123#01",
+    "question_text": "شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950123#02",
+    "question_text": "استانداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950123#03",
+    "question_text": "اداره کل راه و شهرسازی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950123#04",
+    "question_text": "سازمان نظام مهندسی ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950123#05",
+    "question_text": "مهندسین مشاور شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950137#00",
+    "question_text": "وزارت راه و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950137#01",
+    "question_text": "شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950137#02",
+    "question_text": "شورای اسلامی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950137#03",
+    "question_text": "اداره کل راه و شهرسازی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950137#04",
+    "question_text": "سازمان نظام مهندسی ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950137#05",
+    "question_text": "مهندسین مشاور شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950149#00",
+    "question_text": "وزارت راه و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950149#01",
+    "question_text": "شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950149#02",
+    "question_text": "شورای اسلامی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950149#03",
+    "question_text": "استانداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950149#04",
+    "question_text": "سازمان نظام مهندسی ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950149#05",
+    "question_text": "مهندسین مشاور شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950205#00",
+    "question_text": "وزارت راه و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950205#01",
+    "question_text": "شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950205#02",
+    "question_text": "شورای اسلامی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950205#03",
+    "question_text": "استانداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950205#04",
+    "question_text": "اداره کل راه و شهرسازی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950205#05",
+    "question_text": "مهندسین مشاور شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950218#00",
+    "question_text": "وزارت راه و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950218#01",
+    "question_text": "شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950218#02",
+    "question_text": "شورای اسلامی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950218#03",
+    "question_text": "استانداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950218#04",
+    "question_text": "اداره کل راه و شهرسازی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53950218#05",
+    "question_text": "سازمان نظام مهندسی ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1",
+        "value": "1"
+      },
+      {
+        "text": "2",
+        "value": "2"
+      },
+      {
+        "text": "3",
+        "value": "3"
+      },
+      {
+        "text": "4",
+        "value": "4"
+      }
+    ]
+  },
+  {
+    "question_id": "53949621",
+    "question_text": "چنانچه بازیگر کلیدی دیگری در شبکه شهرسازی تهران مدنظر شماست که نام آن در فهرست ۷ تایی قبلی (که میزان نفوذشان بر یکدیگر را ارزیابی نموده اید) نیامده است، لطفاً در یک پیام صوتی (Voice)، نام آن نهاد(ها) را ذکر کرده و مورد زیر را شرح دهید: دلیل اهمیت ویژه و میزان تأثیرگذاری و نفوذ آن در شبکه بازیگران کلیدی(در صورت تأیید لیست ۷ تایی فعلی، بیان عبارت «تأیید است» کفایت می‌کند)",
+    "type": "VOICE",
+    "options": []
+  },
+  {
+    "question_id": "53953420#00",
+    "question_text": "وزارت راه و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953420#01",
+    "question_text": "شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953420#02",
+    "question_text": "شورای اسلامی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953420#03",
+    "question_text": "استانداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953420#04",
+    "question_text": "اداره کل راه و شهرسازی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953420#05",
+    "question_text": "سازمان نظام مهندسی ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953420#06",
+    "question_text": "مهندسین مشاور شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953506#00",
+    "question_text": "وزارت راه و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953506#01",
+    "question_text": "شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953506#02",
+    "question_text": "شورای اسلامی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953506#03",
+    "question_text": "استانداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953506#04",
+    "question_text": "اداره کل راه و شهرسازی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953506#05",
+    "question_text": "سازمان نظام مهندسی ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953506#06",
+    "question_text": "مهندسین مشاور شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953538#00",
+    "question_text": "وزارت راه و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953538#01",
+    "question_text": "شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953538#02",
+    "question_text": "شورای اسلامی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953538#03",
+    "question_text": "استانداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953538#04",
+    "question_text": "اداره کل راه و شهرسازی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953538#05",
+    "question_text": "سازمان نظام مهندسی ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953538#06",
+    "question_text": "مهندسین مشاور شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953573#00",
+    "question_text": "وزارت راه و شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953573#01",
+    "question_text": "شهرداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953573#02",
+    "question_text": "شورای اسلامی شهر تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953573#03",
+    "question_text": "استانداری تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953573#04",
+    "question_text": "اداره کل راه و شهرسازی استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953573#05",
+    "question_text": "سازمان نظام مهندسی ساختمان استان تهران",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53953573#06",
+    "question_text": "مهندسین مشاور شهرسازی",
+    "type": "RADIO",
+    "options": [
+      {
+        "text": "4-/3-",
+        "value": "4-/3-"
+      },
+      {
+        "text": "2-/1-",
+        "value": "2-/1-"
+      },
+      {
+        "text": "0",
+        "value": "0"
+      },
+      {
+        "text": "1+/2+",
+        "value": "1+/2+"
+      },
+      {
+        "text": "3+/4+",
+        "value": "3+/4+"
+      }
+    ]
+  },
+  {
+    "question_id": "53954508",
+    "question_text": "چنانچه «هدف راهبردی» یا موضوع چالش‌برانگیز دیگری در تعاملات نهادی شهرسازی تهران مدنظر شماست که در فهرست ۴ هدف اصلی پیشین (ابعاد حقوقی، توزیع منابع، ساختاری، و تصدی‌گری) نیامده است، لطفاً در یک پیام صوتی (Voice)، عنوان آن هدف را بیان کرده و مورد زیر را شرح دهید:دلیل اهمیت ویژه این هدف در شکل‌دهی به روابط، توافقات یا تضاد منافع میان بازیگران کلیدی شبکه (دولت و نهادهای مدنی)(در صورت جامع بودن و تأیید ۴ هدف فعلی، بیان عبارت «تأیید است» کفایت می‌کند)",
+    "type": "VOICE",
+    "options": []
+  },
+  {
+    "question_id": "53954918",
+    "question_text": "لطفاً تجربه تعامل سازمان خود با سایر نهادهای شهرسازی تهران را شرح دهید؛ این ارتباطات عمدتاً حول چه موضوعاتی شکل می‌گیرد، نقش محوریِ هماهنگی میان بازیگران بر عهده کدام نهادهاست و روند این تعاملات در طول زمان چه تغییراتی داشته است؟",
+    "type": "VOICE",
+    "options": []
+  },
+  {
+    "question_id": "53955100",
+    "question_text": "با توجه به شناخت شما از شبکه تعاملات مدیریت شهری تهران، جایگاه و میزان اثرگذاری سازمان متبوع خود را در مقایسه با سایر نهادهای دولتی و غیردولتی چگونه ارزیابی می‌کنید؟ به نظر شما، این جایگاه ساختاری و میزان قدرت سازمان شما، چه تأثیری بر هم‌گرایی یا واگرایی‌تان با سایر بازیگران در راستای تحقق اهداف چهارگانه داشته است؟",
+    "type": "VOICE",
+    "options": []
+  },
+  {
+    "question_id": "53955184",
+    "question_text": "به‌عنوان جمع‌بندی؛ از دیدگاه شما چه موانع نهادی و قانونی مانع از شکل‌گیری «هماهنگی افقی» و برابر میان سمن‌های شهرسازی و نهادهای دولتی/عمومی تهران شده است؟ برای رفع این موانع و حرکت به سمت «حکمرانی شبکه‌ای»، چه سازوکارهای مشخصی پیشنهاد می‌کنید؟ (چنانچه دغدغه یا نکته ناگفته‌ای در این زمینه دارید، اضافه فرمایید).",
+    "type": "VOICE",
+    "options": []
+  }
+]

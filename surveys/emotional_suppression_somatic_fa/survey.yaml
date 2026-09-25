@@ -1,0 +1,418 @@
+# =============================================================================
+# PersonaBot survey spec — live Porsline form, Persian, 115 questions.
+#   https://survey.porsline.ir/s/ECaUm0Yt
+#
+# RESEARCH QUESTION (from the study owner):
+#   the effect of emotional suppression on somatic symptoms
+#   («بررسی تاثیر سرکوب‌های هیجانی روی علائم بدنی»)
+#
+# TARGET POPULATION (from the study owner):
+#   adults with anxiety disorders co-occurring with depression.
+#   No gender restriction, no marital-status restriction, no age restriction.
+#
+# WHAT THE FORM CONTAINS — 4 instruments + 3 demographics, 4 response formats:
+#
+#   56 items  درست/غلط        Emotional Control Questionnaire (ECQ;
+#                             Roger & Najarian, 1989) — 4 subscales × 14 items:
+#                             rehearsal, emotional inhibition, aggression
+#                             control, benign control.
+#   28 items  5-point         Mentalization Scale (MentS; Dimitrijević et al.,
+#                             2018) — self (8), other (10), motivation (10).
+#   18 items  4-point freq    somatic / bodily symptom checklist — the OUTCOME
+#                             variable of the study.
+#   10 items  7-point agree   Emotion Regulation Questionnaire (ERQ; Gross &
+#                             John, 2003) — reappraisal (6), suppression (4).
+#    3 items  singletons      جنسیت, تاهل, سن — bound in `static_answers`.
+#
+# STATUS: subscale membership below is a PROPOSAL derived by reading all 115
+# item texts against the published structure of each instrument. Every
+# judgement call is marked `# REVIEW:`. Nothing here is inferred by code.
+#
+# TWO ITEMS ARE MIS-TRANSLATED ON THE LIVE FORM (see `# FORM DEFECT` below).
+# They are keyed as the form actually words them, not as the instrument
+# intends — a respondent can only answer the sentence in front of them.
+# =============================================================================
+version: 2
+id: emotional_suppression_somatic_fa
+locale: fa
+
+# Migrated from the 2.x fork `PersonaBot-new-Raoufnadi` (its .env and Makefile).
+form:
+  provider: porsline
+  url: https://survey.porsline.ir/s/ECaUm0Yt
+  max_pages: 200
+# -----------------------------------------------------------------------------
+# 1. POPULATION
+# -----------------------------------------------------------------------------
+# Three common factors, chosen to be the minimum that reproduces the study's
+# own causal claim as a correlational structure:
+#
+#   NA   negative affectivity — anxious-depressive distress. Every respondent in
+#        this frame has clinically meaningful levels of it; NA varies severity,
+#        it does not decide presence.
+#   SUP  the tendency to hold emotion in rather than express it — the study's
+#        independent variable, shared by ERQ-suppression and ECQ-inhibition.
+#   MENT mentalizing capacity / emotional clarity — the ability to identify and
+#        put words to one's own and others' states.
+#
+# The hypothesis (suppression → somatic symptoms) is encoded as somatic_symptoms
+# loading on SUP as well as NA, so the two correlate at ~.45 in the generated
+# corpus rather than being independent. `make validate` prints the full matrix —
+# read it before generating at scale.
+population:
+  seed: null
+
+  latent_model:
+    common_factors: [NA, SUP, MENT]
+    dimensions:
+      # --- ECQ ---
+      ecq_rehearsal:
+        loadings: {NA: 0.60, SUP: 0.30, MENT: -0.20}
+        label: "نشخوار فکری: مرور طولانی و برگشت‌پذیرِ رنجش‌ها و اتفاق‌های ناراحت‌کننده در ذهن"
+      ecq_emotional_inhibition:
+        loadings: {SUP: 0.65, NA: 0.25, MENT: -0.20}
+        label: "بازداری هیجانی: پنهان‌کردن احساس از دیگران و آرام‌نشان‌دادن خود در عین ناآرامی درونی"
+      ecq_aggression_control:
+        loadings: {SUP: 0.45, NA: -0.20, MENT: 0.25}
+        label: "مهار پرخاشگری: خودداری از تلافی، جنجال و واکنش تند در برخوردهای روزمره"
+      ecq_benign_control:
+        loadings: {NA: -0.45, MENT: 0.30, SUP: 0.15}
+        label: "مهار تکانه و سنجیدگی: صبر، برنامه‌ریزی و فکرکردن پیش از گفتن و کردن"
+
+      # --- MentS ---
+      ments_self:
+        loadings: {MENT: 0.75, NA: -0.30, SUP: -0.35}
+        label: "ذهنی‌سازی خود: تشخیص‌دادن و نام‌گذاری احساس خود و توضیح‌دادن دلیل رفتار خود"
+      ments_other:
+        loadings: {MENT: 0.75, NA: -0.10}
+        label: "ذهنی‌سازی دیگران: خواندن حال و نیت آدم‌ها و همدلی با احساسشان"
+      ments_motivation:
+        loadings: {MENT: 0.70, NA: 0.10}
+        label: "انگیزه‌ی ذهنی‌سازی: علاقه به فهمیدن چراییِ رفتار خود و دیگران به‌جای دوری‌کردن از آن"
+
+      # --- ERQ ---
+      erq_suppression:
+        loadings: {SUP: 0.85, NA: 0.20, MENT: -0.20}
+        label: "سرکوب بیانگری هیجان: نگه‌داشتن هیجان برای خود و نشان‌ندادن آن به بیرون"
+      erq_reappraisal:
+        loadings: {MENT: 0.60, NA: -0.30, SUP: 0.05}
+        label: "ارزیابی مجدد شناختی: عوض‌کردن طرز نگاه به موقعیت برای عوض‌کردن حالِ خود"
+
+      # --- outcome ---
+      somatic_symptoms:
+        loadings: {NA: 0.75, SUP: 0.35, MENT: -0.15}
+        label: "علائم بدنی: تپش قلب، تنگی نفس، سرگیجه، دل‌آشوبی، سردرد، لرزش و گرفتگی عضلات"
+
+  bands:
+    cuts:   [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5]
+    labels: ["خیلی پایین", "پایین", "تا حدی پایین", "متوسط",
+             "تا حدی بالا", "بالا", "خیلی بالا"]
+
+  response_style:
+    acquiescence:     {dist: normal, mu: 0.0, sigma: 0.40}
+    extreme_response: {dist: normal, mu: 0.0, sigma: 0.40}
+    careless:         {dist: bernoulli, p: 0.04}
+
+  # جنسیت and تاهل are RADIO questions, and static answers are written into the
+  # answer file WITHOUT fuzzy correction — so each is sampled as the exact option
+  # string the form offers, copied from the schema rather than retyped.
+  # NOTE: the gender option on the live form is «اقا», without the hamza.
+  demographics:
+    # The study owner set no gender restriction. The 58/42 split is the usual
+    # skew of an Iranian online mental-health convenience sample, not a quota.
+    # REVIEW: set 0.50/0.50 if your recruitment frame is balanced.
+    - name: gender
+      dist: categorical
+      choices: [["خانم", 0.58], ["اقا", 0.42]]
+
+    # No age restriction. Adults 18-65, centred on the early thirties, which is
+    # where an online Persian survey population actually sits.
+    - name: age
+      dist: normal
+      mu: 33
+      sigma: 10
+      round: int
+      clip: [18, 65]
+      on_out_of_range: resample
+
+    - name: marital_status
+      dist: conditional
+      cases:
+        - {when: "age <= 24", dist: bernoulli, p: 0.18,
+           labels: {"true": "متاهل", "false": "مجرد"}}
+        - {when: "age <= 30", dist: bernoulli, p: 0.45,
+           labels: {"true": "متاهل", "false": "مجرد"}}
+        - {when: "age <= 40", dist: bernoulli, p: 0.72,
+           labels: {"true": "متاهل", "false": "مجرد"}}
+        - {default: true, dist: bernoulli, p: 0.85,
+           labels: {"true": "متاهل", "false": "مجرد"}}
+
+    # Not asked on the form. Sampled only so the persona prose can say something
+    # concrete about how long this has been going on, and how bad it is.
+    # `persist: false` would hide it from the prompt, so it is kept.
+    - name: distress_duration_months
+      dist: normal
+      mu: "clamp(10 + 14 * sigmoid(1.0 * z.somatic_symptoms), 4, 40)"
+      sigma: 8
+      round: int
+      clip: [2, 96]
+      on_out_of_range: resample
+
+    # Trait-informed: more distress and more somatic complaint raise the odds
+    # that this person has already sought help.
+    - name: help_seeking_history
+      dist: bernoulli
+      p: "clamp(0.10 + 0.25 * sigmoid(1.2 * z.somatic_symptoms) + 0.20 * sigmoid(1.2 * z.ecq_rehearsal), 0.05, 0.65)"
+      labels: {"true": "سابقه‌ی مراجعه به روان‌شناس یا روان‌پزشک دارد",
+               "false": "تا حالا برای این حال‌وروز به کسی مراجعه نکرده"}
+
+  # Nothing on this form asks for a computed fact — the only free-text question
+  # is سن, which is a sampled demographic, not a derived one.
+  derived_fields: []
+
+# -----------------------------------------------------------------------------
+# 2. SCHEMA INTERPRETATION
+# -----------------------------------------------------------------------------
+# Constructs are matched by explicit id lists. A `{scale: …}` rule cannot work
+# here: 56 items share one درست/غلط signature across four different ECQ
+# subscales, and 28 more share one 5-point signature across three MentS
+# subscales. Only the item text separates them, and that is a domain judgement.
+scales:
+  # «درست» = the statement applies = the HIGH end, and it sits at index 0.
+  - name: ecq_truefalse
+    match: {options_equal: ["درست", "غلط"]}
+    coding: high_first
+
+  - name: ments5
+    match: {options_equal: ["کاملا نادرست", "اغلب نادرست", "هم درست هم نادرست",
+                            "اغلب درست", "کاملا درست"]}
+    coding: low_first
+
+  - name: somatic_freq4
+    match: {options_equal: ["به هیچ وجه", "گاهی اوقات", "غالباً", "در اکثر مواقع"]}
+    coding: low_first
+
+  # NOTE: «كاملاً مخالفم» is typed with Arabic kaf, «کاملا موافقم» with Persian
+  # kaf. `answering.normalization.fold_arabic_to_persian` folds both sides
+  # before matching, so this signature is stable.
+  - name: erq_agree7
+    match: {options_equal: ["كاملاً مخالفم", "مخالفم", "تا حدودی مخالفم", "خنثی",
+                            "تا حدودی موافقم", "موافقم", "کاملا موافقم"]}
+    coding: low_first
+
+# The three demographic singletons intentionally have no scale: they are
+# answered from the persona record and carry no trait score.
+
+constructs:
+  # ===== ECQ — Emotional Control Questionnaire (درست/غلط, 56 items) =====
+  # Four subscales of 14. `reverse_when` lists the items whose «درست» means a
+  # LOWER level of the trait.
+
+  - key: ecq_rehearsal
+    label: "مرور ذهنی رنجش‌ها و اتفاق‌های ناراحت‌کننده"
+    traits: [ecq_rehearsal]
+    match:
+      question_id_in: ["52333403", "52333568", "52333640", "52333913", "52334310",
+                       "47858330", "47858333", "47858366", "47858382", "47858393",
+                       "47858437", "47858455", "47858485", "47858493"]
+    # «کینه به دل نمی‌گیرم» / «به سرعت می‌گذرم» / «از ذهنم خارج می‌کنم» /
+    # «به سرعت غلبه می‌کنم» / «از قبل زیاد فکر نمی‌کنم» — all low rehearsal.
+    reverse_when:
+      question_id_in: ["52333568", "52334310", "47858455", "47858485", "47858493"]
+
+  - key: ecq_emotional_inhibition
+    label: "پنهان‌کردن احساس از دیگران"
+    traits: [ecq_emotional_inhibition]
+    # REVIEW: 47858449 («اگر کسی به من توهین کند سعی می‌کنم ساکت بمانم») is the
+    # one item that could belong to aggression control instead. It is placed
+    # here because staying silent is inhibition of expression; moving it swaps
+    # one item between two 14-item subscales and changes little.
+    match:
+      question_id_in: ["47858166", "52333546", "52333578", "52333711", "52333853",
+                       "52333960", "52334155", "47858325", "47858375", "47858408",
+                       "47858449", "47858480", "47858489", "47858540"]
+    # «ترجیح می‌دهم صحبت کنم» / «بلافاصله نشان می‌دهم» / «بیان می‌کنم» /
+    # «خجالت‌زده نمی‌شوم» / «نمی‌توانم جلوگیری کنم» / «نمی‌توانم کنترل کنم».
+    reverse_when:
+      question_id_in: ["52333578", "52333960", "52334155", "47858325",
+                       "47858489", "47858540"]
+
+  - key: ecq_aggression_control
+    label: "خودداری از تلافی و واکنش تند"
+    traits: [ecq_aggression_control]
+    match:
+      question_id_in: ["52333396", "52333572", "52333649", "52333695", "52333827",
+                       "52333845", "52333965", "52334162", "52334256", "47858339",
+                       "47858371", "47858374", "47858391", "47858426"]
+    # Keyed so HIGH = more control; every item describing an aggressive or
+    # retaliatory act is therefore reversed.
+    reverse_when:
+      question_id_in: ["52333396", "52333572", "52333649", "52333827", "52333845",
+                       "52333965", "52334162", "47858374", "47858391"]
+
+  - key: ecq_benign_control
+    label: "صبر، سنجیدگی و فکرکردن پیش از عمل"
+    traits: [ecq_benign_control]
+    match:
+      question_id_in: ["52333413", "52333422", "52333549", "52333554", "52333594",
+                       "52333727", "52333858", "52332966", "47858386", "47858402",
+                       "47858432", "47858448", "47858532", "47858536"]
+    # Keyed so HIGH = more control; impulsive and impatient items are reversed.
+    reverse_when:
+      question_id_in: ["52333422", "52333549", "52333554", "52333727", "52333858",
+                       "52332966", "47858402", "47858432", "47858448", "47858536"]
+
+  # ===== MentS — Mentalization Scale (5-point, 28 items) =====
+
+  - key: ments_self
+    label: "شناخت و بیان احساس خود"
+    traits: [ments_self]
+    match:
+      question_id_in: ["47858873", "47858881", "47858891", "47858895",
+                       "47858901", "47858952", "47858958", "47858965"]
+    # Confusion about one's own feelings, and avoidance of self-knowledge, are
+    # LOW self-mentalization. Only «صحبت می‌کنم» and «به راحتی توصیف می‌کنم»
+    # run in the direct direction.
+    reverse_when:
+      question_id_in: ["47858873", "47858881", "47858891",
+                       "47858901", "47858952", "47858958"]
+
+  - key: ments_other
+    label: "خواندن حال و نیت دیگران"
+    traits: [ments_other]
+    match:
+      question_id_in: ["47858858", "47858861", "47858865", "47858866", "47858870",
+                       "47858878", "47858885", "47858948", "47858961", "47858967"]
+    # «افکار من جای دیگری است وقتی دیگران از احساسشان حرف می‌زنند».
+    reverse_when:
+      question_id_in: ["47858967"]
+
+  - key: ments_motivation
+    label: "علاقه به فهمیدن چراییِ رفتار آدم‌ها"
+    traits: [ments_motivation]
+    match:
+      question_id_in: ["47858777", "47858862", "47858876", "47858888", "47858893",
+                       "47858898", "47858946", "47858964", "47858969", "47858974"]
+    # «دوست ندارم وقت بگذارم» / «دوست ندارم به مشکلاتم فکر کنم» /
+    # «فکر کردن در مورد اهداف بی‌فایده است».
+    reverse_when:
+      question_id_in: ["47858876", "47858946", "47858969"]
+
+  # ===== ERQ — Emotion Regulation Questionnaire (7-point, 10 items) =====
+  # The study's independent variable. Only 4 items, so `make analyze` will
+  # report a correlation rather than a stable alpha — that is the instrument,
+  # not a configuration problem.
+
+  - key: erq_suppression
+    label: "نگه‌داشتن هیجان برای خود"
+    traits: [erq_suppression]
+    match:
+      question_id_in: ["47858634", "47858644", "47858663", "47858676"]
+    # FORM DEFECT: ERQ item 9 should read «وقتی هیجان منفی دارم مطمئنم که آن را
+    # نشان *نمی‌دهم*». On this form the negation is missing, so as worded, high
+    # agreement means MORE expression — the opposite of suppression. Keyed
+    # reverse so the item scores the sentence the respondent actually sees.
+    # Fix the wording in the Porsline editor and re-run phase 1 to drop this.
+    reverse_when:
+      question_id_in: ["47858676"]
+
+  - key: erq_reappraisal
+    label: "عوض‌کردن طرز نگاه به موقعیت"
+    traits: [erq_reappraisal]
+    match:
+      question_id_in: ["47858551", "47858639", "47858647",
+                       "47858668", "47858671", "47858722"]
+    # No reverse-keyed items in the reappraisal subscale.
+    reverse_when: {never: true}
+
+  # ===== Somatic symptom checklist (4-point frequency, 18 items) =====
+  # The study's dependent variable. Every item names a bodily sensation, so all
+  # are direct: more often = more somatic symptoms.
+
+  - key: somatic_symptoms
+    label: "نشانه‌های بدنی در چند وقت اخیر"
+    traits: [somatic_symptoms]
+    match:
+      question_id_in: ["47858994", "47859021", "47859027", "47859032", "47859036",
+                       "47859041", "47859045", "47859050", "47859053", "47859058",
+                       "47859063", "47859066", "47859074", "47859076", "47859081",
+                       "47859086", "47859090", "47859096"]
+    reverse_when: {never: true}
+
+# Answered from the persona record, never by the LLM.
+static_answers:
+  - {name: gender,  match: {question_id_in: ["47858163"]},
+     value: "{{ persona.demographics.gender }}"}
+  - {name: marital, match: {question_id_in: ["47858164"]},
+     value: "{{ persona.demographics.marital_status }}"}
+  # سن is the form's only free-text field. Written as ASCII digits, which the
+  # Porsline numeric input accepts.
+  - {name: age,     match: {question_id_in: ["47858203"]},
+     value: "{{ persona.demographics.age }}"}
+
+skip: []
+
+# -----------------------------------------------------------------------------
+# 3. ANSWERING POLICY
+# -----------------------------------------------------------------------------
+answering:
+  # One request per construct — ten chunks rather than one 115-item request.
+  # This is the guard against the self-consistency that inflates alpha.
+  chunk_by: construct
+  shuffle_within_chunk: true
+
+  temperature: {min: 0.55, max: 0.85}
+
+  normalization:
+    unicode: NFKC
+    # Load-bearing here: «كاملاً مخالفم» uses Arabic kaf while «کاملا موافقم»
+    # uses Persian kaf, in the same option list.
+    fold_arabic_to_persian: true
+    zwnj: strip
+    strip_trailing: ".,؛،۔"
+
+  fuzzy: {algorithm: ratio, min_score: 86}
+
+  completeness:
+    # Every question on this form is required — the Porsline walk confirms the
+    # last page will not advance until it is answered. At 0.95 an answer set
+    # with blanks is accepted in phase 3 and then stalls in phase 4.
+    min_ratio: 1.0
+    denominator: answerable
+    max_retries: 2
+    retry_scope: failed_constructs_only
+
+  careless:
+    enabled: true
+    anchor_stickiness: 0.70
+    drift: [-1, 1]
+    apply_static_answers: true
+
+  reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
+
+response_style_nudges:
+  rules:
+    - {when: "acquiescence > 0.30",
+       text: "در گویه‌های مرزی کمی به سمت «موافقم» / «درست» می‌روی."}
+    - {when: "acquiescence < -0.30",
+       text: "در گویه‌های مرزی کمی به سمت «مخالفم» / «غلط» می‌روی."}
+    - {when: "extreme_response > 0.30",
+       text: "وقتی گویه‌ای واقعاً با حال‌وروزت می‌خواند، بی‌تعارف سرِ طیف را انتخاب می‌کنی."}
+    - {when: "extreme_response < -0.30",
+       text: "معمولاً گزینه‌های میانه را به دو سرِ طیف ترجیح می‌دهی."}
+  default: "سبک پاسخ‌دهی تو معمولی و متعادل است."
+
+# -----------------------------------------------------------------------------
+# 4. ANALYSIS
+# -----------------------------------------------------------------------------
+analysis:
+  reverse_keys_from: config
+  warn_on_sign_disagreement: true
+
+  # The 56 ECQ items are dichotomous; scoring them as extreme responses would
+  # structurally inflate the style indices, so they are excluded from those.
+  response_style_min_scale_points: 3
+
+  straightlining: {scope: within_construct, sd_threshold: 0.5}
+  sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
+  min_items_for_alpha: 3

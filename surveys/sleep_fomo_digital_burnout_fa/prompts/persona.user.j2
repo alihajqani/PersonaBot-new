@@ -1,0 +1,25 @@
+در زیر {{ profiles | length }} پاسخ‌دهنده‌ی از پیش نمونه‌گیری‌شده آمده است. برای هرکدام نثر فارسی `details` را بنویس، کاملاً منطبق بر جمعیت‌شناسی، الگوی خواب و بندهای صفات داده‌شده.
+
+{% for profile in profiles %}
+--- پاسخ‌دهنده {{ profile.id }} ---
+جمعیت‌شناسی:
+{% for key, value in profile.demographics.items() %}
+  - {{ key }}: {{ value }}
+{% endfor %}
+{% if profile.derived %}
+الگوی خواب در ماه گذشته (اعداد قطعی — همین‌ها را خودش در پرسشنامه می‌نویسد):
+  - شب‌ها حدود ساعت {{ '%02d:%02d'|format(profile.derived.bedtime_hour, profile.derived.bedtime_minute) }} به رختخواب می‌رود
+  - حدود {{ profile.derived.sleep_latency_minutes }} دقیقه طول می‌کشد تا خوابش ببرد
+  - صبح‌ها حدود ساعت {{ '%02d:%02d'|format(profile.derived.wakeup_hour, profile.derived.wakeup_minute) }} بیدار می‌شود
+  - خواب واقعی‌اش شبی حدود {{ profile.derived.sleep_hours|int }} ساعت{% if profile.derived.sleep_hours % 1 %} و نیم{% endif %} است
+  - استفاده از دارو برای خواب: {{ profile.derived.sleep_medication }}
+  - مشکل در بیدار ماندن در طول روز: {{ profile.derived.daytime_sleepiness }}
+  - آنچه بیش از همه خوابش را به هم می‌زند: {{ profile.derived.other_sleep_problem }}
+{% endif %}
+سطح صفات:
+{% for label, band in profile.bands.items() %}
+  - {{ label }}: {{ band }}
+{% endfor %}
+
+{% endfor %}
+فقط یک آرایه‌ی JSON با {{ profiles | length }} شیء برگردان، به همان ترتیب بالا، هرکدام با `id` (عیناً کپی‌شده) و `details`.

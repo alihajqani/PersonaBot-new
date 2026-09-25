@@ -1,0 +1,23 @@
+در ادامه {{ profiles | length }} پاسخ‌دهنده از پیش نمونه‌گیری‌شده آمده است. برای هرکدام
+نثر `details` را بنویسید، وفادار به جمعیت‌شناسی و درجه‌های ویژگی داده‌شده.
+
+{% for profile in profiles %}
+--- پاسخ‌دهنده {{ profile.id }} ---
+جمعیت‌شناسی:
+{% for key, value in profile.demographics.items() %}
+  - {{ key }}: {{ value }}
+{% endfor %}
+{% if profile.derived %}
+سایر مشخصات:
+{% for key, value in profile.derived.items() %}
+  - {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+درجه ویژگی‌ها:
+{% for label, band in profile.bands.items() %}
+  - {{ label }}: {{ band }}
+{% endfor %}
+
+{% endfor %}
+فقط یک آرایه JSON با {{ profiles | length }} شیء برگردانید، به همان ترتیب،
+هرکدام با `id` (کپی دقیق) و `details`.

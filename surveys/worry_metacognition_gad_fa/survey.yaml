@@ -1,0 +1,555 @@
+# =============================================================================
+# PersonaBot survey spec — «فراشناخت، تفکر تکرارشونده، بلاتکلیفی و اضطراب فراگیر»
+# Live Porsline form, Persian, 83 questions.
+#
+# Instrument, as read off output/form_schema.json:
+#   •  5 items  demographics — 1 free-text (سن) + 4 RADIO
+#   •  7 items  GAD-7، طیف ۴ درجه‌ای «اصلا … تقریبا هر روز»
+#   • 27 items  IUS-27 (مقیاس تحمل‌ناپذیری بلاتکلیفی، فریستون)،
+#               طیف ۵ درجه‌ای «هرگز … همیشه»
+#   • 30 items  MCQ-30 (پرسشنامه فراشناخت ولز و کارترایت-هاتن)،
+#               طیف ۴ درجه‌ای «مخالفم … کاملا موافقم»
+#   • 14 items  PTQ (پرسشنامه تفکر تکرارشونده اهرینگ)، روی همان طیف ۴ درجه‌ای
+#
+# HOW THE INSTRUMENTS WERE IDENTIFIED. The three psychometric blocks appear on
+# the form in their published item order, so each one could be matched item by
+# item against the source instrument rather than guessed from wording:
+#   • ids 51173590–51173600 are GAD-7 items 1–7, in order.
+#   • ids 51173602–51173694 are IUS-27 items 1–27, in order.
+#   • ids 51199328–51200006 are MCQ-30 items 1–30, in order. Subscale membership
+#     below is the PUBLISHED keying, not a reading of the Persian text.
+#   • ids 51200263–51200606 are PTQ items, in order — but only 14 of 15. The
+#     item «احساس می‌کنم مجبورم به فکر کردن درباره همان موضوع ادامه دهم»
+#     (PTQ 13) is absent from the extracted schema. Nothing to fix here; it is
+#     simply not on the form. Scored totals are therefore not comparable to
+#     published PTQ norms.
+#
+# WHAT IS A JUDGEMENT CALL. Only two things, both marked `# REVIEW:` below:
+#   1. splitting IUS-27 into prospective / inhibitory IU;
+#   2. splitting the 14 PTQ items into core / unproductive.
+# Everything else is published keying.
+#
+# NO ITEM ON THIS FORM IS REVERSE-SCORED. All four instruments are keyed so that
+# the high end of every item means MORE of the construct. Each construct
+# therefore declares `reverse_when: {never: true}` explicitly rather than
+# leaving it unstated — see the note above `mcq_low_cognitive_confidence`, which
+# is the one place where that is easy to get wrong.
+#
+# Ids and option strings are copied verbatim from form_schema.json.
+# =============================================================================
+version: 2
+id: worry_metacognition_gad_fa
+locale: fa
+
+# Migrated from the 2.x fork `PersonaBot-new-Soheyli` (its .env and Makefile).
+form:
+  provider: porsline
+  url: https://survey.porsline.ir/s/2UFsuOhr
+  max_pages: 400
+# -----------------------------------------------------------------------------
+# 1. POPULATION — students enrolled at Islamic Azad University, Qom Branch,
+#                 aged 18–35 (دانشگاه آزاد اسلامی واحد قم)
+# -----------------------------------------------------------------------------
+# Everyone in this frame is CURRENTLY ENROLLED. That is what makes the two
+# demographic questions on the form awkward, and both awkwardnesses are handled
+# in the sampler rather than left to the model:
+#
+#   • «مقطع تحصیلی» is read as the level they are enrolled in now, not the
+#     highest degree they hold. The form's three options happen to cover the
+#     whole frame, so nothing is lost.
+#   • «وضعیت اشتغال» has no «دانشجو» option. A student with no outside job is
+#     therefore sampled as «بیکار» — the closest true answer the form allows.
+#     Read the employment marginals with that in mind: «بیکار» here means "not
+#     in paid work", not "unemployed graduate".
+#
+# `field_of_study` and `residence` are sampled but bound to no question. They
+# exist to keep the persona prose specific to Qom.
+population:
+  seed: null
+
+  # Three common factors, chosen to reproduce the metacognitive model of GAD
+  # (Wells' S-REF) that this battery exists to test:
+  #   N = negative affectivity / anxious distress
+  #   M = maladaptive metacognition — thought monitoring, control beliefs,
+  #       and the repetitive thinking they sustain
+  #   P = positive/instrumental beliefs about worry ("worry helps me")
+  #
+  # P exists as its own factor for a substantive reason: MCQ positive beliefs
+  # are the one subscale that consistently fails to correlate with anxiety in
+  # the literature. Folding it into M or N would manufacture a relationship the
+  # instrument does not show.
+  #
+  # Implied correlations (`make validate` prints the full matrix — read it):
+  #   r(gad_anxiety, mcq_negative_beliefs)      = +0.64   strongest MCQ correlate
+  #   r(gad_anxiety, iu_inhibitory)             = +0.64
+  #   r(gad_anxiety, ptq_core)                  = +0.64
+  #   r(gad_anxiety, iu_prospective)            = +0.56
+  #   r(gad_anxiety, mcq_need_to_control)       = +0.48
+  #   r(gad_anxiety, mcq_low_cognitive_confidence) = +0.39
+  #   r(gad_anxiety, mcq_cognitive_self_consciousness) = +0.33
+  #   r(gad_anxiety, mcq_positive_beliefs)      = +0.20   deliberately weak
+  #   r(iu_prospective, iu_inhibitory)          = +0.55
+  #   r(ptq_core, ptq_unproductive)             = +0.65
+  #
+  # These sit inside the published bands (MCQ-NEG/anxiety r ≈ .5–.7, IU/GAD
+  # r ≈ .55–.65, PTQ/GAD r ≈ .55–.65, MCQ-POS/anxiety r ≈ .1–.25).
+  latent_model:
+    common_factors: [N, M, P]
+    dimensions:
+      gad_anxiety:
+        loadings: {N: 0.78, M: 0.30}                 # ΣL² = 0.698
+        label: "اضطراب و نگرانی فراگیر (دلشوره، بی‌قراری، تنیدگی و ترس از اینکه اتفاق بدی بیفتد)"
+
+      iu_prospective:
+        loadings: {N: 0.55, M: 0.45}                 # ΣL² = 0.505
+        label: "نیاز به پیش‌بینی‌پذیری (خواستن قطعیت درباره‌ی آینده، بیزاری از غافلگیری و اصرار بر برنامه‌ریزی از قبل)"
+
+      iu_inhibitory:
+        loadings: {N: 0.66, M: 0.42}                 # ΣL² = 0.612
+        label: "فلج‌شدن در برابر بلاتکلیفی (وقتی چیزی معلوم نیست، آدم از کار و تصمیم می‌ماند و به هم می‌ریزد)"
+
+      mcq_positive_beliefs:
+        loadings: {N: 0.12, M: 0.35, P: 0.72}        # ΣL² = 0.655
+        label: "باور به سودمندی نگرانی (این حس که نگران بودن آدم را آماده، منظم و در امان نگه می‌دارد)"
+
+      mcq_negative_beliefs:
+        loadings: {N: 0.60, M: 0.58}                 # ΣL² = 0.696
+        label: "باور به مهارناپذیری و خطرناک بودن نگرانی (اینکه نگرانی نه متوقف می‌شود و نه بی‌ضرر است)"
+
+      mcq_low_cognitive_confidence:
+        # Low communality on purpose: MCQ cognitive confidence is the subscale
+        # that stands apart from the rest of the battery, so most of its
+        # variance is unique.
+        loadings: {N: 0.42, M: 0.22}                 # ΣL² = 0.225
+        label: "بی‌اعتمادی به حافظه (این حس که حافظه‌ات ضعیف است و نمی‌شود روی آن حساب کرد)"
+
+      mcq_need_to_control:
+        loadings: {N: 0.35, M: 0.70}                 # ΣL² = 0.613
+        label: "نیاز به کنترل افکار (این باور که باید جلوی بعضی فکرها را گرفت و نگرفتنشان تقصیر و ضعف است)"
+
+      mcq_cognitive_self_consciousness:
+        loadings: {N: 0.15, M: 0.72}                 # ΣL² = 0.541
+        label: "خودآگاهی شناختی (مدام حواست به خودِ فکر کردنت باشد و ذهنت را زیر نظر بگیری)"
+
+      ptq_core:
+        loadings: {N: 0.62, M: 0.52}                 # ΣL² = 0.655
+        label: "تکرارشوندگی و ناخواستگی افکار (فکرهایی که خودشان می‌آیند، تکرار می‌شوند و کنار نمی‌روند)"
+
+      ptq_unproductive:
+        loadings: {N: 0.64, M: 0.48}                 # ΣL² = 0.640
+        label: "بی‌حاصلی فکر کردن (ساعت‌ها فکر کردن بدون رسیدن به جواب، و اینکه این فکرها جای همه چیز را می‌گیرند)"
+
+  bands:
+    cuts:   [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5]
+    labels: ["خیلی پایین", "پایین", "کمی پایین", "متوسط", "کمی بالا", "بالا", "خیلی بالا"]
+
+  response_style:
+    acquiescence:     {dist: normal, mu: 0.0, sigma: 0.40}
+    extreme_response: {dist: normal, mu: 0.0, sigma: 0.40}
+    careless:         {dist: bernoulli, p: 0.04}
+
+  # --- demographics, in dependency order --------------------------------------
+  # `gender`, `marital_status`, `education` and `employment` are bound to RADIO
+  # groups in `static_answers`. Static answers are NOT fuzzy-corrected — they are
+  # written into the answer file and then clicked on a live radio group, so each
+  # one is sampled as the form's LITERAL option string, copied from the schema.
+  # `age` is the form's one free-text field and is written as a bare integer.
+  demographics:
+    # 18–35, dominated by undergraduates in their early twenties with a thinning
+    # tail of graduate students. `mu` sits at 23 rather than at the midpoint of
+    # the range because an Azad branch's headcount is overwhelmingly کارشناسی.
+    - name: age
+      dist: normal
+      mu: 23
+      sigma: 4
+      round: int
+      clip: [18, 35]
+      on_out_of_range: resample      # `clip` would pile mass onto 18 and 35
+
+    # REVIEW: humanities and psychology cohorts at Azad Qom skew female, and
+    # online survey response within a cohort skews female again. Adjust if your
+    # recruitment frame says otherwise.
+    - name: gender
+      dist: categorical
+      choices: [["زن", 0.60], ["مرد", 0.40]]
+
+    # Marriage while still enrolled. Two curves rather than one: Iranian women
+    # marry appreciably earlier than men, and Qom is more socially conservative
+    # than the metropolitan average, so both curves start rising earlier than a
+    # Tehran student frame would justify.
+    - name: marital_status
+      dist: conditional
+      cases:
+        - when: "gender == 'زن'"
+          dist: bernoulli
+          p: "clamp(0.03 + 0.042 * (age - 18), 0.03, 0.72)"
+          labels: {"true": "متاهل", "false": "مجرد"}
+        - default: true
+          dist: bernoulli
+          p: "clamp(0.01 + 0.032 * (age - 18), 0.01, 0.60)"
+          labels: {"true": "متاهل", "false": "مجرد"}
+
+    # CURRENT level of enrolment, not highest degree held — the form asks
+    # «مقطع تحصیلی خود را مشخص کنید» of people who are all still studying.
+    # Weighted toward کارشناسی: that is the shape of an Azad branch's roll.
+    - name: education
+      dist: conditional
+      cases:
+        - when: "age <= 22"
+          dist: categorical
+          choices: [["کارشناسی", 0.97], ["کارشناسی ارشد", 0.03]]
+        - when: "age <= 26"
+          dist: categorical
+          choices: [["کارشناسی", 0.55], ["کارشناسی ارشد", 0.43], ["دکتری", 0.02]]
+        - when: "age <= 30"
+          dist: categorical
+          choices: [["کارشناسی", 0.25], ["کارشناسی ارشد", 0.58], ["دکتری", 0.17]]
+        - default: true
+          dist: categorical
+          choices: [["کارشناسی", 0.15], ["کارشناسی ارشد", 0.50], ["دکتری", 0.35]]
+
+    # The form offers no «دانشجو» option, so a student with no outside job has
+    # to answer «بیکار» — which is why that weight is high throughout and
+    # «شاغل تمام وقت» stays low even in the oldest band.
+    #
+    # Azad is fee-paying, so more of its students hold jobs than a state
+    # university's would; part-time work is the modal compromise, and the
+    # graduate students in the top band are often already employed.
+    - name: employment
+      dist: conditional
+      cases:
+        - when: "age <= 22"
+          dist: categorical
+          choices: [["شاغل تمام وقت", 0.08], ["شاغل پاره وقت", 0.27], ["بیکار", 0.65]]
+        - when: "age <= 26"
+          dist: categorical
+          choices: [["شاغل تمام وقت", 0.20], ["شاغل پاره وقت", 0.33], ["بیکار", 0.47]]
+        - default: true
+          dist: categorical
+          choices: [["شاغل تمام وقت", 0.38], ["شاغل پاره وقت", 0.32], ["بیکار", 0.30]]
+
+    # --- context variables ---------------------------------------------------
+    # Not on the form and not bound to any question. They exist so the persona
+    # prose is grounded in a specific faculty and a specific commute instead of
+    # a generic "Iranian student", and they are visible to the answer prompt as
+    # part of who the respondent is.
+    - name: field_of_study
+      dist: categorical
+      choices:
+        - ["روان‌شناسی و علوم تربیتی", 0.20]
+        - ["حقوق", 0.15]
+        - ["مدیریت و حسابداری", 0.16]
+        - ["مهندسی کامپیوتر و فناوری اطلاعات", 0.13]
+        - ["مهندسی عمران و معماری", 0.11]
+        - ["الهیات و معارف اسلامی", 0.10]
+        - ["علوم پایه و زیست‌شناسی", 0.08]
+        - ["پرستاری و علوم پزشکی", 0.07]
+
+    # Qom draws students from its own city, from the surrounding towns on a
+    # daily commute, and from other provinces who move into rented rooms.
+    - name: residence
+      dist: conditional
+      cases:
+        # Married students almost never live in student housing.
+        - when: "marital_status == 'متاهل'"
+          dist: categorical
+          choices:
+            - ["ساکن قم، خانه‌ی خودشان", 0.80]
+            - ["ساکن شهرهای اطراف قم و رفت‌وآمد روزانه به دانشگاه", 0.20]
+        - default: true
+          dist: categorical
+          choices:
+            - ["ساکن قم، خانه‌ی پدری", 0.55]
+            - ["ساکن شهرهای اطراف قم و رفت‌وآمد روزانه به دانشگاه", 0.24]
+            - ["غیربومی، ساکن خوابگاه یا خانه‌ی دانشجویی در قم", 0.21]
+
+  # Nothing on this form asks for a fact the sampler has to compute — the only
+  # free-text question is age, which is a demographic already.
+  derived_fields: []
+
+# -----------------------------------------------------------------------------
+# 2. SCHEMA INTERPRETATION
+# -----------------------------------------------------------------------------
+# Two of the three psychometric scales are 4-point, and they are told apart by
+# their option strings, never by length. The demographic RADIO groups get no
+# scale entry: they are static-bound and carry no ordinal meaning.
+scales:
+  # MCQ-30 and PTQ share this response format on the form.
+  - name: mcq_agreement4
+    match:
+      options_equal: ["مخالفم", "کمی موافقم", "نسبتا موافقم", "کاملا موافقم"]
+    coding: low_first        # [0] «مخالفم» is the low end
+
+  - name: ius_frequency5
+    match:
+      options_equal: ["هرگز", "بندرت", "گاهی اوقات", "اغلب اوقات", "همیشه"]
+    coding: low_first        # [0] «هرگز» is the low end
+
+  - name: gad_frequency4
+    match:
+      options_equal: ["اصلا", "چندین روز", "بیش از نیمی از روز", "تقریبا هر روز"]
+    coding: low_first        # [0] «اصلا» is the low end
+
+# Constructs match on explicit id lists rather than on `scale`, because MCQ-30
+# and PTQ share one response format — a scale-based rule would collapse all 44
+# agreement items into a single bucket and still validate.
+constructs:
+
+  # ===== GAD-7 =====================================================
+  - key: gad_anxiety
+    label: "اضطراب فراگیر — حال دو هفته‌ی گذشته"
+    traits: [gad_anxiety]
+    match:
+      question_id_in:
+        - "51173590"   # 1. احساس عصبی بودن، اضطراب یا نزدیک مرز بودن
+        - "51173591"   # 2. قادر نبودن به جلوگیری یا کنترل نگرانی
+        - "51173592"   # 3. نگرانی بیش از حد در مورد چیزهای مختلف
+        - "51173594"   # 4. سختی در آرام بودن و احساس آرامش
+        - "51173597"   # 5. آنقدر بی قرار بودم که برایم آرام نشستن سخت است
+        - "51173599"   # 6. به آسانی آزرده یا تحریک می شوم
+        - "51173600"   # 7. احساس ترس به دلیل اینکه ممکن است اتفاق وحشتناکی رخ دهد
+    reverse_when: {never: true}     # GAD-7 has no reverse-scored items
+
+  # ===== IUS-27 ====================================================
+  # REVIEW: the IUS-27's own four-factor solution has never replicated cleanly,
+  # so the 27 items are split here along the prospective / inhibitory line that
+  # the IUS-12 established and that does replicate. If your analysis plan needs
+  # Freeston's original four factors, this is the block to rewrite — the ids
+  # are all here and nothing else in the file depends on the split.
+  - key: iu_prospective
+    label: "تحمل‌ناپذیری بلاتکلیفی — نیاز به دانستن و پیش‌بینی کردن"
+    traits: [iu_prospective]
+    match:
+      question_id_in:
+        - "51173623"   # 4.  غیر عادلانه است که هیچ چیز در زندگی، قطعی و یقینی نیست
+        - "51173625"   # 5.  اگر ندانم فردا چه پیشامدی روی می‌دهد، ذهنم آرام و قرار ندارد
+        - "51173655"   # 7.  حوادث پیش‌بینی نشده، مرا به شدت ناراحت می‌کند
+        - "51173659"   # 8.  اگر همه اطلاعات لازم را در اختیار نداشته باشم، ناکام می‌شوم
+        - "51173665"   # 10. باید همیشه گوش به زنگ باشم تا از وقوع حوادث غافلگیر کننده جلوگیری کنم
+        - "51173667"   # 11. حتی با وجود بهترین برنامه‌ریزی، یک اتفاق غیر پیش بینی کوچک...
+        - "51173676"   # 16. به نظر می‌رسد دیگران بر خلاف من، می‌دانند سرنوشت زندگی‌شان چیست
+        - "51173680"   # 18. همیشه می‌خواهم بدانم در آینده چه سرنوشتی پیدا می کنم
+        - "51173681"   # 19. از غافلگیر شدن متنفرم
+        - "51173684"   # 21. من باید بتوانم همه چیز را از قبل، سازماندهی کنم
+        - "51173687"   # 23. به نظرم اطمینان خاطر دیگران در مورد سرنوشت آینده شان، درست نیست
+        - "51173694"   # 27. نمی‌توانم بلاتکلیفی درباره آینده زندگی‌ام را تحمل کنم
+    reverse_when: {never: true}     # IUS-27 has no reverse-scored items
+
+  - key: iu_inhibitory
+    label: "تحمل‌ناپذیری بلاتکلیفی — از کار افتادن و به هم ریختن"
+    traits: [iu_inhibitory]
+    match:
+      question_id_in:
+        - "51173602"   # 1.  بلاتکلیفی باعث می‌شود که نظر قطعی نداشته باشم
+        - "51173609"   # 2.  بلاتکلیفی، نشان دهنده بی‌نظمی فرد است
+        - "51173621"   # 3.  بلاتکلیفی، زندگی را غیرقابل تحمل می‌کند
+        - "51173651"   # 6.  بلاتکلیفی باعث ناراحتی، اضطراب و آشفتگی من می شود
+        - "51173662"   # 9.  بلاتکلیفی مرا از داشتن یک زندگی لذت بخش محروم می کند
+        - "51173669"   # 12. به محض این که می‌خواهم دست به کار شوم، بلاتکلیفی مرا ناراحت می‌کند
+        - "51173670"   # 13. بلاتکلیف بودن به این معناست که من آرام و قرار ندارم
+        - "51173673"   # 14. وقتی بلاتکلیف هستم نمی‌توانم پیشرفت کنم
+        - "51173675"   # 15. وقتی بلاتکلیف هستم، نمی‌توانم عملکرد خوبی داشته باشم
+        - "51173678"   # 17. بلاتکلیفی باعث ناراحتی، آسیب‌پذیری و غمگینی من می‌شود
+        - "51173682"   # 20. کوچکترین تردیدی مرا از عمل باز می‌دارد
+        - "51173686"   # 22. بلاتکلیفی نشان دهنده عدم اعتماد به نفس است
+        - "51173688"   # 24. بلاتکلیفی مرا از خواب راحت محروم کرده است
+        - "51173691"   # 25. من باید از تمام موقعیت‌های بلاتکلیف زندگی، اجتناب کنم
+        - "51173692"   # 26. ابهام‌های زندگی مرا دچار استرس می‌کند
+    reverse_when: {never: true}
+
+  # ===== MCQ-30 ====================================================
+  # Subscale membership below is Wells & Cartwright-Hatton's published keying,
+  # applied by item position. Not a judgement call.
+  - key: mcq_positive_beliefs
+    label: "باورهای مثبت درباره‌ی نگرانی"
+    traits: [mcq_positive_beliefs]
+    match:
+      question_id_in:
+        - "51199328"   # 1.  نگران شدن به من کمک می‌کند تا از مشکلات در آینده اجتناب کنم
+        - "51199584"   # 7.  لازم است نگران باشم تا اینکه رفتارم تنظیم شده باشد
+        - "51199614"   # 10. نگران شدن به من کمک می‌کند تا مسایل ذهنم را حل و فصل کنم
+        - "51199831"   # 19. نگران شدن به من کمک می‌کند تا با مسائل کنار بیایم
+        - "51199924"   # 23. نگرانی به حل مشکلات من کمک می‌کند
+        - "51199984"   # 28. باید نگران شوم تا این‌که خوب کار کنم
+    reverse_when: {never: true}
+
+  - key: mcq_negative_beliefs
+    label: "باورهای منفی درباره‌ی مهارناپذیری و خطر نگرانی"
+    traits: [mcq_negative_beliefs]
+    match:
+      question_id_in:
+        - "51199364"   # 2.  نگرانی برای من خطرناک است
+        - "51199418"   # 4.  گاهی با نگران شدن، واقعاً خودم را مریض می‌کنم
+        - "51199601"   # 9.  افکار نگران‌کننده‌ام، صرف‌نظر از تلاش برای توقف آن‌ها، ادامه دارد
+        - "51199634"   # 11. نمی‌توانم به افکار نگران‌کننده‌ام بی‌توجه باشم
+        - "51199728"   # 15. نگرانی‌ام می‌تواند مرا دیوانه کند
+        - "51199854"   # 21. وقتی نگرانی‌ام شروع می‌شود، نمی‌توانم جلوی آن را بگیرم
+    reverse_when: {never: true}
+
+  # NOTE — the one place reverse keying is easy to get wrong. Every item here is
+  # worded as a LACK of confidence («حافظه ضعیفی دارم»). The trait is therefore
+  # named for the deficit, so high score = high trait and nothing is reversed.
+  # Naming this construct "cognitive confidence" instead would require all six
+  # ids in `reverse_when`, and getting that half-right is what produces a
+  # negative alpha in `make analyze`.
+  - key: mcq_low_cognitive_confidence
+    label: "بی‌اعتمادی به حافظه و توان شناختی"
+    traits: [mcq_low_cognitive_confidence]
+    match:
+      question_id_in:
+        - "51199590"   # 8.  برای بازیابی کلمات و اسامی به حافظه خود اطمینان کمی دارم
+        - "51199719"   # 14. گاهی حافظه‌ام می‌تواند مرا گمراه کند
+        - "51199793"   # 17. حافظه ضعیفی دارم
+        - "51199935"   # 24. در مورد به خاطر سپردن مکان‌ها، اطمینان کمی به حافظه‌ام دارم
+        - "51199957"   # 26. به حافظه‌ام هیچ اطمینانی ندارم
+        - "51199992"   # 29. به حافظه خود در مورد به خاطر سپردن کارهایی که می‌کنم اطمینان کمی دارم
+    reverse_when: {never: true}
+
+  - key: mcq_need_to_control
+    label: "نیاز به کنترل افکار"
+    traits: [mcq_need_to_control]
+    match:
+      question_id_in:
+        - "51199570"   # 6.  اگر یک فکر نگران‌کننده نکنم و سپس آن رخ بدهد، تقصیر من نخواهد بود
+        - "51199647"   # 13. باید تمام مدت افکار خود را کنترل کنم
+        - "51199840"   # 20. ناتوانی در کنترل افکار، علامت ضعف است
+        - "51199911"   # 22. برای کنترل نکردن برخی از افکار تنبیه می‌شوم
+        - "51199945"   # 25. تفکر در مورد بعضی از افکار بد است
+        - "51199978"   # 27. اگر نتوانم افکارم را کنترل کنم، قادر به کار و فعالیت نخواهم بود
+    reverse_when: {never: true}
+
+  - key: mcq_cognitive_self_consciousness
+    label: "خودآگاهی شناختی — زیر نظر گرفتن افکار"
+    traits: [mcq_cognitive_self_consciousness]
+    match:
+      question_id_in:
+        - "51199408"   # 3.  در مورد افکار خود خیلی فکر می‌کنم
+        - "51199544"   # 5.  وقتی در مورد مسأله‌ای فکر می‌کنم، از نحوه کارکرد ذهنم آگاهم
+        - "51199638"   # 12. افکار خود را کنترل و بازبینی می‌کنم
+        - "51199740"   # 16. دائم متوجه افکار خود هستم
+        - "51199810"   # 18. به نحوه عملکرد ذهنم توجه خاصی می‌کنم
+        - "51200006"   # 30. دائماً افکار خود را بررسی می‌کنم
+    reverse_when: {never: true}
+
+  # ===== PTQ =======================================================
+  # REVIEW: this 7/7 split follows the PTQ's own distinction between "core
+  # characteristics" (repetitive, intrusive, hard to disengage from) and the
+  # unproductiveness / mental-capacity items — but it is assigned here by
+  # reading the Persian text, not by published item numbers, and the form is
+  # missing PTQ item 13. If you want the PTQ scored as the single total score
+  # most studies use, merge these two blocks into one construct.
+  - key: ptq_core
+    label: "افکار تکرارشونده — ناخواسته آمدن و کنار نرفتن"
+    traits: [ptq_core]
+    match:
+      question_id_in:
+        - "51200263"   # افکار یکسان مدام در ذهن من تکرار می‌شوند
+        - "51200273"   # افکار به زور وارد ذهن من می‌شوند
+        - "51200281"   # نمی‌توانم به آن‌ها فکر نکنم
+        - "51200314"   # افکار خودشان تکرار می‌شوند
+        - "51200464"   # افکار بدون اینکه من بخواهم وارد ذهنم می‌شوند
+        - "51200548"   # دائم به یک موضوع فکر می‌کنم
+        - "51200562"   # افکار ناگهان وارد ذهنم می‌شوند
+    reverse_when: {never: true}
+
+  - key: ptq_unproductive
+    label: "افکار تکرارشونده — بی‌حاصلی و اشغال ذهن"
+    traits: [ptq_unproductive]
+    match:
+      question_id_in:
+        - "51200293"   # من به مسائل زیادی فکر می‌کنم بدون اینکه آن‌ها را حل کنم
+        - "51200305"   # وقتی دارم به مسائل فکر می‌کنم، نمی‌توانم هیچ کار دیگری انجام دهم
+        - "51200477"   # من در بعضی از مسائل گیر می‌افتم و نمی‌توانم جلو بروم
+        - "51200483"   # مدام از خود سؤال می‌پرسم بدون اینکه جوابی پیدا کنم
+        - "51200490"   # افکار من نمی‌گذارند روی چیزهای دیگر تمرکز کنم
+        - "51200598"   # افکارم فایده چندانی به حالم ندارند
+        - "51200606"   # افکارم همه توجه را به سمت خود می‌کشند
+    reverse_when: {never: true}
+
+# Answered from the persona record, never by the LLM. The four RADIO values are
+# the form's literal option strings — they get clicked, not fuzzy-matched.
+static_answers:
+  - name: age
+    match: {question_id_in: ["51173076"]}   # سن خود را (به سال) وارد نمایید:
+    value: "{{ persona.demographics.age }}"
+
+  - name: gender
+    match: {question_id_in: ["51173092"]}   # جنسیت خود را انتخاب کنید:
+    value: "{{ persona.demographics.gender }}"
+
+  - name: marital_status
+    match: {question_id_in: ["51173094"]}   # وضعیت تأهل خود را مشخص کنید:
+    value: "{{ persona.demographics.marital_status }}"
+
+  - name: education
+    match: {question_id_in: ["51173102"]}   # مقطع تحصیلی خود را مشخص کنید:
+    value: "{{ persona.demographics.education }}"
+
+  - name: employment
+    match: {question_id_in: ["51173117"]}   # وضعیت اشتغال خود را مشخص کنید:
+    value: "{{ persona.demographics.employment }}"
+
+# Every question on this form is either a construct item or a static binding.
+skip: []
+
+# -----------------------------------------------------------------------------
+# 3. ANSWERING POLICY
+# -----------------------------------------------------------------------------
+answering:
+  # 10 constructs → 10 requests per respondent. The largest chunk is
+  # iu_inhibitory at 15 items, which is well inside what one request handles.
+  chunk_by: construct
+  shuffle_within_chunk: true
+
+  temperature: {min: 0.55, max: 0.85}
+
+  normalization:
+    unicode: NFKC
+    fold_arabic_to_persian: true
+    zwnj: strip
+    strip_trailing: ".,؛،۔"
+
+  fuzzy: {algorithm: ratio, min_score: 86}
+
+  completeness:
+    # 1.0, not the 0.95 default: every field on this form is required, so a set
+    # accepted with blanks here would stall in phase 4 instead.
+    min_ratio: 1.0
+    denominator: answerable
+    max_retries: 2
+    retry_scope: failed_constructs_only
+
+  careless:
+    enabled: true
+    anchor_stickiness: 0.70
+    drift: [-1, 1]
+    # Keeps the five demographic answers intact for an inattentive respondent,
+    # so a careless persona still submits a complete form.
+    apply_static_answers: true
+
+  reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
+
+response_style_nudges:
+  rules:
+    - {when: "acquiescence > 0.30",
+       text: "در گویه‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های موافق/بالاتر داری."}
+    - {when: "acquiescence < -0.30",
+       text: "در گویه‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های مخالف/پایین‌تر داری."}
+    - {when: "extreme_response > 0.30",
+       text: "وقتی گویه‌ای واقعاً با حال‌وروزت می‌خواند، راحت سرِ طیف را انتخاب می‌کنی (مثل «کاملا موافقم» یا «همیشه»)."}
+    - {when: "extreme_response < -0.30",
+       text: "معمولاً گزینه‌های ملایم و میانی را به دو سرِ طیف ترجیح می‌دهی."}
+  default: "سبک پاسخ‌دهی‌ات معمولی و متعادل است."
+
+# -----------------------------------------------------------------------------
+# 4. ANALYSIS
+# -----------------------------------------------------------------------------
+analysis:
+  reverse_keys_from: config           # never auto-flip on observed sign
+  warn_on_sign_disagreement: true
+  # Every psychometric scale here is 4- or 5-point; the only 2-option questions
+  # on the form are the gender and marital demographics, both static-bound.
+  response_style_min_scale_points: 3
+  straightlining: {scope: within_construct, sd_threshold: 0.5}
+  sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
+  min_items_for_alpha: 3

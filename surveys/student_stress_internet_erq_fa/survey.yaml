@@ -1,0 +1,924 @@
+# =============================================================================
+# PersonaBot survey spec —
+#   «استرس تحصیلی، اعتیاد به اینترنت و راهبردهای تنظیم شناختی هیجان
+#    در دانش‌آموزان متوسطه دوم منطقه ۴ تهران»
+#
+# Live Porsline form: https://survey.porsline.ir/s/s956kirA
+# Persian, 99 questions = 18 demographic + 81 psychometric.
+#
+# Instrument, as read off the extracted schema:
+#   • 18 items  demographics / screening (free text + single-choice)
+#   • 51 items  Gadzella Student-life Stress Inventory (SLSI), 5-point frequency
+#               «هرگز … بيشتر وقت ها». The item count and the 7/3/4/3/6 +
+#               14/4/8/2 block structure match Gadzella's published subscales
+#               exactly, which is what identifies the instrument.
+#   • 20 items  Young Internet Addiction Test (IAT), 5-point frequency
+#               «به ندرت … همیشه»
+#   • 10 items  Gross & John Emotion Regulation Questionnaire (ERQ), 5-point
+#               agreement «کاملاً مخالفم … کاملاً موافقم»
+#
+# RESEARCH FRAME (from the study's inclusion/exclusion criteria):
+#   دانش‌آموزان پایه‌های دهم/یازدهم/دوازدهم، مدارس دولتی روزانه، منطقه ۴ تهران،
+#   نیم‌سال دوم ۱۴۰۴-۰۵، دامنه سنی ۱۵ تا ۱۸ سال، حضور فعال و مستمر در مدرسه،
+#   رضایت آگاهانه، بدون اختلال روان‌پزشکی شدید، و بدون دریافت هم‌زمان
+#   روان‌درمانی یا مشاوره تخصصی مرتبط با متغیرهای پژوهش.
+#
+#   The last two criteria are ENCODED, not left to chance: questions 53862984
+#   (own psychiatric history) and 53862988 (psychotropic medication or therapy
+#   in the past 6 months) are bound to the constant «خیر». A persona answering
+#   «بله» would be someone the study excludes, so the sampler must not produce
+#   one. See `static_answers`.
+#
+# STATUS: construct membership follows the published subscale structure of the
+# three instruments. Judgement calls are marked `# REVIEW:`. The validator can
+# prove this file is COMPLETE; only you can decide whether it is CORRECT.
+#
+# Question ids and option strings are copied verbatim from form_schema.json.
+# =============================================================================
+version: 2
+id: student_stress_internet_erq_fa
+locale: fa
+
+# Migrated from the 2.x fork `PersonaBot-new-zahra` (its .env and Makefile).
+form:
+  provider: porsline
+  url: https://survey.porsline.ir/s/s956kirA
+  max_pages: 400
+# -----------------------------------------------------------------------------
+# 1. POPULATION — high-school students, grades 10–12, district 4 of Tehran
+# -----------------------------------------------------------------------------
+population:
+  seed: null
+
+  # Five latent dimensions on three common factors.
+  #
+  #   D = general distress / dysregulation
+  #   R = adaptive emotion regulation
+  #   S = stressor-exposure specific (what happens TO the student, as distinct
+  #       from how their body and mood REACT to it)
+  #
+  # SLSI is deliberately split into two dimensions rather than one. Gadzella's
+  # own structure separates «عوامل استرس‌زا» (23 items) from «واکنش به استرس»
+  # (28 items), and published samples put their correlation near 0.55–0.60 —
+  # high, but nowhere near the 1.0 that a single shared trait would imply.
+  #
+  # Implied correlations — `make validate` prints this matrix, READ IT:
+  #   r(stressors, reactions)          = +0.56   two halves of the SLSI
+  #   r(stressors, internet_addiction) = +0.41   H1
+  #   r(reactions, internet_addiction) = +0.45   H1
+  #   r(reactions, reappraisal)        = -0.31   H2  reappraisal is protective
+  #   r(internet_addiction, reappraisal) = -0.30 H2
+  #   r(reactions, suppression)        = +0.33   H3  suppression is a cost
+  #   r(internet_addiction, suppression) = +0.26 H3
+  #   r(reappraisal, suppression)      = -0.13   ERQ subscales are near-
+  #                                              orthogonal by design; anything
+  #                                              past -0.30 here would be wrong.
+  #
+  # Magnitudes sit in the middle of the adolescent literature rather than at the
+  # top: stress↔internet-addiction is usually reported around +0.30…+0.45, and
+  # reappraisal's protective effect around -0.20…-0.35.
+  latent_model:
+    common_factors: [D, R, S]
+    dimensions:
+      stress_stressors:
+        loadings: {D: 0.62, R: -0.18, S: 0.45}      # ΣL² = 0.619
+        label: "مواجهه با عوامل استرس‌زای تحصیلی و زندگی (ناکامی، تعارض، فشار، تغییر، فشارهای خودتحمیلی)"
+      stress_reactions:
+        loadings: {D: 0.70, R: -0.22, S: 0.20}      # ΣL² = 0.578
+        label: "شدت واکنش به استرس (نشانه‌های جسمانی، هیجانی، رفتاری و ارزیابی شناختی)"
+      internet_addiction:
+        loadings: {D: 0.55, R: -0.25, S: 0.05}      # ΣL² = 0.368
+        label: "اعتیاد به اینترنت (اشتغال ذهنی، ناتوانی در کنترل زمان، اختلال در خواب و تحصیل)"
+      cognitive_reappraisal:
+        loadings: {D: -0.18, R: 0.82, S: 0.0}       # ΣL² = 0.705
+        label: "ارزیابی مجدد شناختی (تغییر دادن نحوه‌ی فکر کردن درباره‌ی موقعیت برای تنظیم هیجان)"
+      expressive_suppression:
+        loadings: {D: 0.45, R: -0.06, S: 0.0}       # ΣL² = 0.206
+        label: "فرونشانی بیانگری هیجان (نگه داشتن احساسات در خود و نشان ندادن آن‌ها)"
+
+  bands:
+    cuts:   [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5]
+    labels: ["خیلی پایین", "پایین", "کمی پایین", "متوسط", "کمی بالا", "بالا", "خیلی بالا"]
+
+  response_style:
+    acquiescence:     {dist: normal, mu: 0.0, sigma: 0.40}
+    extreme_response: {dist: normal, mu: 0.0, sigma: 0.40}
+    careless:         {dist: bernoulli, p: 0.05}     # adolescents in a classroom
+                                                     # setting; slightly above the
+                                                     # 0.04 default
+
+  # --- demographics, in dependency order --------------------------------------
+  # Anything bound to a RADIO in `static_answers` is sampled as a categorical
+  # over the form's LITERAL option strings. Static answers are NOT fuzzy-matched:
+  # they are written into the answer file and then clicked on a live radio group,
+  # so anything but a character-for-character match fails in phase 4.
+  demographics:
+    # The form never asks for gender, so this is not bound to any question. It is
+    # sampled anyway because it shapes the persona prose, and Iranian public
+    # daily high schools are single-sex — a persona has to be one or the other
+    # for the school description to make sense.
+    - name: gender
+      dist: categorical
+      choices: [["دختر", 0.5], ["پسر", 0.5]]
+
+    # Neighbourhoods of Tehran's district 4, exactly as supplied by the study.
+    # Also unbound — it exists to keep the prose specific to district 4 rather
+    # than generically «تهران». Weights follow rough residential population:
+    # the Tehranpars/Narmak/Resalat belt is much denser than Majidabad or Kalad.
+    - name: neighborhood
+      dist: categorical
+      choices:
+        - ["تهران‌پارس شرقی", 0.11]
+        - ["تهران‌پارس غربی", 0.11]
+        - ["نارمک شمالی", 0.08]
+        - ["مجیدیه - شمس‌آباد", 0.07]
+        - ["قنات کوثر", 0.06]
+        - ["حکیمیه", 0.06]
+        - ["پاسداران - ضراب‌خانه", 0.06]
+        - ["لویزان - شیان", 0.05]
+        - ["شمیران‌نو", 0.05]
+        - ["قاسم‌آباد - ده نارمک", 0.05]
+        - ["گلشن", 0.04]
+        - ["علم و صنعت", 0.04]
+        - ["حسین‌آباد - مبارک‌آباد", 0.04]
+        - ["کاظم‌آباد", 0.03]
+        - ["مهران", 0.03]
+        - ["اوقاف", 0.03]
+        - ["کوهسار", 0.03]
+        - ["کالاد", 0.03]
+        - ["مجیدآباد", 0.03]
+
+    # The form's own wording is the pre-reform «اول/دوم/سوم دبیرستان». That maps
+    # onto today's پایه‌های دهم/یازدهم/دوازدهم of متوسطه دوم, which is the frame
+    # the study specifies. Bound verbatim — an option string the browser cannot
+    # find is an unclickable radio.
+    - name: grade_option
+      dist: categorical
+      choices:
+        - ["اول دبیرستان", 0.34]      # پایه دهم
+        - ["دوم دبیرستان", 0.34]      # پایه یازدهم
+        - ["سوم دبیرستان", 0.32]      # پایه دوازدهم — slightly smaller cohort
+                                      # (attrition + کنکور-year transfers)
+
+    # Numeric grade, so age can be drawn conditionally on it. Scaffolding only:
+    # `grade_option` already carries the same fact in the form's own words.
+    - name: grade_level
+      persist: false
+      dist: conditional
+      cases:
+        - {when: "grade_option == 'اول دبیرستان'", dist: constant, value: 10}
+        - {when: "grade_option == 'دوم دبیرستان'", dist: constant, value: 11}
+        - {default: true, dist: constant, value: 12}
+
+    # Age follows grade (modal age = grade + 5 in نیم‌سال دوم) with realistic
+    # off-by-one for late starters and repeaters. Every branch stays inside
+    # 15–18, which is exactly the study's declared age range — no branch can
+    # produce a persona the study would exclude.
+    - name: age
+      dist: conditional
+      cases:
+        - {when: "grade_level == 10", dist: categorical, choices: [[15, 0.80], [16, 0.20]]}
+        - {when: "grade_level == 11", dist: categorical, choices: [[16, 0.82], [17, 0.18]]}
+        - {default: true,             dist: categorical, choices: [[17, 0.80], [18, 0.20]]}
+
+    # District 4 is described by the study as «متوسط رو به بالا», so the parental
+    # education distribution is shifted up relative to the national picture:
+    # دیپلم and above carries ~85% of fathers. «بیسواد» is kept non-zero but tiny
+    # rather than dropped — dropping it would make the option unreachable.
+    - name: father_education
+      dist: categorical
+      choices:
+        - ["بیسواد", 0.01]
+        - ["ابتدایی", 0.04]
+        - ["سیکل", 0.10]
+        - ["دیپلم", 0.35]
+        - ["فوق دیپلم", 0.17]
+        - ["لیسانس", 0.25]
+        - ["فوق لیسانس و بالاتر", 0.08]
+
+    # Mothers' education is correlated with fathers' in real families. Modelled
+    # as a conditional shift rather than an independent draw, so a «فوق لیسانس»
+    # father is not routinely paired with an «ابتدایی» mother.
+    - name: mother_education
+      dist: conditional
+      cases:
+        - when: "father_education == 'فوق لیسانس و بالاتر' or father_education == 'لیسانس'"
+          dist: categorical
+          choices:
+            - ["سیکل", 0.05]
+            - ["دیپلم", 0.32]
+            - ["فوق دیپلم", 0.20]
+            - ["لیسانس", 0.33]
+            - ["فوق لیسانس و بالاتر", 0.10]
+        - when: "father_education == 'فوق دیپلم' or father_education == 'دیپلم'"
+          dist: categorical
+          choices:
+            - ["بیسواد", 0.01]
+            - ["ابتدایی", 0.04]
+            - ["سیکل", 0.13]
+            - ["دیپلم", 0.48]
+            - ["فوق دیپلم", 0.16]
+            - ["لیسانس", 0.17]
+            - ["فوق لیسانس و بالاتر", 0.01]
+        - default: true
+          dist: categorical
+          choices:
+            - ["بیسواد", 0.08]
+            - ["ابتدایی", 0.20]
+            - ["سیکل", 0.30]
+            - ["دیپلم", 0.32]
+            - ["فوق دیپلم", 0.06]
+            - ["لیسانس", 0.04]
+
+    # «بیکار» is deliberately rare: these are intact households in a mid-to-upper
+    # district, and an unemployed father is the exception rather than a fifth of
+    # the sample. Educated fathers skew دولتی.
+    - name: father_job
+      dist: conditional
+      cases:
+        - when: "father_education == 'لیسانس' or father_education == 'فوق لیسانس و بالاتر'"
+          dist: categorical
+          choices: [["دولتی", 0.55], ["آزاد", 0.42], ["بیکار", 0.03]]
+        - default: true
+          dist: categorical
+          choices: [["دولتی", 0.32], ["آزاد", 0.62], ["بیکار", 0.06]]
+
+    # Maternal employment tracks maternal education strongly in Iran.
+    - name: mother_job
+      dist: conditional
+      cases:
+        - when: "mother_education == 'لیسانس' or mother_education == 'فوق لیسانس و بالاتر'"
+          dist: categorical
+          choices: [["شاغل", 0.62], ["خانه دار", 0.38]]
+        - when: "mother_education == 'فوق دیپلم' or mother_education == 'دیپلم'"
+          dist: categorical
+          choices: [["شاغل", 0.28], ["خانه دار", 0.72]]
+        - default: true
+          dist: categorical
+          choices: [["شاغل", 0.12], ["خانه دار", 0.88]]
+
+    # --- آخرین معدل -----------------------------------------------------------
+    # GPA is a FACT about the respondent, not an opinion, so it is sampled from
+    # the traits rather than left to the model — that keeps it coherent with the
+    # 51 stress answers instead of contradicting them. Both stress reactions and
+    # internet addiction pull it down; the effect is small (a z of +2 on both
+    # costs roughly 2.2 points) because GPA has many other causes.
+    - name: gpa_raw
+      persist: false
+      dist: normal
+      mu: "17.2 - 0.50 * z.stress_reactions - 0.65 * z.internet_addiction"
+      sigma: 1.6
+      clip: [11.0, 20.0]
+      on_out_of_range: resample     # `clip` would pile mass on 20.00 exactly
+    - {name: gpa, dist: derived, expr: "round(gpa_raw * 100) / 100"}
+
+    # --- رضایت از رشته تحصیلی -------------------------------------------------
+    # Dissatisfaction with one's field of study is itself a documented academic
+    # stressor, so it is drawn conditionally on the stressor trait rather than
+    # independently.
+    - name: field_satisfaction
+      dist: conditional
+      cases:
+        - when: "z.stress_stressors > 0.9"
+          dist: categorical
+          choices:
+            - ["کاملا راضی", 0.06]
+            - ["راضی", 0.22]
+            - ["نظری ندارم", 0.28]
+            - ["ناراضی", 0.31]
+            - ["کاملا ناراضی", 0.13]
+        - when: "z.stress_stressors > -0.35"
+          dist: categorical
+          choices:
+            - ["کاملا راضی", 0.18]
+            - ["راضی", 0.40]
+            - ["نظری ندارم", 0.22]
+            - ["ناراضی", 0.15]
+            - ["کاملا ناراضی", 0.05]
+        - default: true
+          dist: categorical
+          choices:
+            - ["کاملا راضی", 0.34]
+            - ["راضی", 0.45]
+            - ["نظری ندارم", 0.13]
+            - ["ناراضی", 0.06]
+            - ["کاملا ناراضی", 0.02]
+
+    # --- نحوه ارتباط والدین با دانش‌آموز --------------------------------------
+    # Poorer parent–adolescent communication co-occurs with both higher stress
+    # and heavier internet use. Conditioned on the average of the two so neither
+    # one alone drives it.
+    - name: parent_relation
+      dist: conditional
+      cases:
+        - when: "(z.stress_stressors + z.internet_addiction) / 2 > 0.9"
+          dist: categorical
+          choices: [["خوب", 0.28], ["متوسط", 0.49], ["ضعیف", 0.23]]
+        - when: "(z.stress_stressors + z.internet_addiction) / 2 > -0.35"
+          dist: categorical
+          choices: [["خوب", 0.55], ["متوسط", 0.38], ["ضعیف", 0.07]]
+        - default: true
+          dist: categorical
+          choices: [["خوب", 0.78], ["متوسط", 0.20], ["ضعیف", 0.02]]
+
+    # --- رویداد ۶ ماه گذشته ---------------------------------------------------
+    # REVIEW: this question is a single-choice radio whose five options are all
+    # negative life events, with NO «هیچکدام» and no multi-select. The form
+    # forces every respondent to report one. Nothing in this config can fix that
+    # — an unanswered required radio stalls phase 4 — so the distribution is
+    # weighted toward the two mildest and most common options, and the causally
+    # heaviest events (مرگ، طلاق) are made more likely for high-stress personas.
+    # If the researcher can edit the form, adding «هیچکدام» is the right fix and
+    # this variable should then be re-weighted toward it.
+    - name: life_event_6m
+      dist: conditional
+      cases:
+        - when: "z.stress_stressors > 0.9"
+          dist: categorical
+          choices:
+            - ["بروز بیماری برای یکی از اعضای خانواده", 0.34]
+            - ["بروز بیماری در خود", 0.24]
+            - ["مرگ یکی از اعضای خانواده", 0.26]
+            - ["طلاق والدین", 0.12]
+            - ["ازدواج مجدد یکی از والدین", 0.04]
+        - default: true
+          dist: categorical
+          choices:
+            - ["بروز بیماری برای یکی از اعضای خانواده", 0.44]
+            - ["بروز بیماری در خود", 0.34]
+            - ["مرگ یکی از اعضای خانواده", 0.14]
+            - ["طلاق والدین", 0.06]
+            - ["ازدواج مجدد یکی از والدین", 0.02]
+
+    # --- سابقه استعمال سیگار یا مواد مخدر -------------------------------------
+    # Not an exclusion criterion, so it varies. Base rate is deliberately low —
+    # these are 15–18-year-olds answering a questionnaire administered at school,
+    # where under-reporting is the norm. It rises with the distress traits, which
+    # is the association the literature reports.
+    - name: smoking_history
+      dist: bernoulli
+      p: "clamp(0.06 + 0.05 * z.stress_reactions + 0.04 * z.internet_addiction, 0.01, 0.30)"
+      labels: {"true": "بله", "false": "خیر"}
+
+    # --- سابقه مهاجرت (۲ سال گذشته) -------------------------------------------
+    # Free text. Kept mostly «خیر»: the study requires «حضور فعال و مستمر در
+    # مدرسه», which a very recent move tends to cut against. The «بله» branches
+    # name a real previous location, because the question explicitly asks for one
+    # and a bare «بله» would be a non-answer.
+    - name: migration_history
+      dist: categorical
+      choices:
+        - ["خیر", 0.87]
+        - ["بله، حدود دو سال پیش از منطقه دیگری از تهران به اینجا آمدیم.", 0.05]
+        - ["بله، قبلاً در کرج ساکن بودیم.", 0.03]
+        - ["بله، دو سال پیش از شهرستان به تهران مهاجرت کردیم.", 0.03]
+        - ["بله، قبلاً در مشهد زندگی می‌کردیم.", 0.02]
+
+    # --- سابقه مشکلات روانی در خانواده و بستگان -------------------------------
+    # NOT an exclusion criterion — the study excludes the STUDENT's own severe
+    # psychiatric disorder, not a relative's — so this one is allowed to vary.
+    # The question asks for the relationship and the problem, so each «بله»
+    # branch supplies both.
+    - name: family_psych_history
+      dist: categorical
+      choices:
+        - ["خیر", 0.80]
+        - ["بله، خاله‌ام، افسردگی.", 0.05]
+        - ["بله، عمویم، اضطراب و حملات پانیک.", 0.04]
+        - ["بله، مادرم، افسردگی و مصرف دارو.", 0.04]
+        - ["بله، پسرعمویم، وسواس فکری-عملی.", 0.03]
+        - ["بله، پدربزرگم، افسردگی در سال‌های آخر عمر.", 0.02]
+        - ["بله، دایی‌ام، اختلال دوقطبی.", 0.02]
+
+  # ---------------------------------------------------------------------------
+  # Facts the model must NOT invent. The three household counts have to be
+  # ARITHMETICALLY CONSISTENT with each other — a form that asks for children,
+  # household size and birth order in three separate boxes will otherwise get
+  # three independently-hallucinated numbers, e.g. "2 children, 6 people,
+  # 4th child". Computing them here makes that impossible by construction.
+  # ---------------------------------------------------------------------------
+  derived_fields:
+    # Tehran family sizes: one or two children dominate.
+    - name: num_children
+      dist: categorical
+      choices: [[1, 0.26], [2, 0.48], [3, 0.20], [4, 0.06]]
+
+    # Uniform over the sibship — every birth position is equally likely a priori.
+    - {name: birth_order, dist: uniform_int, low: 1, high: "num_children"}
+
+    # A grandparent or other relative living in the household. Rare, but it is
+    # the reason «تعداد اعضای خانواده» is not simply children + 2.
+    - name: extra_members
+      persist: false
+      dist: categorical
+      choices: [[0, 0.90], [1, 0.08], [2, 0.02]]
+
+    # children + two parents + any co-resident relative.
+    # REVIEW: this assumes an intact two-parent household. A persona who drew
+    # «طلاق والدین» on the life-event question may still report both parents
+    # here. Left as-is: the form asks for household MEMBERS, and a recently
+    # divorced parent is often still counted by an adolescent respondent.
+    - {name: family_size, dist: derived, expr: "num_children + 2 + extra_members"}
+
+# -----------------------------------------------------------------------------
+# 2. SCHEMA INTERPRETATION
+# -----------------------------------------------------------------------------
+# CODING DIRECTION — the one thing here that is silently wrong if you get it
+# wrong. `low_first` = option[0] is the LOW end (score = index + 1);
+# `high_first` = option[0] is the HIGH end (score = K - index).
+scales:
+  # --- the three psychometric response formats ------------------------------
+  # SLSI, all 51 items. option[0] «هرگز» is the LOW end → low_first.
+  # NOTE the Arabic yeh in «بيشتر وقت ها» — copied verbatim from the schema.
+  - name: slsi_frequency5
+    match: {options_equal: ["هرگز", "به ندرت", "گاه گاهی", "اغلب", "بيشتر وقت ها"]}
+    coding: low_first
+
+  # IAT, all 20 items. option[0] «به ندرت» is the LOW end → low_first.
+  # REVIEW: the published IAT is a 6-point scale whose bottom anchor is
+  # «هرگز/Never». This form offers only 5 points, starting at «به ندرت». Scores
+  # are therefore NOT comparable to published IAT cut-offs (20–100). Recorded as
+  # extracted; this is a property of the form, not something to patch here.
+  - name: iat_frequency5
+    match: {options_equal: ["به ندرت", "گاهی اوقات", "اغلب", "بیشتر اوقات", "همیشه"]}
+    coding: low_first
+
+  # ERQ, all 10 items. option[0] «کاملاً مخالفم» is the LOW end → low_first.
+  # REVIEW: the published ERQ is a 7-point scale. This form uses 5. Same caveat
+  # as the IAT — internally consistent, not comparable to published norms.
+  - name: erq_agreement5
+    match: {options_equal: ["کاملاً مخالفم", "مخالفم", "نه مخالفم، نه موافقم", "موافقم", "کاملاً موافقم"]}
+    coding: low_first
+
+  # --- demographic response formats ------------------------------------------
+  # Declared so the coverage report accounts for them explicitly. All of these
+  # are bound in `static_answers` and therefore never reach a construct or the
+  # reliability statistics; `coding` is recorded for correctness, not because
+  # anything downstream reads it.
+  - name: demo_grade3
+    match: {options_equal: ["اول دبیرستان", "دوم دبیرستان", "سوم دبیرستان"]}
+    coding: low_first
+  - name: demo_parent_education7
+    match: {options_equal: ["بیسواد", "ابتدایی", "سیکل", "دیپلم", "فوق دیپلم", "لیسانس", "فوق لیسانس و بالاتر"]}
+    coding: low_first
+  # option[0] «کاملا راضی» is the HIGH end of satisfaction → high_first.
+  - name: demo_satisfaction5
+    match: {options_equal: ["کاملا راضی", "راضی", "نظری ندارم", "ناراضی", "کاملا ناراضی"]}
+    coding: high_first
+  # option[0] «خوب» is the HIGH end of relationship quality → high_first.
+  - name: demo_relation3
+    match: {options_equal: ["خوب", "متوسط", "ضعیف"]}
+    coding: high_first
+  - name: demo_father_job3
+    match: {options_equal: ["بیکار", "آزاد", "دولتی"]}
+    coding: low_first
+  - name: demo_mother_job2
+    match: {options_equal: ["خانه دار", "شاغل"]}
+    coding: low_first
+  # Nominal, not ordinal — five unrelated life events. `coding` is meaningless
+  # here; it is required by the schema, so low_first is recorded as a no-op.
+  - name: demo_life_event5
+    match: {options_equal: ["مرگ یکی از اعضای خانواده", "طلاق والدین", "بروز بیماری در خود", "بروز بیماری برای یکی از اعضای خانواده", "ازدواج مجدد یکی از والدین"]}
+    coding: low_first
+  # option[0] «بله» is the HIGH end → high_first.
+  - name: demo_yes_no2
+    match: {options_equal: ["بله", "خیر"]}
+    coding: high_first
+
+# -----------------------------------------------------------------------------
+# CONSTRUCTS
+# -----------------------------------------------------------------------------
+# Twelve constructs over five latent traits. The grouping is NOT arbitrary: it
+# reproduces the published subscale structure of the three instruments, because
+# a construct is simultaneously
+#
+#   1. the LLM REQUEST UNIT — one call per construct per respondent, which is
+#      the guard against the self-consistency that inflates Cronbach's alpha;
+#   2. the REPORTING UNIT — `make analyze` prints one alpha per construct.
+#
+# (2) is why the nine SLSI subscales are kept apart instead of merged into two
+# big chunks: SLSI is reported subscale by subscale, and merging would replace
+# nine meaningful alphas with two that no paper asks for. The price is twelve
+# LLM calls per persona instead of five, and two subscales (تعارض‌ها، تغییرات =
+# 3 items; ارزیابی شناختی = 2 items) that are too short for a stable alpha —
+# `make analyze` will say so rather than print a misleading number. If you would
+# rather trade subscale reporting for cheaper runs, merge the five stressor
+# constructs into one and the four reaction constructs into another; nothing
+# else in this file changes.
+#
+# All rules are explicit `question_id_in` lists and are mutually disjoint, so
+# evaluation order does not matter here.
+constructs:
+
+  # ==========================================================================
+  # SLSI — بخش اول: عوامل استرس‌زا (۲۳ گویه، ۵ زیرمقیاس)
+  # ==========================================================================
+  # Stem for every item in this half: «در طول یک نیم‌سال تحصیلی، ... را تجربه
+  # کرده‌ام». Higher = more exposure. All direct.
+
+  # --- ۱. ناکامی‌ها (Frustrations, 7) ---------------------------------------
+  - key: slsi_frustrations
+    label: "ناکامی‌ها — تأخیر در رسیدن به هدف، کمبود منابع، طرد اجتماعی"
+    traits: [stress_stressors]
+    match:
+      question_id_in:
+        - "53863012"   # به علت تاخير در رسيدن به اهدافم ناکامي‌هايي را تجربه کرده‌ام.
+        - "53863013"   # مشکلات روزمره‌اي را تجربه کرده‌ام که در رسيدن به اهدافم تاثيرگذار بوده است.
+        - "53863020"   # کمبود منابع (مثلا کمبود پول براي خريد کتاب) را تجربه کرده‌ام.
+        - "53863023"   # شکست‌هايي را در دستيابي به اهدافي که تعيين مي‌کنم، تجربه کرده‌ام.
+        - "53863026"   # از نظر اجتماعي مقبول واقع نشده‌ام (از نظر اجتماعي طرد شده‌ام).
+        - "53863029"   # ناکامی هايی را در قرار ملاقات با معلمان تجربه کرده‌ام.
+        - "53863032"   # احساس مي‌کنم به رغم توانايي‌هايم، فرصت‌هايی از من سلب شده است.
+    reverse_when: {never: true}
+
+  # --- ۲. تعارض‌ها (Conflicts, 3) --------------------------------------------
+  # The three classic conflict types: approach–approach, avoidance–avoidance,
+  # approach–avoidance. Note these items are grammatically continuations of a
+  # page stem («تعارض‌هایی را تجربه کرده‌ام که …»), which is why they read as
+  # fragments. Three items — too few for a stable alpha, by design of the
+  # instrument, not of this file.
+  - key: slsi_conflicts
+    label: "تعارض‌ها — گیر افتادن میان دو انتخاب"
+    traits: [stress_stressors]
+    match:
+      question_id_in:
+        - "53863038"   # به وسيله دو يا چند انتخاب خوشايند ايجاد شدند.
+        - "53863073"   # به وسيله دو يا چند انتخاب نا خوشايند ايجاد شدند.
+        - "53863220"   # زماني که هدف دو وجه مثبت و منفي دارد، ايجاد مي‌شوند.
+    reverse_when: {never: true}
+
+  # --- ۳. فشارها (Pressures, 4) ----------------------------------------------
+  - key: slsi_pressures
+    label: "فشارها — رقابت، موعد تحویل تکالیف، اضافه‌بار، انتظارات اطرافیان"
+    traits: [stress_stressors]
+    match:
+      question_id_in:
+        - "53863221"   # در نتيجه رقابت (براي نمرات، کار، روابط با دوستان) :
+        - "53863231"   # به علت موعدهاي تعيين شده (مثلا مقاله‌ها و تکالیفی که موعد تحويل‌شان فرا رسيده است)
+        - "53863233"   # به علت اضافه بار (تلاش براي امور زياد در يک زمان)
+        - "53863236"   # به علت روابط بين‌فردي (خانواده و يا دوستان، انتظارات، روابط کلامي)
+    reverse_when: {never: true}
+
+  # --- ۴. تغییرات (Changes, 3) -----------------------------------------------
+  - key: slsi_changes
+    label: "تغییرات — دگرگونی‌های ناخوشایند و همزمان در زندگی"
+    traits: [stress_stressors]
+    match:
+      question_id_in:
+        - "53863237"   # تغييرات ناخوشايند سريعی را:
+        - "53863292"   # تغييرات بسيار زيادی را که در يک زمان اتفاق مي‌افتند :
+        - "53863297"   # تغييری که زندگی و يا اهدافم را مختل مي‌کند:
+    reverse_when: {never: true}
+
+  # --- ۵. فشارهای خودتحمیلی (Self-imposed, 6) --------------------------------
+  # REVIEW: this subscale is the odd one out in the SLSI. Two of its items —
+  # «دوست دارم رقابت کنم و برنده شوم» and «دوست دارم مورد توجه همه واقع شوم» —
+  # describe drive and sociability, not distress, and they routinely show the
+  # weakest item-total correlations in published analyses. They are kept DIRECT
+  # here because that is how Gadzella keys them: the construct is the pressure a
+  # student puts on themselves, and wanting to win is a source of it. If
+  # `make analyze` flags a sign disagreement on 53863327 or 53863329, this is
+  # the reason, and it is a known property of the instrument.
+  - key: slsi_self_imposed
+    label: "فشارهای خودتحمیلی — کمال‌گرایی، نگرانی، اضطراب امتحان، اهمال‌کاری"
+    traits: [stress_stressors]
+    match:
+      question_id_in:
+        - "53863327"   # دوست دارم رقابت کنم و برنده شوم.
+        - "53863329"   # دوست دارم مورد توجه و علاقه همه واقع شوم.
+        - "53863331"   # درباره هر چيز و هر کس بسيار نگرانم.
+        - "53863332"   # تمايل به اهمال کاری دارم (به تعويق انداختن اموری که بايست انجام دهم).
+        - "53863334"   # احساس مي‌کنم بايد براي مسائلی که آنها را برعهده مي‌گيرم راه حل کاملی پيدا کنم.
+        - "53863336"   # برای امتحانها نگران و مضطرب مي‌شوم.
+    reverse_when: {never: true}
+
+  # ==========================================================================
+  # SLSI — بخش دوم: واکنش به عوامل استرس‌زا (۲۸ گویه، ۴ زیرمقیاس)
+  # ==========================================================================
+  # Stem: «در واکنش به موقعیت‌های استرس‌زا، ... را تجربه کرده‌ام». Higher = a
+  # stronger stress reaction. All direct.
+
+  # --- ۶. واکنش‌های جسمانی (Physiological, 14) --------------------------------
+  - key: slsi_physiological
+    label: "واکنش‌های جسمانی — تعریق، لرزش، خستگی، سردرد، مشکلات گوارشی و خواب اشتها"
+    traits: [stress_reactions]
+    match:
+      question_id_in:
+        - "53863358"   # عرق کردن (کف دست، و غيره).
+        - "53863363"   # لکنت زبان (ناتوانی در واضح صحبت کردن).
+        - "53863366"   # لرزش (عصبی بودن، جويدن ناخن و غيره).
+        - "53863368"   # حرکات سريع (حرکت سريع از جايی به جاي ديگر).
+        - "53863370"   # خستگي شديد.
+        - "53863372"   # تحريک پذيری روده، زخمهاي دستگاه گوارش و غيره.
+        - "53863374"   # تنگی نفس،گرفتگي نايژه ای، نفس نفس زدن.
+        - "53863376"   # کمردرد، گرفتگی ماهيچه ها(انقباض)، دندان قروچه.
+        - "53863380"   # کهير، خارش پوست، حساسيت ها.
+        - "53863381"   # سردردهای ميگرنی، فشار خون بالا، افزايش ضربان قلب.
+        - "53863384"   # التهاب مفاصل، دردهای فراگير.
+        - "53863388"   # ويروس ها، سرماخوردگی، آنفلونزا.
+        - "53863404"   # کاهش وزن(به علت بی اشتهايي).
+        - "53863405"   # افزايش وزن(به علت اشتهاي زياد).
+    reverse_when: {never: true}
+
+  # --- ۷. واکنش‌های هیجانی (Emotional, 4) ------------------------------------
+  - key: slsi_emotional
+    label: "واکنش‌های هیجانی — ترس، خشم، احساس گناه، غم"
+    traits: [stress_reactions]
+    match:
+      question_id_in:
+        - "53863407"   # ترس، اضطراب، نگرانی
+        - "53863408"   # خشم
+        - "53863411"   # احساس گناه
+        - "53863412"   # غم و غصه، افسردگی
+    reverse_when: {never: true}
+
+  # --- ۸. واکنش‌های رفتاری (Behavioral, 8) -----------------------------------
+  # CONTENT NOTE: two items in this block touch self-harm (53863422، 53863433).
+  # They are part of the published instrument and are answered on the same
+  # 5-point frequency scale as everything else. The answer prompt instructs the
+  # model to treat them as ordinary questionnaire items, and the persona prompt
+  # is explicitly forbidden from writing prose about them. Base rates stay low
+  # because the underlying trait, not the item text, drives the response.
+  - key: slsi_behavioral
+    label: "واکنش‌های رفتاری — فریاد، پرخاش، کناره‌گیری، رفتارهای آسیب‌رسان"
+    traits: [stress_reactions]
+    match:
+      question_id_in:
+        - "53863415"   # فرياد کشيدن
+        - "53863417"   # بدرفتاری با ديگران (به طور کلامی يا جسمی).
+        - "53863422"   # بدرفتاری با خود (با سوء مصرف مواد و غيره).
+        - "53863425"   # سيگارکشيدن بيش از حد.
+        - "53863430"   # عصبانی شدن نسبت به ديگران.
+        - "53863433"   # تلاش برای خودکشی.
+        - "53863437"   # استفاده از مکانيسم های دفاعی.
+        - "53863439"   # دوری جستن از ديگران.
+    reverse_when: {never: true}
+
+  # --- ۹. ارزیابی شناختی (Cognitive appraisal, 2) ----------------------------
+  # REVIEW: the direction of this subscale is genuinely arguable. Both items
+  # describe REFLECTING on the stressor and on whether one's coping worked,
+  # which reads like adaptive processing rather than distress — yet Gadzella
+  # scores them direct, as part of the total stress-reaction score, on the
+  # grounds that you only analyse what has already distressed you. Kept direct
+  # to stay faithful to the instrument. Two items, so `make analyze` will report
+  # a correlation, not an alpha.
+  - key: slsi_cognitive_appraisal
+    label: "ارزیابی شناختی — تحلیل کردن موقعیت استرس‌زا و اثربخشی راهبردها"
+    traits: [stress_reactions]
+    match:
+      question_id_in:
+        - "53863445"   # فکر کردن و تحليل درباره اينکه اين موقعيت‌ها چه قدر استرس‌زا بودند.
+        - "53863449"   # فکر کردن و تحليل کردن درباره اين که آيا راهبردهايي که من به کار بردم بيشترين تاثير را داشتند.
+    reverse_when: {never: true}
+
+  # ==========================================================================
+  # آزمون اعتیاد به اینترنت یانگ (IAT) — ۲۰ گویه
+  # ==========================================================================
+  # Kept as ONE construct: splitting a unidimensional published scale would
+  # report two meaningless alphas instead of the one that matters. All direct —
+  # a higher frequency always means more addiction.
+  #
+  # REVIEW: this form contains two verbatim DUPLICATE pairs —
+  #   items 5 and 6  (53864445 / 53864450) are the same sentence, and
+  #   items 17 and 18 (53864685 / 53864688) are the same sentence.
+  # The real IAT has no duplicates: item 6 should ask about schoolwork
+  # suffering, and item 18 about hiding one's online time from others. This is a
+  # data-entry fault in the form itself. Both copies are kept — every question on
+  # the page must be answered — but be aware that two item pairs will show
+  # near-perfect correlation and will inflate this construct's alpha. Fixing it
+  # means editing the form and re-running phase 1.
+  - key: internet_addiction
+    label: "اعتیاد به اینترنت — الگوی استفاده از اینترنت و فضای مجازی"
+    traits: [internet_addiction]
+    match:
+      question_id_in:
+        - "53864420"   # 1- چند وقت یکبار برای زمانی طولانی تر از آنچه که دوست داشتی، در اینترنت می مانی؟
+        - "53864422"   # 2- چند وقت یکبار از انجام کارهای خانه صرف نظر می کنی تا زمان بیشتری را در اینترنت بمانی؟
+        - "53864429"   # 3- چندوقت یکبار هیجان بودن در اینترنت را به گذراندن وقت خود با همسرت(یا هر دوست نزدیک) ترجیح می دهی؟
+        - "53864433"   # 4- چند وقت یکبار به دنبال ایجاد ارتباط جدیدی با کاربران اینترنتی هستی؟
+        - "53864445"   # 5- چند وقت یکبار افراد خانواده ات از مدت زمانی که در اینترنت صرف می کنی، ابراز ناراحتی می کنند؟
+        - "53864450"   # 6- (تکراری با گویه ۵ — نقص خودِ فرم)
+        - "53864452"   # 7- چند وقت یکبار قبل از انجام هر کار ضروری، ایمیل خود را چک می کنی؟
+        - "53864608"   # 8- چند وقت یکبار پرداختن به اینترنت، موجب ایجاد مشکل در کارت می شود؟
+        - "53864613"   # 9- چند وقت یکبار، وقتی اطرافیان از شما می پرسند در اینترنت چکار می کنی، حالت دفاعی یا پنهان‌کارانه می گیری؟
+        - "53864625"   # 10- چند وقت یکبار سعی می کنی خودت را از دست افکار آزارنده در زندگی، با مشغول کردن خود در اینترنت رها کنی؟
+        - "53864626"   # 11- چند وقت یکبار، دوباره وارد اینترنت شدن را زودتر از زمانی که قصد داشتی، شروع می کنی؟
+        - "53864629"   # 12- چند وقت یکبار می ترسی که زندگیت بدون اینترنت ملال آور، پوچ و بدون شادی خواهد بود؟
+        - "53864632"   # 13- هر چند وقت یکبار زمانی که در اینترنت هستی و کسی مزاحمت شود، ناراحت می شوی؟
+        - "53864633"   # 14- چند وقت یکبار خوابت را به خاطر اینکه شب تا دیر وقت در اینترنت هستی از دست می دهی؟
+        - "53864648"   # 15- چند وقت یکبار وقتی که در اینترنت نیستی احساس می کنی که بد جوری فکرت در پی آن است؟
+        - "53864679"   # 16- هر چند وقت یکبار به خودت می گویی «فقط چند دقیقه دیگر» موقع رفتن به اینترنت است؟
+        - "53864685"   # 17- هر چند وقت یکبار سعی می کنی مدت زمان اینترنت بودنت را کوتاه کنی، اما نتوانستی؟
+        - "53864688"   # 18- (تکراری با گویه ۱۷ — نقص خودِ فرم)
+        - "53864689"   # 19- هر چند وقت یکبار صرف کردن وقت بیشتر در اینترنت را بر بیرون رفتن با دیگران ترجیح می دهی؟
+        - "53864722"   # 20- هر چند وقت یکبار احساس می کنی که وقتی در اینترنت نیستی افسرده یا عصبی هستی؟
+    reverse_when: {never: true}
+
+  # ==========================================================================
+  # پرسشنامه تنظیم شناختی هیجان گراس و جان (ERQ) — ۱۰ گویه، ۲ زیرمقیاس
+  # ==========================================================================
+  # The two subscales are deliberately SEPARATE constructs, and not only because
+  # Gross and John score them separately: they load on different latent traits
+  # here (reappraisal on R, suppression on D), so putting them in one chunk
+  # would ask the model to express two opposing tendencies in a single pass.
+  #
+  # No item on either subscale is reverse-keyed. The ERQ has no reversed items —
+  # endorsing a reappraisal item means more reappraisal, and endorsing a
+  # suppression item means more suppression. The two constructs oppose each
+  # other through the FACTOR MODEL, not through reverse keying.
+
+  # --- ارزیابی مجدد شناختی (Reappraisal, 6: items 1,3,5,7,8,10) --------------
+  - key: erq_reappraisal
+    label: "ارزیابی مجدد شناختی — تغییر دادن طرز فکر برای تنظیم هیجان"
+    traits: [cognitive_reappraisal]
+    match:
+      question_id_in:
+        - "53864891"   # 1 - وقتی میخواهم احساس شادی بیشتری داشته باشم، به چیز دیگری فکر میکنم.
+        - "53864893"   # 3 - وقتی میخواهم احساس بد کمتری داشته باشم، به چیز دیگری فکر می کنم.
+        - "53864899"   # 5 - وقتی درباره چیزی نگران هستم، خودم را مجبور میکنم طوری در موردش فکر کنم که احساس بهتری داشته باشم.
+        - "53864906"   # 7 - وقتی میخواهم احساس شادی بیشتری داشته باشم، طرز فکرم را درباره آن عوض میکنم.
+        - "53864908"   # 8 - من احساسم را نسبت به مسایل، از طریق تغییر در نحوه فکر کردنم کنترل می کنم.
+        - "53864913"   # 10 - وقتی میخواهم احساس بد کمتری داشته باشم، روش فکر کردنم را تغییر می دهم.
+    reverse_when: {never: true}
+
+  # --- فرونشانی بیانگری (Suppression, 4: items 2,4,6,9) ----------------------
+  - key: erq_suppression
+    label: "فرونشانی بیانگری هیجان — نگه داشتن احساسات در خود"
+    traits: [expressive_suppression]
+    match:
+      question_id_in:
+        - "53864892"   # 2 - من احساساتم را در خودم نگه میدارم.
+        - "53864898"   # 4 - وقتی احساس شادی میکنم، مراقب هستم آن را نشان ندهم.
+        - "53864904"   # 6 - من احساساتم را با نشان ندادن آنها، کنترل میکنم.
+        - "53864912"   # 9 - وقتی احساس بدی دارم دقت میکنم آن را نشان ندهم.
+    reverse_when: {never: true}
+
+# -----------------------------------------------------------------------------
+# 3. STATIC ANSWERS — answered from the persona record, never by the LLM
+# -----------------------------------------------------------------------------
+# All 18 demographic/screening questions are bound here, so none of them reaches
+# a construct chunk or the reliability statistics.
+#
+# Two different contracts apply, and mixing them up is the usual way this block
+# breaks:
+#   • RADIO   — the value must render to EXACTLY one of that question's option
+#               strings. It is not fuzzy-matched; it is clicked on a live radio
+#               group, so a single character off fails in phase 4. Every radio
+#               below is sampled as a categorical over the literal strings.
+#   • TEXT_INPUT — free text, typed as-is. Numbers are safe here.
+static_answers:
+
+  # --- free text ------------------------------------------------------------
+  - name: age
+    match: {question_id_in: ["53862924"]}   # سن :
+    value: "{{ persona.demographics.age }}"
+
+  - name: gpa
+    match: {question_id_in: ["53862930"]}   # آخرین معدل :
+    value: "{{ persona.demographics.gpa }}"
+
+  # These three MUST agree with each other; that is why they come from
+  # `derived_fields` rather than from three independent guesses by the model.
+  - name: num_children
+    match: {question_id_in: ["53862937"]}   # تعداد فرزندان خانواده:
+    value: "{{ persona.derived.num_children }}"
+
+  - name: family_size
+    match: {question_id_in: ["53862938"]}   # تعداد اعضای خانواده:
+    value: "{{ persona.derived.family_size }}"
+
+  - name: birth_order
+    match: {question_id_in: ["53862939"]}   # شما فرزند چندم خانواده هستید؟
+    value: "{{ persona.derived.birth_order }}"
+
+  - name: migration_history
+    match: {question_id_in: ["53862981"]}   # آیا سابقه مهاجرت در زندگی شما وجود دارد( 2 سال قبل)؟ …
+    value: "{{ persona.demographics.migration_history }}"
+
+  # EXCLUSION CRITERION — «عدم ابتلا به اختلالات روان‌پزشکی شدید». A respondent
+  # who answered «بله» here is by definition not in the study's sampling frame,
+  # so this is a constant, not a draw. Do not turn it into a distribution
+  # "for realism": that would populate the dataset with people the design
+  # excludes.
+  - name: own_psych_history
+    match: {question_id_in: ["53862984"]}   # آیا سابقه مشکلات روانی در شما وجود دارد؟ اگر بله، چه مشکلی؟
+    value: "خیر"
+
+  # NOT an exclusion criterion — the study screens the student, not the family —
+  # so this one varies.
+  - name: family_psych_history
+    match: {question_id_in: ["53862987"]}   # آیا سابقه مشکلات روانی در خانواده و بستگان شما وجود دارد؟ …
+    value: "{{ persona.demographics.family_psych_history }}"
+
+  # EXCLUSION CRITERION — «عدم دریافت هم‌زمان مداخلات روان‌درمانی یا مشاوره
+  # تخصصی». Same reasoning as own_psych_history: constant «خیر».
+  - name: psych_treatment_6m
+    match: {question_id_in: ["53862988"]}   # ایا ظرف 6 ماه گذشته از داروهای موثر بر روان یا درمانهای روانشناسی استفاده نموده اید؟ …
+    value: "خیر"
+
+  # --- single choice --------------------------------------------------------
+  - name: grade
+    match: {question_id_in: ["53862928"]}   # سطح تحصیلات:
+    value: "{{ persona.demographics.grade_option }}"
+
+  - name: field_satisfaction
+    match: {question_id_in: ["53862936"]}   # میزان رضایت شما از رشته تحصیلی تان چقدر است؟
+    value: "{{ persona.demographics.field_satisfaction }}"
+
+  - name: parent_relation
+    match: {question_id_in: ["53862941"]}   # از نظر شما نحوه ارتباط والدینتان با شما چگونه است؟
+    value: "{{ persona.demographics.parent_relation }}"
+
+  - name: father_education
+    match: {question_id_in: ["53862946"]}   # میزان تحصیلات پدر:
+    value: "{{ persona.demographics.father_education }}"
+
+  - name: father_job
+    match: {question_id_in: ["53862951"]}   # شغل پدر :
+    value: "{{ persona.demographics.father_job }}"
+
+  - name: mother_education
+    match: {question_id_in: ["53862975"]}   # میزان تحصیلات مادر:
+    value: "{{ persona.demographics.mother_education }}"
+
+  - name: mother_job
+    match: {question_id_in: ["53862979"]}   # شغل مادر:
+    value: "{{ persona.demographics.mother_job }}"
+
+  - name: life_event_6m
+    match: {question_id_in: ["53862993"]}   # ظرف 6 ماه گذشته موارد زیر برای شما اتفاق افتاده است؟
+    value: "{{ persona.demographics.life_event_6m }}"
+
+  - name: smoking_history
+    match: {question_id_in: ["53862998"]}   # آیا سابقه استعمال سیگار یا مواد مخدر دارید؟
+    value: "{{ persona.demographics.smoking_history }}"
+
+# Nothing is skipped: every question on this form is answered, so the
+# completeness denominator below is the full 99.
+skip: []
+
+# -----------------------------------------------------------------------------
+# 4. ANSWERING POLICY
+# -----------------------------------------------------------------------------
+answering:
+  chunk_by: construct
+  shuffle_within_chunk: true
+  temperature: {min: 0.55, max: 0.85}
+
+  normalization:
+    unicode: NFKC
+    # ESSENTIAL for this form. The SLSI block was typed with Arabic characters
+    # throughout — «بيشتر وقت ها» (ي), «تحريک پذيری», «مي‌کنم» — while the IAT
+    # and ERQ blocks use Persian ی/ک. Without this fold, a model that answers in
+    # ordinary Persian would fail to match the SLSI options.
+    fold_arabic_to_persian: true      # ي→ی ، ك→ک
+    zwnj: strip
+    strip_trailing: ".,؛،۔"
+
+  fuzzy: {algorithm: ratio, min_score: 86}
+
+  completeness:
+    # 1.0, not the 0.95 default. Nothing is skipped and every question on this
+    # form is required, so a set accepted with blanks here would stall in phase 4
+    # on an empty radio group or text box.
+    min_ratio: 1.0
+    denominator: answerable
+    max_retries: 2
+    retry_scope: failed_constructs_only
+
+  careless:
+    enabled: true
+    anchor_stickiness: 0.70
+    drift: [-1, 1]
+    # false: the demographics are the study's own screening variables. A careless
+    # respondent may straightline the 81 questionnaire items, but their age,
+    # grade and household counts must stay internally consistent — a persona
+    # whose birth order exceeds its sibling count is a data error, not realism.
+    apply_static_answers: false
+
+  reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
+
+response_style_nudges:
+  rules:
+    - {when: "acquiescence > 0.30",      text: "در گویه‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های موافق/بالاتر داری."}
+    - {when: "acquiescence < -0.30",     text: "در گویه‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های مخالف/پایین‌تر داری."}
+    - {when: "extreme_response > 0.30",  text: "وقتی گزینه‌ای واقعاً با حال‌وروزت می‌خواند، راحت از گزینه‌ی انتهای طیف (مثل «بيشتر وقت ها»، «همیشه» یا «کاملاً موافقم») استفاده می‌کنی."}
+    - {when: "extreme_response < -0.30", text: "معمولاً گزینه‌های ملایم و میانی (مثل «گاه گاهی» یا «نه مخالفم، نه موافقم») را به گزینه‌های انتهای طیف ترجیح می‌دهی."}
+  default: "سبک پاسخ‌دهی‌ات معمولی و متعادل است."
+
+# -----------------------------------------------------------------------------
+# 5. ANALYSIS
+# -----------------------------------------------------------------------------
+analysis:
+  reverse_keys_from: config           # never auto-flip on observed sign
+  warn_on_sign_disagreement: true
+  # Every psychometric scale here is 5-point, so nothing is excluded; the
+  # 2- and 3-option questions on the form are all demographics and are
+  # static-bound.
+  response_style_min_scale_points: 3
+  straightlining: {scope: within_construct, sd_threshold: 0.5}
+  sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
+  # slsi_conflicts (3), slsi_changes (3), slsi_emotional (4) and
+  # erq_suppression (4) sit at or just above this floor; slsi_cognitive_appraisal
+  # has 2 items and will be reported as a correlation instead of an alpha.
+  min_items_for_alpha: 3

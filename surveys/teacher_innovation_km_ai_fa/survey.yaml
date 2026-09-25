@@ -1,0 +1,486 @@
+# =============================================================================
+# PersonaBot survey spec — live Porsa form (porsa.irandoc.ac.ir/s/2MxM2V),
+# Persian, 91 questions, all RADIO, no free text.
+#
+# WHAT THE FORM CONTAINS — three instruments back to back, administered to
+# Iranian schoolteachers. The instrument titles are glued onto the first item of
+# each block on the live form, which is how the boundaries were identified:
+#
+#   Q1–Q6    demographics                       6 singletons, bound in static_answers
+#   Q7–Q30   «پرسشنامه رفتار نوآورانه»          24 items, خیلی کم … خیلی زیاد
+#            Innovative Work Behaviour, in the De Jong & Den Hartog phase order:
+#            exploration → generation → championing → implementation → sustaining
+#   Q31–Q68  «پرسشنامه مدیریت دانایی»           38 items, هرگز … همواره
+#            Knowledge management, read as the SECI cycle plus human capital
+#   Q69–Q91  «پرسشنامه هوش مصنوعی»              23 items, کاملا مخالفم … کاملا موافقم
+#            AI-literacy: awareness → use → evaluate → ethics
+#
+# TWO OPTION LISTS ARE MISSPELLED ON THE LIVE FORM and are NOT "corrected" here.
+# The schema records what is actually on the page, and an option string the
+# browser cannot find cannot be clicked:
+#   • Q54, Q59, Q60 read «ب ندرت» (missing ه)      -> scale `km_frequency5_typo`
+#   • Q75 reads «کاملاموافقم» (missing space)       -> scale `ai_agreement5_typo`
+# Matching those by `{scale: …}` alone would drop them into UNASSIGNED, so the
+# constructs below match by `question_id_in` throughout.
+#
+# POSITIVE SKEW: this population is deliberately tilted toward favourable
+# responding. See the `bands` and `response_style` blocks — that is where it is
+# done, and the comments there explain why it is done that way and not another.
+# =============================================================================
+version: 2
+id: teacher_innovation_km_ai_fa
+locale: fa
+
+# Migrated from the 2.x fork `PersonaBot-new-hadi` (its .env and Makefile).
+form:
+  provider: porsa
+  url: https://porsa.irandoc.ac.ir/s/2MxM2V
+  max_pages: 40
+# -----------------------------------------------------------------------------
+# 1. POPULATION — Iranian schoolteachers
+# -----------------------------------------------------------------------------
+population:
+  seed: null
+
+  # Four common factors, one latent dimension per construct:
+  #   G      general professional engagement — the tendency to be an involved,
+  #          positively-disposed employee. Loads on everything, mildly.
+  #   INNOV  personal innovation drive       — carries the IWB block
+  #   ORGKM  perceived knowledge climate of the school — carries the KM block.
+  #          Note the KM items ask about the SCHOOL, not the respondent, so this
+  #          is a perception-of-organization factor, distinct from INNOV.
+  #   AILIT  AI literacy and self-efficacy   — carries the AI block
+  #
+  # Constraint enforced at load: squared loadings sum to < 1 per dimension.
+  # `make validate` prints the implied correlation matrix — read it.
+  latent_model:
+    common_factors: [G, INNOV, ORGKM, AILIT]
+    dimensions:
+      # --- Innovative work behaviour (Q7–Q30) ---
+      iwb_exploration:
+        loadings: {G: 0.35, INNOV: 0.68, AILIT: 0.22}
+        label: "کاوش فرصت‌ها: دنبال‌کردن تحولات، فرصت‌های بهبود و شیوه‌های تازه در کار معلمی"
+      iwb_generation:
+        loadings: {G: 0.30, INNOV: 0.75, AILIT: 0.18}
+        label: "تولید ایده: پیشنهاد ایده‌ها و راه‌حل‌های تازه برای مسائل مدرسه"
+      iwb_championing:
+        loadings: {G: 0.30, INNOV: 0.72}
+        label: "ترویج ایده: متقاعدکردن همکاران و جاانداختن ایده‌های نو در مدرسه"
+      iwb_implementation:
+        loadings: {G: 0.32, INNOV: 0.70}
+        label: "اجرای ایده: آزمودن، ارزیابی و وارد‌کردن نوآوری به شیوه‌ی کار روزمره"
+      iwb_sustaining:
+        loadings: {G: 0.35, INNOV: 0.68}
+        label: "پایداری در نوآوری: پافشاری، برنامه‌ریزی و بهینه‌سازی ایده‌های اجراشده"
+
+      # --- Knowledge management (Q31–Q68) ---
+      km_human_capital:
+        loadings: {G: 0.35, ORGKM: 0.68, INNOV: 0.25}
+        label: "سرمایه‌ی انسانی مدرسه: خلاقیت، مطالعه، توان حل مسئله و انعطاف معلمان"
+      km_socialization:
+        loadings: {G: 0.32, ORGKM: 0.72}
+        label: "اجتماعی‌سازی دانش: اعتماد، گفتگوی غیررسمی و کار گروهی میان معلمان"
+      km_externalization:
+        loadings: {G: 0.28, ORGKM: 0.75}
+        label: "برون‌سازی دانش: مستندسازی تجربه‌ها و دسترس‌پذیر‌کردن آن‌ها"
+      km_combination:
+        loadings: {G: 0.28, ORGKM: 0.74, AILIT: 0.20}
+        label: "ترکیب دانش: زیرساخت‌ها و سامانه‌های الکترونیکی برای ذخیره و توزیع دانش"
+      km_internalization:
+        loadings: {G: 0.32, ORGKM: 0.68, INNOV: 0.28}
+        label: "درونی‌سازی دانش: به‌روزکردن توانمندی‌ها و به‌کارگیری دانش تازه در عمل"
+
+      # --- AI literacy (Q69–Q91) ---
+      ai_awareness:
+        loadings: {G: 0.30, AILIT: 0.78}
+        label: "آگاهی از هوش مصنوعی: درک مفاهیم، اصول و کارکردهای پایه‌ی آن"
+      ai_use:
+        loadings: {G: 0.30, AILIT: 0.80}
+        label: "به‌کارگیری هوش مصنوعی: استفاده از ابزارهای آن در یادگیری، کار و حل مسئله"
+      ai_evaluate:
+        loadings: {G: 0.30, AILIT: 0.75}
+        label: "ارزیابی هوش مصنوعی: سنجش درستی، محدودیت‌ها و سوگیری خروجی‌های آن"
+      ai_ethics:
+        loadings: {G: 0.35, AILIT: 0.62}
+        label: "اخلاق هوش مصنوعی: پایبندی به اصول اخلاقی، حریم خصوصی و مسئولیت در کاربرد آن"
+
+  # =========================== THE POSITIVE SKEW ==============================
+  # Trait z-scores are always N(0,1) — the factor model has no mean parameter,
+  # by design. The band CUTS are therefore the lever: they decide which word a
+  # given z-score becomes, and words are the only trait information that ever
+  # reaches the model.
+  #
+  # Shifting the cuts down (default is [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5])
+  # maps the same population onto higher labels. With the cuts below:
+  #
+  #     خیلی بالا    18%   ┐
+  #     بالا         22%   ├─ 66% at or above «نسبتاً بالا»
+  #     نسبتاً بالا  25%   ┘
+  #     متوسط        19%
+  #     نسبتاً پایین 10%
+  #     پایین         4%
+  #     خیلی پایین    1%
+  #
+  # This is the honest way to do it. Pushing further — collapsing everyone onto
+  # «خیلی بالا» — would remove the between-person variance that Cronbach's alpha
+  # is computed from: alpha collapses, every respondent straightlines, and the
+  # result is obvious in any analysis of the dataset. A positively-skewed
+  # population that still has spread stays positive AND stays plausible.
+  bands:
+    cuts:   [-2.2, -1.6, -1.0, -0.4, 0.25, 0.9]
+    labels: ["خیلی پایین", "پایین", "نسبتاً پایین", "متوسط",
+             "نسبتاً بالا", "بالا", "خیلی بالا"]
+
+  # Method variance. `acquiescence` is centred well above 0 — the second half of
+  # the positive skew. It makes borderline items break toward agreement without
+  # touching the trait itself, which is what an agreeable-but-real respondent
+  # looks like. `careless` is halved from the template default: fewer
+  # straightliners means fewer wasted, uniformly-mid response sets.
+  response_style:
+    acquiescence:     {dist: normal, mu: 0.35, sigma: 0.35}
+    extreme_response: {dist: normal, mu: 0.15, sigma: 0.40}
+    careless:         {dist: bernoulli, p: 0.02}
+
+  # Drawn in declaration order; a variable may reference only earlier ones.
+  #
+  # Every value here is a LITERAL OPTION STRING copied from the live form, not a
+  # number to be bucketed later. Static answers are written into the answer file
+  # verbatim and then clicked on a real radio group, so each must render to
+  # exactly one of that question's options, character for character — including
+  # «11تا 15 سال», which is missing a space on the form.
+  demographics:
+    - name: age_band                      # -> questionId1 «سن»
+      dist: categorical
+      choices: [["20-30", 0.18], ["31-40", 0.38], ["41-50", 0.30],
+                ["51-60", 0.13], ["60-70", 0.01]]
+
+    - name: gender                        # -> questionId2 «جنسیت»
+      dist: categorical
+      choices: [["زن", 0.62], ["مرد", 0.38]]   # Iranian teaching workforce skews female
+
+    - name: marital_status                # -> questionId3 «وضعیت تاهل»
+      dist: conditional
+      cases:
+        - when: 'age_band == "20-30"'
+          dist: categorical
+          choices: [["مجرد", 0.55], ["متاهل", 0.45]]
+        - when: 'age_band == "31-40"'
+          dist: categorical
+          choices: [["مجرد", 0.20], ["متاهل", 0.80]]
+        - default: true
+          dist: categorical
+          choices: [["مجرد", 0.08], ["متاهل", 0.92]]
+
+    - name: education                     # -> questionId4 «میزان تحصیلات»
+      dist: categorical
+      choices: [["دیپلم", 0.04], ["فوق دیپلم", 0.11],
+                ["لیسانس", 0.56], ["فوق لیسانس و بالاتر", 0.29]]
+
+    - name: tenure                        # -> questionId5 «سابقه خدمت»
+      dist: conditional                   # years of service must not outrun age
+      cases:
+        - when: 'age_band == "20-30"'
+          dist: categorical
+          choices: [["زیر 5 سال", 0.70], ["6 تا 10 سال", 0.30]]
+        - when: 'age_band == "31-40"'
+          dist: categorical
+          choices: [["زیر 5 سال", 0.10], ["6 تا 10 سال", 0.35],
+                    ["11تا 15 سال", 0.40], ["16 تا 20 سال", 0.15]]
+        - when: 'age_band == "41-50"'
+          dist: categorical
+          choices: [["11تا 15 سال", 0.20], ["16 تا 20 سال", 0.40],
+                    ["20 سال به بالا", 0.40]]
+        - default: true
+          dist: categorical
+          choices: [["16 تا 20 سال", 0.15], ["20 سال به بالا", 0.85]]
+
+    - name: employment                    # -> questionId6 «وضعیت استخدام»
+      dist: conditional                   # tenure drives the shift to رسمی
+      cases:
+        - when: 'tenure == "زیر 5 سال"'
+          dist: categorical
+          choices: [["پیمانی", 0.40], ["قراردادی", 0.35],
+                    ["رسمی", 0.15], ["مامور به خدمت", 0.10]]
+        - when: 'tenure == "6 تا 10 سال"'
+          dist: categorical
+          choices: [["پیمانی", 0.30], ["رسمی", 0.42],
+                    ["قراردادی", 0.18], ["مامور به خدمت", 0.10]]
+        - default: true
+          dist: categorical
+          choices: [["رسمی", 0.68], ["پیمانی", 0.14],
+                    ["قراردادی", 0.10], ["مامور به خدمت", 0.08]]
+
+  # Nothing on this form asks for a computed fact — every question is a radio
+  # group and all six demographics are drawn directly above.
+  derived_fields: []
+
+# -----------------------------------------------------------------------------
+# 2. SCHEMA INTERPRETATION
+# -----------------------------------------------------------------------------
+# All five scales run low -> high in option order, so every one is `low_first`.
+# Verified against the live form rather than assumed: option [0] is «خیلی کم»,
+# «هرگز» and «کاملا مخالفم» respectively, all of which are the low end.
+scales:
+  - name: iwb_extent5
+    match:
+      options_equal: ["خیلی کم", "کم", "متوسط", "زیاد", "خیلی زیاد"]
+    coding: low_first
+
+  - name: km_frequency5
+    match:
+      options_equal: ["هرگز", "به ندرت", "بعضی اوقات", "اغلب", "همواره"]
+    coding: low_first
+
+  # Q54, Q59, Q60 — «ب ندرت» on the live form. Same meaning, different string,
+  # therefore a different signature. Do not merge with km_frequency5.
+  - name: km_frequency5_typo
+    match:
+      options_equal: ["هرگز", "ب ندرت", "بعضی اوقات", "اغلب", "همواره"]
+    coding: low_first
+
+  - name: ai_agreement5
+    match:
+      options_equal: ["کاملا مخالفم", "مخالفم", "متوسط", "موافقم", "کاملا موافقم"]
+    coding: low_first
+
+  # Q75 — «کاملاموافقم», missing the space. Same treatment.
+  - name: ai_agreement5_typo
+    match:
+      options_equal: ["کاملا مخالفم", "مخالفم", "متوسط", "موافقم", "کاملاموافقم"]
+    coding: low_first
+
+# Every construct matches by explicit id list. Matching by `{scale: …}` would
+# strand the four misspelled items, and the three instruments are contiguous
+# id blocks anyway, so the lists are readable and checkable by eye.
+#
+# `reverse_when` may not be an empty list — `{never: true}` is how a construct
+# states that none of its items are reversed.
+constructs:
+  # ===== پرسشنامه رفتار نوآورانه — Q7–Q30 =====
+  - key: iwb_exploration
+    label: "کاوش فرصت‌ها و جست‌وجوی ایده‌های تازه"
+    traits: [iwb_exploration]
+    match:
+      question_id_in: ["questionId7", "questionId8", "questionId9",
+                       "questionId10", "questionId11"]
+    reverse_when: {never: true}
+
+  - key: iwb_generation
+    label: "تولید ایده و راه‌حل تازه"
+    traits: [iwb_generation]
+    # REVIEW: 3 items — alpha is unstable below 4. `make analyze` will report a
+    # correlation rather than a reliability coefficient here, which is correct.
+    match:
+      question_id_in: ["questionId12", "questionId13", "questionId14"]
+    reverse_when: {never: true}
+
+  - key: iwb_championing
+    label: "ترویج ایده و همراه‌کردن همکاران"
+    traits: [iwb_championing]
+    match:
+      question_id_in: ["questionId15", "questionId16", "questionId17",
+                       "questionId18", "questionId19", "questionId20"]
+    reverse_when: {never: true}
+
+  - key: iwb_implementation
+    label: "اجرای ایده در کلاس و مدرسه"
+    traits: [iwb_implementation]
+    match:
+      question_id_in: ["questionId21", "questionId22", "questionId23",
+                       "questionId24"]
+    reverse_when: {never: true}
+
+  - key: iwb_sustaining
+    label: "پایداری و بهینه‌سازی نوآوری"
+    traits: [iwb_sustaining]
+    match:
+      question_id_in: ["questionId25", "questionId26", "questionId27",
+                       "questionId28", "questionId29", "questionId30"]
+    reverse_when: {never: true}
+
+  # ===== پرسشنامه مدیریت دانایی — Q31–Q68 =====
+  # These items ask about the SCHOOL and its teachers, not about the respondent
+  # personally. The prompt preset says so explicitly; without that the model
+  # answers them as self-report and the two instruments blur together.
+  - key: km_human_capital
+    label: "سرمایه‌ی انسانی و توانمندی معلمان مدرسه"
+    traits: [km_human_capital]
+    match:
+      question_id_in: ["questionId31", "questionId32", "questionId33",
+                       "questionId34", "questionId35", "questionId36",
+                       "questionId37", "questionId38", "questionId39",
+                       "questionId40"]
+    reverse_when: {never: true}
+
+  - key: km_socialization
+    label: "تبادل دانش در تعامل‌های رودررو و غیررسمی"
+    traits: [km_socialization]
+    match:
+      question_id_in: ["questionId41", "questionId42", "questionId43",
+                       "questionId44", "questionId45", "questionId46"]
+    reverse_when: {never: true}
+
+  - key: km_externalization
+    label: "مستندسازی و در‌دسترس‌قرار‌دادن دانش"
+    traits: [km_externalization]
+    match:
+      question_id_in: ["questionId47", "questionId48", "questionId49",
+                       "questionId50", "questionId51", "questionId52",
+                       "questionId53"]
+    reverse_when: {never: true}
+
+  - key: km_combination
+    label: "سامانه‌ها و زیرساخت‌های ذخیره و توزیع دانش"
+    traits: [km_combination]
+    match:                                # includes the «ب ندرت» items 54, 59, 60
+      question_id_in: ["questionId54", "questionId55", "questionId56",
+                       "questionId57", "questionId58", "questionId59",
+                       "questionId60"]
+    reverse_when: {never: true}
+
+  - key: km_internalization
+    label: "به‌کارگیری و درونی‌کردن دانش تازه"
+    traits: [km_internalization]
+    match:
+      question_id_in: ["questionId61", "questionId62", "questionId63",
+                       "questionId64", "questionId65", "questionId66",
+                       "questionId67", "questionId68"]
+    # Q62 asks how far teachers RESIST new methods and knowledge. A high answer
+    # means a LOW level of the construct — the one reversed item on this form.
+    reverse_when:
+      question_id_in: ["questionId62"]
+
+  # ===== پرسشنامه هوش مصنوعی — Q69–Q91 =====
+  - key: ai_awareness
+    label: "آگاهی و درک از هوش مصنوعی"
+    traits: [ai_awareness]
+    match:
+      question_id_in: ["questionId69", "questionId70", "questionId71",
+                       "questionId72", "questionId73", "questionId74"]
+    reverse_when: {never: true}
+
+  - key: ai_use
+    label: "به‌کارگیری ابزارهای هوش مصنوعی"
+    traits: [ai_use]
+    match:                                # includes the «کاملاموافقم» item 75
+      question_id_in: ["questionId75", "questionId76", "questionId77",
+                       "questionId78", "questionId79", "questionId80",
+                       "questionId81"]
+    reverse_when: {never: true}
+
+  - key: ai_evaluate
+    label: "ارزیابی و نقد خروجی هوش مصنوعی"
+    traits: [ai_evaluate]
+    match:
+      question_id_in: ["questionId82", "questionId83", "questionId84",
+                       "questionId85", "questionId86"]
+    reverse_when: {never: true}
+
+  - key: ai_ethics
+    label: "اخلاق و مسئولیت در کاربرد هوش مصنوعی"
+    traits: [ai_ethics]
+    match:
+      question_id_in: ["questionId87", "questionId88", "questionId89",
+                       "questionId90", "questionId91"]
+    reverse_when: {never: true}
+
+# Answered from the persona record, never by the LLM. Each `value` must render
+# to one of that question's option strings exactly — these are radio groups, and
+# static answers are not fuzzy-matched before being clicked.
+# `exclude_from_psychometrics` keeps demographics out of the reliability and
+# response-style statistics, where they do not belong.
+static_answers:
+  - name: age_band
+    match: {question_id: "questionId1"}
+    value: "{{ persona.demographics.age_band }}"
+    exclude_from_psychometrics: true
+
+  - name: gender
+    match: {question_id: "questionId2"}
+    value: "{{ persona.demographics.gender }}"
+    exclude_from_psychometrics: true
+
+  - name: marital_status
+    match: {question_id: "questionId3"}
+    value: "{{ persona.demographics.marital_status }}"
+    exclude_from_psychometrics: true
+
+  - name: education
+    match: {question_id: "questionId4"}
+    value: "{{ persona.demographics.education }}"
+    exclude_from_psychometrics: true
+
+  - name: tenure
+    match: {question_id: "questionId5"}
+    value: "{{ persona.demographics.tenure }}"
+    exclude_from_psychometrics: true
+
+  - name: employment
+    match: {question_id: "questionId6"}
+    value: "{{ persona.demographics.employment }}"
+    exclude_from_psychometrics: true
+
+skip: []
+
+# -----------------------------------------------------------------------------
+# 3. ANSWERING POLICY
+# -----------------------------------------------------------------------------
+answering:
+  # One request per construct, items shuffled. The deliberate guard against the
+  # self-consistency that inflates alpha. The largest construct here is 10 items,
+  # comfortably inside one JSON response.
+  chunk_by: construct
+  shuffle_within_chunk: true
+
+  temperature: {min: 0.55, max: 0.85}
+
+  normalization:
+    unicode: NFKC
+    fold_arabic_to_persian: true
+    zwnj: strip
+    strip_trailing: ".,؛،۔"
+
+  fuzzy: {algorithm: ratio, min_score: 86}
+
+  completeness:
+    # MUST be 1.0. Porsa validates every question on every page before it will
+    # POST, so a set accepted at 0.95 is accepted in phase 3 and then fails at
+    # the very last click in phase 4.
+    min_ratio: 1.0
+    denominator: answerable
+    max_retries: 2
+    retry_scope: failed_constructs_only
+
+  careless:
+    enabled: true
+    anchor_stickiness: 0.70
+    drift: [-1, 1]
+    apply_static_answers: true
+
+  reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
+
+# The acquiescence mean of +0.35 puts most respondents in the first rule, which
+# is the second half of the positive skew — applied as response STYLE, not as a
+# trait, so it nudges borderline items without flattening the scales.
+response_style_nudges:
+  rules:
+    - {when: "acquiescence > 0.30",
+       text: "در گویه‌های مرزی کمی به سمت موافقت و گزینه‌های بالاتر متمایل می‌شوی."}
+    - {when: "acquiescence < -0.30",
+       text: "در گویه‌های مرزی کمی محتاط‌تری و به گزینه‌های پایین‌تر متمایل می‌شوی."}
+    - {when: "extreme_response > 0.30",
+       text: "هرجا گزینه‌ای واقعاً با حال‌وروزت می‌خواند، راحت سرِ طیف را انتخاب می‌کنی."}
+    - {when: "extreme_response < -0.30",
+       text: "معمولاً گزینه‌های میانی را به دو سرِ طیف ترجیح می‌دهی."}
+  default: "سبک پاسخ‌دهی تو عادی و متعادل است، با تمایلی ملایم به نگاه مثبت."
+
+# -----------------------------------------------------------------------------
+# 4. ANALYSIS
+# -----------------------------------------------------------------------------
+analysis:
+  reverse_keys_from: config
+  warn_on_sign_disagreement: true
+  response_style_min_scale_points: 3
+  straightlining: {scope: within_construct, sd_threshold: 0.5}
+  sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
+  min_items_for_alpha: 3

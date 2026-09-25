@@ -1,0 +1,759 @@
+# =============================================================================
+# PersonaBot survey spec — «پیش‌بینی سازگاری زناشویی و رضایت جنسی بر اساس تنظیم
+# هیجان و دانش جنسی در زنان متاهل»
+# Live Porsline form: https://survey.porsline.ir/s/QEi2HvzN
+# Persian, 88 questions, every one RADIO, zero free-text, zero demographics.
+#
+# WHAT IS ON THE FORM, as read off output/form_schema.json (11 option
+# signatures, matched item-by-item against the published instruments):
+#
+#   • 25 items  ISS — شاخص رضایت جنسی هادسون. ids 53402621–53402923 are ISS
+#               items 1–25 in published order, so keying below is the published
+#               keying, not a reading of the Persian.
+#   • 20 items  پرسشنامه‌ی دانش و نگرش جنسی. ids 53406296–53406705, numbered
+#               1–20 on the form itself.
+#   • 33 items  DAS-32 — مقیاس سازگاری زناشویی اسپانیر. ids 53407192–53408166,
+#               numbered 1–32 on the form. THIRTY-THREE questions for a
+#               32-item scale: item 28 «در یک پروژه یا برنامه همکاری کردن» is
+#               duplicated on the form (53407887 and 53407891). Both are
+#               answered and both are scored; see das_cohesion.
+#   • 10 items  ERQ — پرسشنامه‌ی تنظیم هیجان گراس و جان. ids 53408232–53408360,
+#               numbered 1–10 on the form.
+#
+#   25 + 20 + 33 + 10 = 88. ✓
+#
+# THE FORM ASKS NO DEMOGRAPHIC QUESTION AT ALL. There is no age, no education,
+# no district field — nothing to bind. `static_answers` is therefore empty and
+# the whole population frame below exists only to make the persona prose (and
+# through it the answers) belong to the right people. That is not decoration:
+# it is the only place the sampling frame is stated.
+#
+# WHAT IS A JUDGEMENT CALL. Five things, all marked `# REVIEW:` below:
+#   1. splitting the 20 knowledge/attitude items into three constructs;
+#   2. ISS items 9 and 13, whose Persian wording is softer than the English;
+#   3. ERQ item 4, whose text on the form duplicates item 3;
+#   4. the non-monotonic middle of the 5-point agreement scale, a form defect;
+#   5. the Karaj neighbourhood→district mapping, which is prose-only.
+# Everything else is published keying.
+#
+# Ids and option strings are copied verbatim from form_schema.json.
+# =============================================================================
+version: 2
+id: marital_adjustment_sexual_karaj_fa
+locale: fa
+
+# Migrated from the 2.x fork `PersonaBot-new-nyayesh (Copy)` (its .env and Makefile).
+form:
+  provider: porsline
+  url: https://survey.porsline.ir/s/QEi2HvzN
+  max_pages: 400
+# -----------------------------------------------------------------------------
+# 1. POPULATION — زنان متاهلِ مراجعه‌کننده به مراکز مشاوره‌ی مناطق ۱، ۲ و ۳ کرج
+# -----------------------------------------------------------------------------
+# Every respondent in this frame is (a) a woman, (b) currently married, and
+# (c) currently attending a counselling centre in municipal district 1, 2 or 3
+# of Karaj. `gender` and `marital_status` are therefore `constant`, not
+# `categorical`: they are the frame itself, and a sampler that occasionally
+# drew «مرد» or «مجرد» would be sampling a different study.
+#
+# WHY THIS FRAME MOVES THE NUMBERS. A help-seeking clinic sample is not a
+# community sample. Marital adjustment and sexual satisfaction run lower, and
+# their variance runs wider, than in the general married population. The latent
+# model here is standardized *within this frame*: z = 0 means "average for a
+# woman sitting in a Karaj counselling centre", not "average married woman".
+# Read every band label with that in mind, and do not compare the resulting
+# DAS/ISS totals against community norms without saying so.
+population:
+  seed: null
+
+  # Three common factors, chosen to reproduce the model the study's own title
+  # states — marital adjustment and sexual satisfaction predicted FROM emotion
+  # regulation and sexual knowledge:
+  #   M = کیفیت پیوند زناشویی (the positive marital bond)
+  #   S = سواد و عاملیت جنسی (sexual literacy, awareness and agency)
+  #   E = تنظیم شناختی هیجان (adaptive, reappraisal-side emotion regulation)
+  #
+  # Suppression is deliberately NOT given a factor of its own. It loads weakly
+  # and negatively on M and E and keeps most of its variance unique, because
+  # the ERQ's two subscales are close to orthogonal in the literature
+  # (r ≈ .00 to −.15) — giving suppression a strong negative E loading would
+  # manufacture the large negative correlation the instrument does not show.
+  #
+  # Implied correlations (`make validate` prints the full matrix — read it):
+  #   r(sexual_satisfaction, das_satisfaction)      = +0.62
+  #   r(das_consensus, das_satisfaction)            = +0.68
+  #   r(sexual_satisfaction, sexual_knowledge)      = +0.39
+  #   r(sexual_knowledge, das_satisfaction)         = +0.20
+  #   r(sexual_satisfaction, erq_reappraisal)       = +0.26
+  #   r(das_satisfaction, erq_reappraisal)          = +0.34
+  #   r(das_satisfaction, erq_suppression)          = −0.23
+  #   r(sexual_satisfaction, erq_suppression)       = −0.20
+  #   r(erq_reappraisal, erq_suppression)           = −0.13
+  #   r(sexual_knowledge, sexual_agency)            = +0.63
+  #
+  # These sit inside the published bands (DAS/ISS r ≈ .45–.65; reappraisal and
+  # marital quality r ≈ .25–.35; suppression and marital quality r ≈ −.20–−.30;
+  # sexual knowledge and sexual satisfaction r ≈ .25–.40).
+  latent_model:
+    common_factors: [M, S, E]
+    dimensions:
+      sexual_satisfaction:
+        loadings: {M: 0.72, S: 0.26, E: 0.15}        # ΣL² = 0.609
+        label: "رضایت جنسی (لذت بردن از رابطه، کیفیت و گرمای آن، و نبودِ اجبار و دلزدگی)"
+
+      sexual_knowledge:
+        loadings: {S: 0.80, M: 0.25}                 # ΣL² = 0.703
+        label: "آگاهی و دانش جنسی (اینکه چقدر از بدن، تمایلات و احساسات جنسی خودت سر در می‌آوری)"
+
+      sexual_agency:
+        loadings: {S: 0.72, E: 0.25, M: 0.20}        # ΣL² = 0.621
+        label: "عاملیت و قاطعیت جنسی (این حس که مسائل جنسی زندگی‌ات دست خودت است و مسئولیتش با توست)"
+
+      sexual_attitudes:
+        loadings: {S: 0.68, M: 0.22}                 # ΣL² = 0.511
+        label: "نگرش باز به مسائل جنسی (اینکه حرف زدن و اهمیت دادن به این موضوع را درست بدانی، نه شرم‌آور)"
+
+      das_consensus:
+        loadings: {M: 0.78, E: 0.20}                 # ΣL² = 0.648
+        label: "توافق زناشویی (اینکه سرِ پول، فامیل، کارِ خانه و تصمیم‌های مهم با همسرت هم‌نظر باشی)"
+
+      das_satisfaction:
+        loadings: {M: 0.82, E: 0.22}                 # ΣL² = 0.721
+        label: "رضایت زناشویی (نبودِ دعوا و پشیمانی، اعتماد به همسر و امید به آینده‌ی رابطه)"
+
+      das_cohesion:
+        loadings: {M: 0.72, S: 0.15}                 # ΣL² = 0.541
+        label: "همبستگی زناشویی (اینکه چقدر با هم می‌گذرانید، می‌خندید، گفتگو می‌کنید و کار مشترک دارید)"
+
+      das_affectional_expression:
+        loadings: {M: 0.70, S: 0.28}                 # ΣL² = 0.568
+        label: "ابراز محبت (اینکه محبت و رابطه‌ی جنسی در این خانه ابراز می‌شود یا سرد و کم‌رنگ شده)"
+
+      erq_reappraisal:
+        loadings: {E: 0.80, M: 0.20}                 # ΣL² = 0.680
+        label: "بازارزیابی شناختی (اینکه وقتی حالت بد می‌شود، با عوض کردن نگاهت به ماجرا خودت را آرام کنی)"
+
+      erq_suppression:
+        # Communality on purpose very low: suppression is the one dimension in
+        # this battery that mostly stands on its own.
+        loadings: {M: -0.25, E: -0.10}               # ΣL² = 0.073
+        label: "فرونشانی بیانی (اینکه هیجان‌هایت را بروز ندهی و توی خودت نگه داری)"
+
+  bands:
+    cuts:   [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5]
+    labels: ["خیلی پایین", "پایین", "کمی پایین", "متوسط", "کمی بالا", "بالا", "خیلی بالا"]
+
+  response_style:
+    acquiescence:     {dist: normal, mu: 0.0, sigma: 0.40}
+    extreme_response: {dist: normal, mu: 0.0, sigma: 0.40}
+    careless:         {dist: bernoulli, p: 0.04}
+
+  # --- demographics, in dependency order --------------------------------------
+  # NOTHING here is bound to a question — the form has no demographic fields.
+  # These variables exist so the persona prose is about a specific woman in a
+  # specific part of Karaj rather than a generic "married Iranian woman", and
+  # so the answer prompt can see who it is answering as.
+  demographics:
+    # The sampling frame, stated as constants so it cannot drift.
+    - {name: gender,         dist: constant, value: "زن"}
+    - {name: marital_status, dist: constant, value: "متاهل"}
+    - {name: city,           dist: constant, value: "کرج"}
+
+    # Districts 1–3 of Karaj municipality, weighted evenly. Change these three
+    # numbers if your recruitment was concentrated in one district.
+    - name: district
+      dist: categorical
+      choices: [["منطقه ۱ کرج", 0.34], ["منطقه ۲ کرج", 0.33], ["منطقه ۳ کرج", 0.33]]
+
+    # REVIEW: this neighbourhood→district mapping is approximate. Karaj has
+    # redistricted more than once and residents name their area, not their
+    # municipal district. It feeds the persona prose ONLY — no question on the
+    # form asks it, and no score depends on it — so an imprecise mapping costs
+    # nothing but flavour. Correct it if you know the current boundaries.
+    - name: neighborhood
+      dist: conditional
+      cases:
+        - when: "district == 'منطقه ۱ کرج'"
+          dist: categorical
+          choices: [["عظیمیه", 0.45], ["گلشهر", 0.35], ["دهقان ویلا", 0.20]]
+        - when: "district == 'منطقه ۲ کرج'"
+          dist: categorical
+          choices: [["جهانشهر", 0.40], ["شهرک اداری", 0.32], ["بلوار طالقانی", 0.28]]
+        - default: true
+          dist: categorical
+          choices: [["رجایی‌شهر (گوهردشت)", 0.42], ["باغستان", 0.32], ["مهرشهر", 0.26]]
+
+    # Married women in counselling. The peak sits in the early-to-mid thirties:
+    # that is where marital counselling demand concentrates in Iranian urban
+    # centres, with a real tail on both sides.
+    - name: age
+      dist: normal
+      mu: 35
+      sigma: 8
+      round: int
+      clip: [20, 55]
+      on_out_of_range: resample      # `clip` would pile mass onto 20 and 55
+
+    # Karaj is a metropolitan area with high female schooling in the younger
+    # cohorts and a much lower rate in the oldest one.
+    - name: education
+      dist: conditional
+      cases:
+        - when: "age <= 30"
+          dist: categorical
+          choices: [["زیر دیپلم", 0.08], ["دیپلم", 0.30], ["کارشناسی", 0.48], ["کارشناسی ارشد و بالاتر", 0.14]]
+        - when: "age <= 42"
+          dist: categorical
+          choices: [["زیر دیپلم", 0.16], ["دیپلم", 0.36], ["کارشناسی", 0.36], ["کارشناسی ارشد و بالاتر", 0.12]]
+        - default: true
+          dist: categorical
+          choices: [["زیر دیپلم", 0.34], ["دیپلم", 0.40], ["کارشناسی", 0.20], ["کارشناسی ارشد و بالاتر", 0.06]]
+
+    # «خانه‌دار» is the modal answer across the whole frame; employment rises
+    # with education.
+    - name: employment
+      dist: conditional
+      cases:
+        - when: "education == 'کارشناسی ارشد و بالاتر' or education == 'کارشناسی'"
+          dist: categorical
+          choices: [["خانه‌دار", 0.42], ["شاغل تمام وقت", 0.31], ["شاغل پاره وقت", 0.27]]
+        - default: true
+          dist: categorical
+          choices: [["خانه‌دار", 0.71], ["شاغل تمام وقت", 0.11], ["شاغل پاره وقت", 0.18]]
+
+    - name: household_income_adequacy
+      dist: categorical
+      choices: [["به سختی کفاف می‌دهد", 0.34], ["تقریبا کافی است", 0.44], ["کافی است", 0.22]]
+
+    # Intermediate: used to derive years_married, kept out of the record.
+    - name: marriage_age
+      dist: normal
+      mu: 22
+      sigma: 3.8
+      round: int
+      clip: [15, "min(age - 1, 38)"]
+      on_out_of_range: resample
+      persist: false
+
+    - {name: years_married, dist: derived, expr: "max(1, age - marriage_age)"}
+
+    - name: children_count
+      dist: conditional
+      cases:
+        - when: "years_married <= 2"
+          dist: categorical
+          choices: [[0, 0.62], [1, 0.34], [2, 0.04]]
+        - when: "years_married <= 7"
+          dist: categorical
+          choices: [[0, 0.22], [1, 0.48], [2, 0.26], [3, 0.04]]
+        - when: "years_married <= 15"
+          dist: categorical
+          choices: [[0, 0.10], [1, 0.36], [2, 0.42], [3, 0.10], [4, 0.02]]
+        - default: true
+          dist: categorical
+          choices: [[0, 0.06], [1, 0.24], [2, 0.44], [3, 0.20], [4, 0.06]]
+
+    # --- what brought her to the counselling centre -----------------------------
+    # Trait-informed, and the single most important context variable in this
+    # file: it is what makes the frame "women IN COUNSELLING" rather than
+    # "married women". `z.das_satisfaction` is the sampled z-score, so the woman
+    # whose marital satisfaction was drawn at the bottom of the frame is the one
+    # most likely to be sitting there over a separation.
+    - name: counseling_focus
+      dist: conditional
+      cases:
+        - when: "z.das_satisfaction < -0.9"
+          dist: categorical
+          choices:
+            - ["مشاوره‌ی زناشویی، سرِ اختلاف‌های جدی با همسر", 0.44]
+            - ["مشاوره پیش از تصمیم به جدایی", 0.26]
+            - ["مشاوره‌ی فردی، برای اضطراب و بی‌حوصلگی", 0.18]
+            - ["مشاوره‌ی جنسی و مسائل رابطه‌ی زناشویی", 0.12]
+        - when: "z.das_satisfaction < 0.35"
+          dist: categorical
+          choices:
+            - ["مشاوره‌ی زناشویی، سرِ دلخوری‌های تکراری با همسر", 0.40]
+            - ["مشاوره‌ی فردی، برای اضطراب و بی‌حوصلگی", 0.26]
+            - ["مشاوره‌ی خانواده و فرزندپروری", 0.22]
+            - ["مشاوره‌ی جنسی و مسائل رابطه‌ی زناشویی", 0.12]
+        - default: true
+          dist: categorical
+          choices:
+            - ["مشاوره‌ی خانواده و فرزندپروری", 0.38]
+            - ["مشاوره‌ی فردی، برای رشد شخصی و مدیریت استرس", 0.32]
+            - ["مشاوره‌ی زناشویی، برای بهتر کردن رابطه‌ای که بد نیست", 0.20]
+            - ["مشاوره‌ی جنسی و مسائل رابطه‌ی زناشویی", 0.10]
+
+    - name: counseling_history
+      dist: categorical
+      choices:
+        - ["تازه یکی دو جلسه است که می‌روم", 0.30]
+        - ["حدود سه تا شش جلسه رفته‌ام", 0.34]
+        - ["چند ماهی است که مرتب می‌روم", 0.24]
+        - ["قبلا هم دوره‌ی مشاوره رفته‌ام و دوباره شروع کرده‌ام", 0.12]
+
+  # Nothing on this form asks for a fact the sampler has to compute — there is
+  # no free-text question at all, so there is nothing to bind and nothing to
+  # keep out of the model's arithmetic.
+  derived_fields: []
+
+# -----------------------------------------------------------------------------
+# 2. SCHEMA INTERPRETATION
+# -----------------------------------------------------------------------------
+# READ THE `coding` LINES. SIX of the eleven response formats on this form run
+# HIGH-TO-LOW — option [0] is the top of the scale, not the bottom. That is the
+# single easiest thing to get wrong here, and getting it wrong does not raise an
+# error: it silently inverts that block's scoring, and `make analyze` is the
+# only place you would ever see it.
+scales:
+  # [0] «هرگز» سرِ پایین طیف است — فراوانی از کم به زیاد.
+  - name: iss_freq5                     # 25 پرسش روی این طیف
+    match:
+      options_equal:
+        - "هرگز"
+        - "به ندرت"
+        - "گاهی اوقات"
+        - "اکثر اوقات"
+        - "همیشه"
+    coding: low_first
+
+  # [0] «کاملا موافقم» سرِ **بالای** طیف است. اگر این را low_first بگذاری، هر بیست
+  #   گویه‌ی این بخش وارونه نمره می‌گیرند و آلفا منفی می‌شود.
+  # REVIEW: ترتیب میانه‌ی این طیف روی خودِ فرم یکنواخت نیست — «تاحدودی موافقم»
+  #   پیش از «موافقم» آمده. نمره‌گذاری ترتیبی از شماره‌ی گزینه استفاده می‌کند،
+  #   پس گزینه‌های ۲ و ۳ عملا جابه‌جا نمره می‌گیرند. این ایراد خودِ فرم است و
+  #   از این‌جا قابل رفع نیست؛ فقط بدان که هست.
+  - name: sexknow_agree5                     # 20 پرسش روی این طیف
+    match:
+      options_equal:
+        - "کاملا موافقم"
+        - "تاحدودی موافقم"
+        - "موافقم"
+        - "مخالفم"
+        - "کاملا مخالفم"
+    coding: high_first
+
+  # [0] «توافق دائم داریم» سرِ بالای طیف (بیشترین توافق) است.
+  - name: das_consensus6                     # 15 پرسش روی این طیف
+    match:
+      options_equal:
+        - "توافق دائم داریم"
+        - "تقریباً توافق دائم داریم"
+        - "گاهی توافق داریم"
+        - "اغلب اختلاف داری"
+        - "تقریباً همیشه اختلاف داریم"
+        - "همیشه اختلاف داریم"
+    coding: high_first
+
+  # [0] «همیشه» پرتکرارترین حالت است. اینکه «پرتکرار» خوب باشد یا بد، به خودِ
+  #   گویه بستگی دارد و با reverse_when تعیین می‌شود، نه با coding.
+  - name: das_frequency6                     # 7 پرسش روی این طیف
+    match:
+      options_equal:
+        - "همیشه"
+        - "تقریباً همیشه"
+        - "اکثر اوقات"
+        - "معمولاً"
+        - "بندرت"
+        - "هرگز"
+    coding: high_first
+
+  # [0] «هر روز» سرِ بالای طیف است.
+  - name: das_kissing5                     # 1 پرسش روی این طیف
+    match:
+      options_equal:
+        - "هر روز"
+        - "تقریباً هر روز"
+        - "گاهی اوقات"
+        - "ندرتاً"
+        - "هرگز"
+    coding: high_first
+
+  # [0] «در تمام موارد» سرِ بالای طیف است.
+  - name: das_shared_interests5                     # 1 پرسش روی این طیف
+    match:
+      options_equal:
+        - "در تمام موارد"
+        - "در اکثر موارد"
+        - "در بعضی موارد"
+        - "در چند مورد"
+        - "در هیچ مورد"
+    coding: high_first
+
+  # [0] «هرگز» سرِ پایین طیف است.
+  - name: das_activity_frequency5                     # 5 پرسش روی این طیف
+    match:
+      options_equal:
+        - "هرگز"
+        - "کمتر از 1 بار درماه"
+        - "ماهی 1 یا 2 بار"
+        - "روزی 1 بار"
+        - "بیش از روزی 1 بار"
+    coding: low_first
+
+  # «بله» یعنی این مشکل در چند هفته‌ی اخیر وجود داشته → نمره ۱؛ «خیر» → نمره ۲.
+  #   پس سرِ بالای طیف («خیر») یعنی سازگاری بهتر، و گویه معکوس نیست.
+  - name: das_problem_yesno2                     # 2 پرسش روی این طیف
+    match:
+      options_equal:
+        - "بله"
+        - "خیر"
+    coding: low_first
+
+  # [0] «بسیار ناخشنود» سرِ پایین طیف است.
+  - name: das_happiness7                     # 1 پرسش روی این طیف
+    match:
+      options_equal:
+        - "بسیار ناخشنود"
+        - "نسبتاً ناخشنود"
+        - "کمی ناخشنود"
+        - "خشنود یا شادکام"
+        - "خیلی شادکام"
+        - "فوق العاده شادکام"
+        - "عالی"
+    coding: low_first
+
+  # [0] بیشترین تعهد به آینده‌ی رابطه است.
+  - name: das_future6                     # 1 پرسش روی این طیف
+    match:
+      options_equal:
+        - "مصرانه خواهان موفقیت رابطۀ خود هستم و براي این موفقیت از هر مقدار تلاش خسته و نا امید نمی شوم."
+        - "خیلی دلم می خواهد رابطۀ ما موفق باشد و براي این موفقیت تمام تلاش خود را می کنم."
+        - "خیلی دلم می خواهد رابطۀ ما موفق باشد و براي این موفقیت به سهم خود تلاش می کنم."
+        - "خوب است که رابطۀ ما موفق باشد اما نمی توانم براي تداوم آن بیش از این تلاش کنم."
+        - "خوب است که رابطۀ ما موفق باشد اما حاضر نیستم براي تداوم آن بیش از این تلاش کنم."
+        - "امکان موفقیت رابطۀ ما هرگز وجود ندارد و براي ادامۀ آن هیچ کار دیگری از من ساخته نیست."
+    coding: high_first
+
+  # [0] «کاملاً مخالفم» سرِ پایین طیف است.
+  - name: erq_agree7                     # 10 پرسش روی این طیف
+    match:
+      options_equal:
+        - "کاملاً مخالفم"
+        - "مخالفم"
+        - "تا حدودی مخالفم"
+        - "خنثی"
+        - "تا حدودی موافقم"
+        - "موافقم"
+        - "کاملاً موافقم"
+    coding: low_first
+
+# Constructs match on explicit id lists, never on `scale`: eight of the eleven
+# response formats belong to the DAS alone, and a scale-based rule would put all
+# 33 DAS questions in one bucket and still validate.
+constructs:
+
+  # ===== ISS — شاخص رضایت جنسی (۲۵ گویه) ==========================
+  # Published as a single total score, so it stays a single construct. The
+  # trait is named for SATISFACTION, so the thirteen negatively-worded items
+  # (the ones where «همیشه» means a worse sex life) are the reversed ones.
+  #
+  # REVIEW: two items where the Persian is softer than Hudson's English and
+  # the keying is worth a second look before you scale up —
+  #   • 53402787 «همسر من از نظر جنسی بسیار هیجانزده است» is ISS 9, "My partner
+  #     is sexually very exciting" — positive. The Persian can also be read as
+  #     "gets over-excited", which would make it negative. Kept DIRECT.
+  #   • 53402820 «همسرم به روابط جنسی اهمیت زیادی می دهد» is ISS 13, "My partner
+  #     dwells on sex too much" — negative. The Persian reads almost neutral.
+  #     Kept REVERSED, per the published keying.
+  # If `make analyze` reports an item-total sign disagreement, these two are the
+  # first place to look.
+  - key: sexual_satisfaction
+    label: "رضایت جنسی از رابطه با همسر"
+    traits: [sexual_satisfaction]
+    match:
+      question_id_in:
+        - "53402621"   # من احساس می کنم که همسرم از روابط جنسی مان لذت می برد.
+        - "53402647"   # زندگی جنسی من جالب و هیجان انگیز است.
+        - "53402675"   # برقراری ارتباط جنسی برای من و همسرم سرگرم کننده است.
+        - "53402755"   # برقراری روابط جنسی با همسرم برای من یک عمل اجباری است.
+        - "53402759"   # من احساس می کنم که روابط جنسی زشت و ناپسند است.
+        - "53402765"   # زندگی جنسی من یکنواخت است.
+        - "53402776"   # روابط جنسی ما شتابزده انجام می شود.
+        - "53402779"   # زندگی جنسی من فاقد کیفیت مطلوب است.
+        - "53402787"   # همسر من از نظر جنسی بسیار هیجانزده است.
+        - "53402809"   # من از انجام روشهایی که دیگران در روابط جنسی خود آن را دوست دارند یا بکار م…
+        - "53402813"   # احساس می کنم همسرم از نظر روابط جنسی بیش از اندازه از من توقع دارد.
+        - "53402816"   # به عقیده ی من روابط جنسی در زندگی زناشویی بسیار مهم و جالب است.
+        - "53402820"   # همسرم به روابط جنسی اهمیت زیادی می دهد.
+        - "53402843"   # من سعی می کنم از برقراری رابطه ی جنسی با همسرم اجتناب کنیم.
+        - "53402846"   # همسرم در هنگام برقراری رابطه ی جنسی، خشن و تندخو است.
+        - "53402852"   # همسرم شریک خوبی در روابط جنسی ما می باشد.
+        - "53402856"   # به عقیده ی من برقراری رابطه ی جنسی عملکردی طبیعی می باشد.
+        - "53402883"   # وقتی من تمایل به برقراری رابطه ی جنسی با همسرم دارم او مایل نیست.
+        - "53402886"   # من حقیقتا احساس می کنم که روابط جنسی، ارتباط عاطفی مان را عمیق تر می کند.
+        - "53402888"   # به نظر می رسد همسرم از برقراری رابطه ی جنسی یا من اجتناب می کند.
+        - "53402890"   # من به آسانی توسط همسرم به اوج لذت جنسی می رسم.
+        - "53402895"   # من احساس می کنم همسرم از روابط جنسی مان خشنود است.
+        - "53402898"   # همسرم به نیازها و تمایلات جنسی من بسیار حساس است.
+        - "53402920"   # همسرم نمی تواند مرا از نظر جنسی ارضا کند.
+        - "53402923"   # من احساس می کنم روابط جنسی مان خسته کننده است.
+    reverse_when:
+      question_id_in:
+        - "53402755"   # برقراری روابط جنسی با همسرم برای من یک عمل اجباری است.
+        - "53402759"   # من احساس می کنم که روابط جنسی زشت و ناپسند است.
+        - "53402765"   # زندگی جنسی من یکنواخت است.
+        - "53402776"   # روابط جنسی ما شتابزده انجام می شود.
+        - "53402779"   # زندگی جنسی من فاقد کیفیت مطلوب است.
+        - "53402813"   # احساس می کنم همسرم از نظر روابط جنسی بیش از اندازه از من توقع دارد.
+        - "53402820"   # همسرم به روابط جنسی اهمیت زیادی می دهد.
+        - "53402843"   # من سعی می کنم از برقراری رابطه ی جنسی با همسرم اجتناب کنیم.
+        - "53402846"   # همسرم در هنگام برقراری رابطه ی جنسی، خشن و تندخو است.
+        - "53402883"   # وقتی من تمایل به برقراری رابطه ی جنسی با همسرم دارم او مایل نیست.
+        - "53402888"   # به نظر می رسد همسرم از برقراری رابطه ی جنسی یا من اجتناب می کند.
+        - "53402920"   # همسرم نمی تواند مرا از نظر جنسی ارضا کند.
+        - "53402923"   # من احساس می کنم روابط جنسی مان خسته کننده است.
+
+  # ===== دانش و نگرش جنسی (۲۰ گویه) ================================
+  # REVIEW: the form numbers these 1–20 and gives no subscale keys, so this
+  # three-way split is read off the item texts, not published keying. It is the
+  # main judgement call in this file. Merge the three into one construct if your
+  # analysis plan scores this questionnaire as a single total — the ids are all
+  # here and nothing else in the file depends on the split.
+  - key: sexual_knowledge
+    label: "آگاهی و دانش جنسی"
+    traits: [sexual_knowledge]
+    match:
+      question_id_in:
+        - "53406296"   # 1-اطلاعات کافی در مورد احساسات و عملکرد جنسی خودم دارم.
+        - "53406314"   # 2- خوب میدانم که درروابط جنسی چه کار باید بکنم.
+        - "53406417"   # 3- از تمایلات جنسی ام تا حد زیادی آگاهم.
+        - "53406419"   # 4-نسبت به تفاوتهای جنسیتی درشیوۀ ارضاء جنسی آگاه هستم.
+        - "53406425"   # 5- از انگیزه های جنسی ام تا حد زیادی آگاهم.
+        - "53406435"   # 6- تمایل دارم تا در مورد احساسات جنسی ام فکر کنم.
+        - "53406436"   # 7- از تغییرات در تمایلات جنسی ام تا حد زیادی آگاهم.
+        - "53406437"   # 8- نقاط حساس بدنم را به خوبی می شناسم.
+        - "53406438"   # 9- از احساسات جنسی ام تا حد زیادی آگاهم.
+    reverse_when: {never: true}     # all nine are worded as HAVING knowledge
+
+  - key: sexual_agency
+    label: "عاملیت و مسئولیت‌پذیری در مسائل جنسی"
+    traits: [sexual_agency]
+    match:
+      question_id_in:
+        - "53406441"   # 11- تا حد زیادی در مورد مسائل جنسی زندگی ام قاطعم.
+        - "53406446"   # 12- بخش عمده ای از مسائل جنسی زندگی ام به وسیله رفتار خودم تعیین می شود.
+        - "53406488"   # 14- عامل اساسی که بر مسائل جنسی زندگی ام اثر می گذارد، آن چیزیست که خودم ا…
+        - "53406618"   # 17- مسئولیت مسائل جنسی ام را خودم به عهده می گیرم.
+    reverse_when: {never: true}
+
+  - key: sexual_attitudes
+    label: "نگرش به اهمیت و ابرازِ مسائل جنسی"
+    traits: [sexual_attitudes]
+    match:
+      question_id_in:
+        - "53406439"   # 10-آموزش جنسی،روابط را رضایت بخش تر می کند.
+        - "53406448"   # 13-به نظر من آشنایی فرد نسبت به نقاط حساس بدن خود و طرف مقابلش برای رابطه …
+        - "53406614"   # 15- فرد نباید با صحبت در مورد مسائل جنسی خود،خودش را کوچک کند.
+        - "53406616"   # 16- افراد نباید به روابط جنسی اهمیت بدهند.
+        - "53406651"   # 18- مردم نبایدمشکلات جنسی شان را مخفی کنند، بلکه باید آن را ابراز کنند.
+        - "53406691"   # 19- به عقیدۀ من روابط جنسی در زندگی فرد بسیار مهم و جالب است.
+        - "53406705"   # 20- روابط جنسی خوب و رضایت بخش زوجین، آنها را بهم نزدیکتر و کانون زندگی را…
+    # The one reversed item in this block: agreeing that people should NOT
+    # attach importance to sex is the low end of an open attitude.
+    reverse_when:
+      question_id_in:
+        - "53406616"   # 16- افراد نباید به روابط جنسی اهمیت بدهند.
+
+  # ===== DAS-32 — مقیاس سازگاری زناشویی =============================
+  # Subscale membership below is Spanier's published keying by item number:
+  #   consensus 1,2,3,5,7,8,9,10,11,12,13,14,15   (13 items)
+  #   satisfaction 16–23, 31, 32                  (10 items)
+  #   cohesion 24–28                              (5 items, 6 questions here)
+  #   affectional expression 4, 6, 29, 30         (4 items)
+  # Items 4 and 6 belong to affectional expression, NOT to consensus — that is
+  # Spanier's own keying, and it is why the consensus block below holds 13 ids
+  # and not 15. Nothing is counted twice.
+  - key: das_consensus
+    label: "توافق با همسر بر سرِ مسائل زندگی"
+    traits: [das_consensus]
+    match:
+      question_id_in:
+        - "53407192"   # 1- صرف درآمد و امور مالی خانواده
+        - "53407194"   # 2- تفریحات و تجدید قوا
+        - "53407212"   # 3- موضوعات و مسائل مذهبی
+        - "53407217"   # 5- دوستان
+        - "53407367"   # 7- رعایت عرف ( رفتار صحیح یا مناسب)
+        - "53407417"   # 8- فلسفۀ زندگی
+        - "53407419"   # 9- طرز رفتار با والدین و خویشان همسر
+        - "53407420"   # 10- مقاصد، هدفها و چیزهاي مهم
+        - "53407423"   # 11- مدت زمان با هم بودن
+        - "53407425"   # 12- اتخاذ تصمیمات مهم
+        - "53407477"   # 13- انجام کارهای خانه
+        - "53407479"   # 14- علایق و فعالیت های اوقات فراقت
+        - "53407492"   # 15- تصمیمات شغلی و تحصیلی
+    reverse_when: {never: true}     # das_consensus6 is coded high_first already
+
+  - key: das_satisfaction
+    label: "رضایت از رابطه‌ی زناشویی"
+    traits: [das_satisfaction]
+    match:
+      question_id_in:
+        - "53407525"   # 16- چند وقت یک بار به فکر طلاق، جدایی، و یا پایان دادن به رابطۀ خود افتاده…
+        - "53407533"   # 17- چند وقت یک بار شما و همسرتان بعد از دعوا خانه را ترك کرده اید؟
+        - "53407539"   # 18- کلاً، چند وقت یک بار فکر کردهاید که همه چیز بین شما و همسرتان به خوبی …
+        - "53407542"   # 19- به همسر خود اعتماد و اطمینان دارید؟
+        - "53407544"   # 20- آیا اتفاق افتاده که از ازدواج خود متأسف باشید؟
+        - "53407545"   # 21- چند وقت یک بار شما و همسرتان دعوا میکنید؟
+        - "53407547"   # 22- چند وقت یک بار شما و همسرتان اعصاب یکدیگر را خرد میکنید؟
+        - "53407579"   # 23- همسر خود را میبوسید؟
+        - "53408062"   # 31- موارد زیر نشان دهنده میزان شادکامی در رابطۀ شما است. نقطۀ وسط، یعنی خش…
+        - "53408166"   # 32- کدامیک از عبارات زیر بهترین توصیف احساس شما درباره آینده رابطۀ شماست؟ …
+    # The five items on das_frequency6 where a HIGHER frequency means a WORSE
+    # marriage. Items 18 («همه چیز به خوبی می‌گذرد») and 19 («اعتماد دارید») sit
+    # on the same scale but run the other way, so they stay direct — which is
+    # exactly why `coding` cannot carry this and `reverse_when` has to.
+    reverse_when:
+      question_id_in:
+        - "53407525"   # 16- چند وقت یک بار به فکر طلاق، جدایی، و یا پایان دادن به رابطۀ خود افتاده…
+        - "53407533"   # 17- چند وقت یک بار شما و همسرتان بعد از دعوا خانه را ترك کرده اید؟
+        - "53407544"   # 20- آیا اتفاق افتاده که از ازدواج خود متأسف باشید؟
+        - "53407545"   # 21- چند وقت یک بار شما و همسرتان دعوا میکنید؟
+        - "53407547"   # 22- چند وقت یک بار شما و همسرتان اعصاب یکدیگر را خرد میکنید؟
+
+  # SIX questions for five items: the form repeats item 28 verbatim
+  # (53407887 and 53407891). Both are listed because both must be answered for
+  # the form to submit. Note for the analysis: cohesion is therefore scored over
+  # 6 questions, one of which is a duplicate, so its alpha is inflated a little
+  # by construction. Drop 53407891 from this list and add it to `skip` if you
+  # would rather score five.
+  - key: das_cohesion
+    label: "همبستگی و وقتِ مشترک با همسر"
+    traits: [das_cohesion]
+    match:
+      question_id_in:
+        - "53407676"   # 24- آیا شما و همسرتان علایق مشترك خارج از خانه دارید؟
+        - "53407818"   # 25- یک تبادل نظر دلچسب و جذاب
+        - "53407862"   # 26- با هم خندیدن
+        - "53407886"   # 27- به آرامی در بارة چیزي گفتگو کردن
+        - "53407887"   # 28- در یک پروژه یا برنامه همکاری کردن
+        - "53407891"   # 28- در یک پروژه یا برنامه همکاری کردن
+    reverse_when: {never: true}
+
+  # Mixes two response formats on purpose — items 4 and 6 are DAS consensus-style
+  # 6-point items, 29 and 30 are the yes/no pair. That is Spanier's subscale.
+  # On das_problem_yesno2, «خیر» (no such problem in the past weeks) is the high
+  # end, so nothing here is reversed.
+  - key: das_affectional_expression
+    label: "ابراز محبت و نزدیکی با همسر"
+    traits: [das_affectional_expression]
+    match:
+      question_id_in:
+        - "53407214"   # 4- ابراز محبت
+        - "53407229"   # 6- روابط جنسی
+        - "53407949"   # 29- حال و حوصلۀ رابطۀ جنسی نداشتن
+        - "53407953"   # 30- ابراز عشق و محبت نکردن
+    reverse_when: {never: true}
+
+  # ===== ERQ — تنظیم هیجان (۱۰ گویه) ================================
+  # REVIEW: 53408259 is form item 4, which in the published ERQ is a SUPPRESSION
+  # item («وقتی هیجان‌های مثبت را احساس می‌کنم، مراقبم آن‌ها را بروز ندهم»). On
+  # this form its text is a verbatim duplicate of item 3, a reappraisal item.
+  # It is assigned here by the text the respondent actually sees, not by its
+  # position — a suppression key on an item that reads as reappraisal would
+  # depress suppression's alpha for a reason nobody could find later. Move it to
+  # erq_suppression if you are scoring by published item number.
+  - key: erq_reappraisal
+    label: "آرام کردن خود با عوض کردن نگاه به ماجرا"
+    traits: [erq_reappraisal]
+    match:
+      question_id_in:
+        - "53408232"   # 1- وقتی می‌خواهم هیجان مثبت بیشتری (مانند لذت یا سرگرمی) را احساس کنم، فکر…
+        - "53408253"   # 3- وقتی می‌خواهم هیجان منفی کمتری (مانند غمگینی یا خشم) را احساس کنم، فکرم…
+        - "53408259"   # 4- وقتی می‌خواهم هیجان منفی کمتری (مانند غمگینی یا خشم) را احساس کنم، فکرم…
+        - "53408262"   # 5- وقتی با یک موقعیت استرس‌زا مواجه می‌شوم، فکرم را به گونه‌ای تغییر می‌ده…
+        - "53408297"   # 7- وقتی می‌خواهم هیجان مثبت بیشتری را احساس کنم، طرز فکرم را درباره‌ی آن م…
+        - "53408336"   # 8- من هیجان‌های خود را با تغییر دادن طرز فکرم درباره‌ی موقعیتی که در آن هس…
+        - "53408360"   # 10- وقتی می‌خواهم هیجان منفی کمتری را احساس کنم، طرز فکرم را درباره‌ی آن م…
+    reverse_when: {never: true}     # the ERQ has no reverse-scored items
+
+  - key: erq_suppression
+    label: "توی خود ریختن و بروز ندادن هیجان"
+    traits: [erq_suppression]
+    match:
+      question_id_in:
+        - "53408236"   # 2- هیجان‌های خود را پنهان می‌کنم (بروز نمی‌دهم).
+        - "53408263"   # 6- من هیجان‌های خود را با ابراز نکردن آن‌ها کنترل می‌کنم.
+        - "53408353"   # 9- وقتی هیجان‌های منفی را احساس می‌کنم، سعی می‌کنم آن‌ها را بروز ندهم.
+    reverse_when: {never: true}
+
+  # NO catch-all. A question reaching the end of this list is a coverage error
+  # and `validate-config` fails.
+
+# -----------------------------------------------------------------------------
+# 3. STATIC ANSWERS
+# -----------------------------------------------------------------------------
+# Empty, and that is not an omission: this form asks no demographic question and
+# has no free-text field, so there is nothing to answer from the persona record.
+# Everyone the study is about — married women attending counselling centres in
+# Karaj districts 1–3 — is described in `population` above and in the prompt
+# preset, because the form itself never asks.
+static_answers: []
+
+# Every question on this form belongs to a construct.
+skip: []
+
+# -----------------------------------------------------------------------------
+# 4. ANSWERING POLICY
+# -----------------------------------------------------------------------------
+answering:
+  # 10 constructs → 10 requests per respondent. The largest chunk is the
+  # 25-item ISS; that is bigger than any chunk in the other specs here, so if
+  # you see repeated completeness retries naming ISS ids, splitting that
+  # construct is the fix.
+  chunk_by: construct
+  shuffle_within_chunk: true
+
+  temperature: {min: 0.55, max: 0.85}
+
+  normalization:
+    unicode: NFKC
+    fold_arabic_to_persian: true      # ي→ی ، ك→ک — this form mixes both
+    zwnj: strip
+    strip_trailing: ".,؛،۔"
+
+  fuzzy: {algorithm: ratio, min_score: 86}
+
+  completeness:
+    # 1.0, not the 0.95 default: Porsline will not advance past a required
+    # question, so a set accepted with blanks here would stall in phase 4.
+    min_ratio: 1.0
+    denominator: answerable
+    max_retries: 2
+    retry_scope: failed_constructs_only
+
+  careless:
+    enabled: true
+    anchor_stickiness: 0.70
+    drift: [-1, 1]
+    apply_static_answers: true
+
+  reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
+
+response_style_nudges:
+  rules:
+    - {when: "acquiescence > 0.30",
+       text: "در گویه‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های موافق/بالاتر داری."}
+    - {when: "acquiescence < -0.30",
+       text: "در گویه‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های مخالف/پایین‌تر داری."}
+    - {when: "extreme_response > 0.30",
+       text: "وقتی گویه‌ای واقعا با حال‌وروزت می‌خواند، راحت سرِ طیف را انتخاب می‌کنی (مثل «همیشه» یا «کاملا موافقم»)."}
+    - {when: "extreme_response < -0.30",
+       text: "معمولا گزینه‌های ملایم و میانی را به دو سرِ طیف ترجیح می‌دهی."}
+  default: "سبک پاسخ‌دهی‌ات معمولی و متعادل است."
+
+# -----------------------------------------------------------------------------
+# 5. ANALYSIS
+# -----------------------------------------------------------------------------
+analysis:
+  reverse_keys_from: config           # never auto-flip on observed sign
+  warn_on_sign_disagreement: true
+  # Excludes the two yes/no DAS items (29, 30) from the response-style indices,
+  # where a 2-point item always scores as an extreme response.
+  response_style_min_scale_points: 3
+  straightlining: {scope: within_construct, sd_threshold: 0.5}
+  sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
+  # erq_suppression has exactly 3 items and das_affectional_expression has 4 —
+  # both are at the floor where alpha is still reportable but unstable. Read
+  # them as an indication, not as a reliability coefficient.
+  min_items_for_alpha: 3

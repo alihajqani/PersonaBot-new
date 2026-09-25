@@ -1,0 +1,463 @@
+# =============================================================================
+# PersonaBot survey spec — live Porsa form (porsa.irandoc.ac.ir/s/ThhMjk).
+# 128 questions: 6 demographics + 1 consent + 4 psychometric instruments given
+# as Porsa "matrix" questions (122 items total). Persian, married respondents.
+#
+# STATUS: DRAFT — construct membership below is a PROPOSAL derived by reading
+# every item's Persian text and identifying the underlying instrument. Items
+# and whole constructs needing your judgement are marked `# REVIEW:`. Nothing
+# here is inferred by code; it is a domain decision, made without access to any
+# paywalled official scoring manual — verify against one if you have it.
+#
+# The four instruments, identified from item content:
+#   msc_1_7_*  (42) — «پرسشنامه تعارضات زناشویی» / Marital Conflict Questionnaire
+#                     (Sanaei Zaker et al.). Officially has 7 named subscales;
+#                     see the REVIEW note on `marital_conflict` below.
+#   msc_1_8_*  (39) — Five Facet Mindfulness Questionnaire (FFMQ-39, Baer et
+#                     al. 2006). Item order and reverse keys verified against
+#                     the published facet table.
+#   msc_1_9_*  (21) — Interpersonal Reactivity Index (Davis), a 21-item
+#                     Iranian short form. Facet split below is inferred from
+#                     item content, not a cited item-key — see REVIEW note.
+#   msc_1_10_* (20) — Toronto Alexithymia Scale (TAS-20). Item order and
+#                     reverse keys verified against the published subscale
+#                     table.
+# =============================================================================
+version: 2
+id: marital_conflict_couples_fa
+locale: fa
+
+# Migrated from the 2.x fork `PersonaBot-new-haana` (its .env and Makefile).
+form:
+  provider: porsa
+  url: https://porsa.irandoc.ac.ir/s/ThhMjk
+  max_pages: 40
+# -----------------------------------------------------------------------------
+# 1. POPULATION — every respondent is a married adult reporting on their own
+#    marriage. `marital_status` is fixed to "married" and is not asked by the
+#    form itself (the platform apparently restricts the form to married
+#    respondents already); it exists so the persona prompt can state it plainly
+#    and so nothing downstream can silently generate an unmarried persona.
+# -----------------------------------------------------------------------------
+population:
+  seed: null
+
+  # Two common factors:
+  #   G = general adaptive emotional/relational functioning (mindful, empathic,
+  #       emotionally articulate, low conflict)
+  #   R = reactivity / distress-proneness under emotional or relational strain
+  # REVIEW: these loadings are a literature-informed proposal (mindfulness and
+  # empathy reduce marital conflict and alexithymia; personal distress and
+  # alexithymia go together), not fit to any data. Read the printed correlation
+  # matrix from `make validate` and adjust before trusting downstream alpha.
+  latent_model:
+    common_factors: [G, R]
+    dimensions:
+      marital_conflict:
+        loadings: {G: -0.55, R: 0.45}
+        label: "تعارض زناشویی (قهر، دخالت خانواده‌ها و فرزندان، جدا کردن مالی، واکنش هیجانی حین دعوا)"
+      mindfulness_observing:
+        loadings: {G: 0.35, R: 0.10}
+        label: "ذهن‌آگاهی — مشاهده (توجه به حس‌های بدنی، صداها، بو، منظره)"
+      mindfulness_describing:
+        loadings: {G: 0.45, R: -0.05}
+        label: "ذهن‌آگاهی — توصیف (توانایی بیان احساسات با کلمات)"
+      mindfulness_acting_awareness:
+        loadings: {G: 0.40, R: -0.30}
+        label: "ذهن‌آگاهی — عمل همراه با آگاهی (تمرکز، عدم حواس‌پرتی و کار خودکار)"
+      mindfulness_nonjudging:
+        loadings: {G: 0.35, R: -0.25}
+        label: "ذهن‌آگاهی — بدون‌قضاوتی نسبت به افکار و احساسات درونی"
+      mindfulness_nonreactivity:
+        loadings: {G: 0.30, R: -0.35}
+        label: "ذهن‌آگاهی — عدم واکنش‌پذیری نسبت به تجربه‌ی درونی"
+      perspective_taking:
+        loadings: {G: 0.40, R: -0.10}
+        label: "همدلی — دیدگاه‌گیری (توانایی دیدن موقعیت از نگاه دیگران)"
+      empathic_concern:
+        loadings: {G: 0.45, R: 0.05}
+        label: "همدلی — دلسوزی (نگرانی و دلسوزی برای دیگران)"
+      personal_distress:
+        loadings: {G: -0.20, R: 0.65}
+        label: "همدلی — درماندگی شخصی (اضطراب و از دست دادن کنترل در موقعیت‌های هیجانیِ دیگران)"
+      alexithymia_dif:
+        loadings: {G: -0.50, R: 0.35}
+        label: "الکسی‌تایمیا — دشواری در شناسایی احساسات"
+      alexithymia_ddf:
+        loadings: {G: -0.55, R: 0.15}
+        label: "الکسی‌تایمیا — دشواری در توصیف احساسات"
+      alexithymia_eot:
+        loadings: {G: -0.25, R: 0.20}
+        label: "الکسی‌تایمیا — تفکر برون‌مدار (تمرکز بر بیرون به‌جای تجربه‌ی درونی)"
+
+  bands:
+    cuts:   [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5]
+    labels: ["خیلی کم", "کم", "کمی کم", "متوسط", "کمی زیاد", "زیاد", "خیلی زیاد"]
+
+  response_style:
+    acquiescence:     {dist: normal, mu: 0.0, sigma: 0.40}
+    extreme_response: {dist: normal, mu: 0.0, sigma: 0.40}
+    careless:         {dist: bernoulli, p: 0.04}
+
+  # --- demographics, each bound 1:1 to a form question via static_answers ----
+  demographics:
+    - name: gender
+      dist: categorical
+      choices: [["زن", 0.5], ["مرد", 0.5]]
+
+    - name: age_bucket
+      dist: categorical
+      choices: [["زیر 30 سال", 0.15], ["31-40 سال", 0.45], ["بالای 41 سال", 0.40]]
+
+    # REVIEW: homemaking skewed toward women is a plausible Iranian-population
+    # prior, not a measured rate. Adjust the two branches' weights if your
+    # target sample should look different.
+    - name: employment_status
+      dist: conditional
+      cases:
+        - when: "gender == 'زن'"
+          dist: categorical
+          choices: [["شاغل", 0.40], ["خانه دار", 0.60]]
+        - default: true
+          dist: categorical
+          choices: [["شاغل", 0.90], ["خانه دار", 0.10]]
+
+    - name: children_count_bucket
+      dist: conditional
+      cases:
+        - when: "age_bucket == 'زیر 30 سال'"
+          dist: categorical
+          choices: [["بدون فرزند", 0.55], ["یک فرزند", 0.35], ["دو فرزند", 0.10]]
+        - when: "age_bucket == '31-40 سال'"
+          dist: categorical
+          choices: [["بدون فرزند", 0.15], ["یک فرزند", 0.30], ["دو فرزند", 0.38],
+                    ["سه فرزند", 0.13], ["بالای سه فرزند", 0.04]]
+        - default: true
+          dist: categorical
+          choices: [["بدون فرزند", 0.08], ["یک فرزند", 0.22], ["دو فرزند", 0.40],
+                    ["سه فرزند", 0.20], ["بالای سه فرزند", 0.10]]
+
+    - name: economic_status
+      dist: categorical
+      choices: [["پایین", 0.25], ["متوسط", 0.50], ["بالا", 0.25]]
+
+    # Not asked by the form; fixed so the persona prompt can state it plainly
+    # and every generated respondent is unambiguously part of a married couple.
+    - name: marital_status
+      dist: constant
+      value: "متأهل"
+
+# -----------------------------------------------------------------------------
+# 2. SCHEMA INTERPRETATION
+# -----------------------------------------------------------------------------
+scales:
+  # index 0 = «همیشه» = the HIGH-frequency end of these conflict-behavior
+  # items, so the scale runs high-to-low rather than low-to-high.
+  - name: mcq_frequency5
+    match:
+      options_equal: ["همیشه", "اکثراً", "گاهی", "بندرت", "هرگز"]
+    coding: high_first
+
+  - name: ffmq_frequency5
+    match:
+      options_equal: ["هرگز", "به‌ندرت", "گاهی اوقات", "اغلب درست", "همیشه"]
+    coding: low_first
+
+  - name: iri_agreement5
+    match:
+      options_equal: ["کاملاً مخالفم", "تا حدودی مخالف", "نظری ندارم",
+                      "تا حدودی موافق", "کاملاً موافقم"]
+    coding: low_first
+
+  - name: tas_agreement5
+    match:
+      options_equal: ["کاملاً مخالف", "تا حدودی مخالف", "نه مخالف نه موافق",
+                      "تا حدودی موافق", "کاملاً موافق"]
+    coding: low_first
+
+  - name: age3
+    match: {options_equal: ["زیر 30 سال", "31-40 سال", "بالای 41 سال"]}
+    coding: low_first
+  - name: economic3
+    match: {options_equal: ["پایین", "متوسط", "بالا"]}
+    coding: low_first
+  - name: consent2
+    match: {options_equal: ["موافقم", "مخالفم"]}
+    coding: low_first
+  - name: gender2
+    match: {options_equal: ["زن", "مرد"]}
+    coding: low_first
+  - name: employment2
+    match: {options_equal: ["شاغل", "خانه دار"]}
+    coding: low_first
+  - name: children5
+    match:
+      options_equal: ["بدون فرزند", "یک فرزند", "دو فرزند", "سه فرزند", "بالای سه فرزند"]
+    coding: low_first
+
+constructs:
+  # --- Marital Conflict Questionnaire (42 items) -----------------------------
+  # REVIEW: the source instrument officially has 7 named subscales (کاهش
+  # همکاری، کاهش رابطه جنسی، افزایش واکنش‌های هیجانی، افزایش جلب حمایت فرزند،
+  # افزایش رابطه فردی با خویشاوندان خود، کاهش رابطه خانوادگی با خویشاوندان
+  # همسر و دوستان، جدا کردن امور مالی). No official item-to-subscale key was
+  # available to verify a split, so all 42 items are scored as ONE total
+  # "marital_conflict" construct instead — a legitimate, documented use of
+  # this instrument, but if you need the 7 subscale scores, get the source
+  # manual and split this construct's `match` list accordingly.
+  - key: marital_conflict
+    label: "تعارض زناشویی"
+    traits: [marital_conflict]
+    match:
+      question_id_in:
+        - msc_1_7_1
+        - msc_1_7_2
+        - msc_1_7_3
+        - msc_1_7_4
+        - msc_1_7_5
+        - msc_1_7_6
+        - msc_1_7_7
+        - msc_1_7_8
+        - msc_1_7_9
+        - msc_1_7_10
+        - msc_1_7_11
+        - msc_1_7_12
+        - msc_1_7_13
+        - msc_1_7_14
+        - msc_1_7_15
+        - msc_1_7_16
+        - msc_1_7_17
+        - msc_1_7_18
+        - msc_1_7_19
+        - msc_1_7_20
+        - msc_1_7_21
+        - msc_1_7_22
+        - msc_1_7_23
+        - msc_1_7_24
+        - msc_1_7_25
+        - msc_1_7_26
+        - msc_1_7_27
+        - msc_1_7_28
+        - msc_1_7_29
+        - msc_1_7_30
+        - msc_1_7_31
+        - msc_1_7_32
+        - msc_1_7_33
+        - msc_1_7_34
+        - msc_1_7_35
+        - msc_1_7_36
+        - msc_1_7_37
+        - msc_1_7_38
+        - msc_1_7_39
+        - msc_1_7_40
+        - msc_1_7_41
+        - msc_1_7_42
+    # msc_1_7_26 ("من و همسرم با مشارکت و توافق یکدیگر پول را خرج می‌کنیم") is
+    # the one clearly cooperative/positive item in the set — its high end
+    # means LESS conflict, opposite of the other 41. REVIEW: every other item
+    # was read as running with the majority direction; recheck against the
+    # source key if you have it.
+    reverse_when:
+      question_id_in: [msc_1_7_26]
+
+  # --- FFMQ-39, five facets (Baer et al. 2006 published key) -----------------
+  - key: mindfulness_observing
+    label: "ذهن‌آگاهی — مشاهده"
+    traits: [mindfulness_observing]
+    match:
+      question_id_in: [msc_1_8_1, msc_1_8_6, msc_1_8_11, msc_1_8_15, msc_1_8_20,
+                        msc_1_8_26, msc_1_8_31, msc_1_8_36]
+    reverse_when: {never: true}
+
+  - key: mindfulness_describing
+    label: "ذهن‌آگاهی — توصیف"
+    traits: [mindfulness_describing]
+    match:
+      question_id_in: [msc_1_8_2, msc_1_8_7, msc_1_8_12, msc_1_8_16, msc_1_8_22,
+                        msc_1_8_27, msc_1_8_32, msc_1_8_37]
+    reverse_when:
+      question_id_in: [msc_1_8_12, msc_1_8_16, msc_1_8_22]
+
+  - key: mindfulness_acting_awareness
+    label: "ذهن‌آگاهی — عمل همراه با آگاهی"
+    traits: [mindfulness_acting_awareness]
+    match:
+      question_id_in: [msc_1_8_5, msc_1_8_8, msc_1_8_13, msc_1_8_18, msc_1_8_23,
+                        msc_1_8_28, msc_1_8_34, msc_1_8_38]
+    # All 8 items in this facet are reverse-worded (mindlessness statements).
+    reverse_when:
+      question_id_in: [msc_1_8_5, msc_1_8_8, msc_1_8_13, msc_1_8_18, msc_1_8_23,
+                        msc_1_8_28, msc_1_8_34, msc_1_8_38]
+
+  - key: mindfulness_nonjudging
+    label: "ذهن‌آگاهی — بدون‌قضاوتی"
+    traits: [mindfulness_nonjudging]
+    match:
+      question_id_in: [msc_1_8_3, msc_1_8_10, msc_1_8_14, msc_1_8_17, msc_1_8_25,
+                        msc_1_8_30, msc_1_8_35, msc_1_8_39]
+    # All 8 items in this facet are reverse-worded (judgmental statements).
+    reverse_when:
+      question_id_in: [msc_1_8_3, msc_1_8_10, msc_1_8_14, msc_1_8_17, msc_1_8_25,
+                        msc_1_8_30, msc_1_8_35, msc_1_8_39]
+
+  - key: mindfulness_nonreactivity
+    label: "ذهن‌آگاهی — عدم واکنش‌پذیری"
+    traits: [mindfulness_nonreactivity]
+    match:
+      question_id_in: [msc_1_8_4, msc_1_8_9, msc_1_8_19, msc_1_8_21, msc_1_8_24,
+                        msc_1_8_29, msc_1_8_33]
+    reverse_when: {never: true}
+
+  # --- Interpersonal Reactivity Index, 21-item Iranian short form ------------
+  # REVIEW: Davis's IRI officially has 4 subscales (Perspective Taking,
+  # Fantasy, Empathic Concern, Personal Distress) with published item numbers
+  # for the 28-item original — but this 21-item Iranian short form uses
+  # different numbering and no cited item-key was available for it. The split
+  # below was inferred by reading each item's content against the four
+  # classic facet definitions; the Fantasy facet (identifying with fictional
+  # characters) does not appear to be represented in this short form's items
+  # at all. Verify against the short form's own validation paper if you have
+  # it (Current Psychology, 2022, "short form of the interpersonal reactivity
+  # index in Iranian community").
+  - key: perspective_taking
+    label: "همدلی — دیدگاه‌گیری"
+    traits: [perspective_taking]
+    match:
+      question_id_in: [msc_1_9_2, msc_1_9_5, msc_1_9_9, msc_1_9_12, msc_1_9_16,
+                        msc_1_9_19, msc_1_9_21]
+    reverse_when:
+      question_id_in: [msc_1_9_2, msc_1_9_12]
+
+  - key: empathic_concern
+    label: "همدلی — دلسوزی"
+    traits: [empathic_concern]
+    match:
+      question_id_in: [msc_1_9_1, msc_1_9_4, msc_1_9_7, msc_1_9_10, msc_1_9_14,
+                        msc_1_9_17, msc_1_9_18]
+    reverse_when:
+      question_id_in: [msc_1_9_4, msc_1_9_10, msc_1_9_14]
+
+  - key: personal_distress
+    label: "همدلی — درماندگی شخصی"
+    traits: [personal_distress]
+    match:
+      question_id_in: [msc_1_9_3, msc_1_9_6, msc_1_9_8, msc_1_9_11, msc_1_9_13,
+                        msc_1_9_15, msc_1_9_20]
+    reverse_when:
+      question_id_in: [msc_1_9_11, msc_1_9_15]
+
+  # --- Toronto Alexithymia Scale (TAS-20), published key ---------------------
+  - key: alexithymia_dif
+    label: "الکسی‌تایمیا — دشواری در شناسایی احساسات"
+    traits: [alexithymia_dif]
+    match:
+      question_id_in: [msc_1_10_1, msc_1_10_3, msc_1_10_6, msc_1_10_7,
+                        msc_1_10_9, msc_1_10_13, msc_1_10_14]
+    reverse_when: {never: true}
+
+  - key: alexithymia_ddf
+    label: "الکسی‌تایمیا — دشواری در توصیف احساسات"
+    traits: [alexithymia_ddf]
+    match:
+      question_id_in: [msc_1_10_2, msc_1_10_4, msc_1_10_11, msc_1_10_12, msc_1_10_17]
+    reverse_when:
+      question_id_in: [msc_1_10_4]
+
+  - key: alexithymia_eot
+    label: "الکسی‌تایمیا — تفکر برون‌مدار"
+    traits: [alexithymia_eot]
+    match:
+      question_id_in: [msc_1_10_5, msc_1_10_8, msc_1_10_10, msc_1_10_15,
+                        msc_1_10_16, msc_1_10_18, msc_1_10_19, msc_1_10_20]
+    reverse_when:
+      question_id_in: [msc_1_10_5, msc_1_10_10, msc_1_10_18, msc_1_10_19]
+
+  # NO catch-all. A question reaching the end of this list is a coverage error
+  # and `validate-config` fails.
+
+# -----------------------------------------------------------------------------
+# 3. STATIC ANSWERS — answered from the persona, never by the LLM
+# -----------------------------------------------------------------------------
+static_answers:
+  - name: consent
+    match: {question_id_in: [questionId1]}
+    value: "موافقم"
+    exclude_from_psychometrics: true
+
+  - name: age
+    match: {question_id_in: [questionId2]}
+    value: "{{ persona.demographics.age_bucket }}"
+
+  - name: gender
+    match: {question_id_in: [questionId3]}
+    value: "{{ persona.demographics.gender }}"
+
+  - name: employment
+    match: {question_id_in: [questionId4]}
+    value: "{{ persona.demographics.employment_status }}"
+
+  - name: children
+    match: {question_id_in: [questionId5]}
+    value: "{{ persona.demographics.children_count_bucket }}"
+
+  - name: economic_status
+    match: {question_id_in: [questionId6]}
+    value: "{{ persona.demographics.economic_status }}"
+
+skip: []
+
+# -----------------------------------------------------------------------------
+# 4. ANSWERING POLICY
+# -----------------------------------------------------------------------------
+answering:
+  chunk_by: construct
+  shuffle_within_chunk: true
+  temperature: {min: 0.55, max: 0.85}
+
+  normalization:
+    unicode: NFKC
+    fold_arabic_to_persian: true
+    zwnj: strip
+    strip_trailing: ".,;:،؛"
+
+  fuzzy: {algorithm: ratio, min_score: 86}
+
+  # Porsa re-validates every question on every page before it accepts the
+  # final POST, so an answer set with any gap stalls in phase 4 rather than
+  # submitting partially. See providers/porsa's module docstring.
+  completeness:
+    min_ratio: 1.0
+    denominator: answerable
+    max_retries: 2
+    retry_scope: failed_constructs_only
+
+  careless:
+    enabled: true
+    anchor_stickiness: 0.70
+    drift: [-1, 1]
+    apply_static_answers: true
+
+  reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
+
+response_style_nudges:
+  rules:
+    - {when: "acquiescence > 0.30",
+       text: "در سؤال‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های موافق/بالاتر داری."}
+    - {when: "acquiescence < -0.30",
+       text: "در سؤال‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های مخالف/پایین‌تر داری."}
+    - {when: "extreme_response > 0.30",
+       text: "وقتی گزینه‌ای واقعاً با حال‌وروزت می‌خواند، راحت از گزینه‌ی نهاییِ طیف استفاده می‌کنی."}
+    - {when: "extreme_response < -0.30",
+       text: "معمولاً گزینه‌های ملایم/میانی را به گزینه‌های نهاییِ طیف ترجیح می‌دهی."}
+  default: "سبک پاسخ‌دهی‌ات معمولی و متعادل است."
+
+# -----------------------------------------------------------------------------
+# 5. ANALYSIS
+# -----------------------------------------------------------------------------
+analysis:
+  reverse_keys_from: config
+  warn_on_sign_disagreement: true
+  response_style_min_scale_points: 3
+  straightlining: {scope: within_construct, sd_threshold: 0.5}
+  sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
+  min_items_for_alpha: 3

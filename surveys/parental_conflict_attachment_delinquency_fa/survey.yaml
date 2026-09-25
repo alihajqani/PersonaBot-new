@@ -1,0 +1,598 @@
+# =============================================================================
+# PersonaBot survey spec — «تعارض والدین، سبک‌های دلبستگی و نگرش به بزهکاری
+# در دختران نوجوان»
+# Live Porsline form: https://survey.porsline.ir/s/NbFZTHqO
+# Persian, 94 questions across 70 pages (6 of them statement-only).
+#
+# Instrument, as read off the extracted schema:
+#   • 1 item   سن — the only demographic the form asks, a 4-option radio
+#   • 19 items نگرش به علل بزهکاری نوجوانان, 5-point agreement («کاملا …»)
+#   • 15 items سبک‌های دلبستگی — RAAS-style, 5-point frequency
+#   • 30 items تعارض والدین — CPIC-style, 5-point agreement («کاملاً …»)
+#   • 29 items شادکامی — Oxford Happiness Inventory, 4-point agreement
+#
+# The 30 conflict items render as a SINGLE PAGE DISPLAY group: one page, one
+# section heading, thirty items. See the provider docstring — resolving options
+# against the page wrapper used to give each of them all 150 of the group's
+# radios, and the schema recorded thirty 150-option questions.
+#
+# That same group is also why this file described a 65-question form until
+# 2026-09-06. The group renders its own «شروع» confirm button carrying
+# `shared_submit__`, the provider read that as the form's send button, and both
+# phase 1 and phase 4 stopped at page 39 of 70 — the entire شادکامی scale was
+# invisible. Fixed in the provider; see its docstring.
+#
+# STATUS: construct membership is a PROPOSAL derived by reading all 93
+# psychometric item texts. Judgement calls are marked `# REVIEW:`. The validator
+# can prove this file is COMPLETE; only you can decide whether it is CORRECT.
+#
+# Question ids and option strings are copied verbatim from form_schema.json.
+# =============================================================================
+version: 2
+id: parental_conflict_attachment_delinquency_fa
+locale: fa
+
+# Migrated from the 2.x fork `PersonaBot-new-150` (its .env and Makefile).
+form:
+  provider: porsline
+  url: https://survey.porsline.ir/s/NbFZTHqO
+  max_pages: 120
+# -----------------------------------------------------------------------------
+# 1. POPULATION — دختران نوجوان ۱۴ تا ۱۷ ساله
+# -----------------------------------------------------------------------------
+population:
+  seed: null
+
+  # Seven latent dimensions over three common factors:
+  #   C = آشفتگی و تعارض در فضای خانه   (family conflict climate)
+  #   I = ناایمنی دلبستگی               (attachment insecurity)
+  #   D = سبک اسنادِ علل بزهکاری         (attributional stance on delinquency)
+  #
+  # Implied correlations — `make validate` prints the full matrix, read it:
+  #   r(interparental_conflict, conflict_distress)   = +0.69  the distress items
+  #                                   are the child's reaction to the same events
+  #   r(interparental_conflict, triangulation)       = +0.60
+  #   r(interparental_conflict, attachment_avoidance)= +0.35  POSITIVE ✓
+  #   r(interparental_conflict, attachment_anxiety)  = +0.34  POSITIVE ✓
+  #   r(attachment_avoidance,   attachment_anxiety)  = +0.52
+  #   r(interparental_conflict, delinq_attr_family)  = +0.32  modest, see below
+  #
+  # Magnitudes: adolescent samples put interparental-conflict ↔ attachment-
+  # insecurity in the +0.25…+0.45 band, so +0.35 sits at the strong-but-plausible
+  # end. The conflict↔distress correlation is deliberately high because the two
+  # sets of items describe one situation from two angles, not two constructs
+  # that merely travel together.
+  #
+  # REVIEW: the delinquency scale measures an OPINION about why other teenagers
+  # offend, not the respondent's own behaviour. Its link to the family-climate
+  # factor is a weak assumption — that a girl living with chronic parental
+  # conflict leans slightly harder on family explanations. Loaded at +0.30 on C
+  # so it is visible but never drives the scale. Set these loadings to 0 if you
+  # would rather the attitude scale float free of the home-climate factor.
+  latent_model:
+    common_factors: [C, I, D]
+    dimensions:
+      interparental_conflict:
+        loadings: {C: 0.86, I: 0.12, D: 0.10}      # ΣL² = 0.764
+        label: "تعارض میان پدر و مادر (فراوانی، شدت و حل‌نشدگی مشاجره‌های آن‌ها)"
+      conflict_distress:
+        loadings: {C: 0.74, I: 0.36, D: 0.08}      # ΣL² = 0.684
+        label: "پریشانی و احساس ناامنی ناشی از تعارض والدین (ترس، بی‌خوابی، افت درسی، احساس مقصربودن)"
+      triangulation:
+        loadings: {C: 0.66, I: 0.22, D: 0.06}      # ΣL² = 0.488
+        label: "کشیده‌شدن به میان دعوای والدین (طرف‌گیری، میانجی‌گری، محرم‌راز شدن)"
+      attachment_avoidance:
+        loadings: {C: 0.30, I: 0.74, D: 0.05}      # ΣL² = 0.640
+        label: "اجتناب در دلبستگی (دشواری در نزدیک‌شدن، اعتمادنکردن، ناراحتی از صمیمیت)"
+      attachment_anxiety:
+        loadings: {C: 0.30, I: 0.58, D: 0.06}      # ΣL² = 0.430
+        label: "اضطراب در دلبستگی (نگرانی از طردشدن و از دوست‌داشته‌نشدن)"
+      delinq_attr_environmental:
+        loadings: {C: 0.24, I: 0.08, D: 0.60}      # ΣL² = 0.424
+        label: "اسناد بزهکاری به عوامل بیرونی (فقر، محله، دوستان ناباب)"
+      delinq_attr_family:
+        loadings: {C: 0.30, I: 0.06, D: 0.56}      # ΣL² = 0.407
+        label: "اسناد بزهکاری به خانواده (تربیت، پایبندی اخلاقی و مذهبی، نظارت بر اوقات فراغت)"
+      # REVIEW: شادکامی is the one dimension that runs BACKWARDS against the
+      # rest — a girl reporting a calm home and secure attachment reports more
+      # happiness, not less — so its loadings are negative. Implied:
+      #   r(happiness, interparental_conflict)  = -0.39
+      #   r(happiness, conflict_distress)       = -0.46
+      #   r(happiness, attachment_avoidance)    = -0.49
+      #   r(happiness, attachment_anxiety)      = -0.41
+      # Adolescent samples put subjective well-being against attachment
+      # insecurity in the -0.35…-0.55 band and against interparental conflict
+      # in the -0.30…-0.45 band, so this sits mid-range on both. It loads
+      # essentially nothing on D: what a girl believes causes OTHER teenagers
+      # to offend says little about how happy she is.
+      happiness:
+        loadings: {C: -0.38, I: -0.50, D: -0.04}   # ΣL² = 0.396
+        label: "شادکامی (نشاط، رضایت از زندگی، حرمت خود و سرزندگی)"
+
+  bands:
+    cuts:   [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5]
+    labels: ["خیلی پایین", "پایین", "کمی پایین", "متوسط", "کمی بالا", "بالا", "خیلی بالا"]
+
+  response_style:
+    acquiescence:     {dist: normal, mu: 0.0, sigma: 0.40}
+    extreme_response: {dist: normal, mu: 0.0, sigma: 0.40}
+    careless:         {dist: bernoulli, p: 0.04}
+
+  # --- demographics, in dependency order --------------------------------------
+  # The form asks exactly ONE demographic (سن). Everything else here exists to
+  # give the persona prose something concrete to stand on; only `age_option` is
+  # ever written into an answer file, and it is a verbatim copy of a radio label.
+  demographics:
+    # The frame is دختران نوجوان, so this is a constant, not a 50/50 draw that
+    # would occasionally hand the prompt a boy.
+    - name: gender
+      dist: constant
+      value: "دختر"
+
+    # 14–17, near-uniform with a slight taper at 17 (school leaving, marriage in
+    # some regions). The form offers exactly these four ages and no others.
+    - name: age
+      dist: categorical
+      choices: [[14, 0.26], [15, 0.26], [16, 0.25], [17, 0.23]]
+
+    # The form's age options carry their own numbering INSIDE the choice label
+    # («۱ 14 سال»), and static answers are clicked on a live radio group rather
+    # than fuzzy-matched — so the persona has to carry the literal string.
+    - name: age_option
+      dist: conditional
+      cases:
+        - {when: "age == 14", dist: constant, value: "۱ 14 سال"}
+        - {when: "age == 15", dist: constant, value: "۲ 15 سال"}
+        - {when: "age == 16", dist: constant, value: "۳ 16 سال"}
+        - {default: true,     dist: constant, value: "۴ 17 سال"}
+
+    # Modal grade = age - 5, with the usual off-by-one for late starters and
+    # repeaters. Prose only; the form never asks.
+    - name: grade
+      dist: conditional
+      cases:
+        - {when: "age == 14", dist: categorical, choices: [["نهم", 0.82], ["هشتم", 0.08], ["دهم", 0.10]]}
+        - {when: "age == 15", dist: categorical, choices: [["دهم", 0.82], ["نهم", 0.10], ["یازدهم", 0.08]]}
+        - {when: "age == 16", dist: categorical, choices: [["یازدهم", 0.82], ["دهم", 0.10], ["دوازدهم", 0.08]]}
+        - {default: true,     dist: categorical, choices: [["دوازدهم", 0.86], ["یازدهم", 0.14]]}
+
+    # REVIEW: the study frame named no city. This spread is a stand-in that
+    # keeps the prose from collapsing onto one setting. If your sample is
+    # single-site, replace it with a constant — a persona who mentions Tabriz in
+    # a Karaj-only study is a tell.
+    - name: city
+      dist: categorical
+      choices:
+        - ["تهران", 0.30]
+        - ["کرج", 0.18]
+        - ["مشهد", 0.14]
+        - ["اصفهان", 0.13]
+        - ["شیراز", 0.10]
+        - ["تبریز", 0.09]
+        - ["اهواز", 0.06]
+
+    - name: school_type
+      dist: categorical
+      choices: [["دولتی", 0.62], ["غیرانتفاعی", 0.24], ["نمونه دولتی", 0.10], ["تیزهوشان", 0.04]]
+
+    # Every conflict item is phrased «والدینم …», so the instrument presupposes
+    # two parents in one household. A separated-parents draw would hand the model
+    # thirty items it cannot answer in character. Stated as a constant rather
+    # than left implicit.
+    - name: living_arrangement
+      dist: constant
+      value: "با پدر و مادرم در یک خانه زندگی می‌کنم"
+
+    - name: siblings
+      dist: categorical
+      choices: [[0, 0.14], [1, 0.46], [2, 0.28], [3, 0.12]]
+
+    - name: birth_order
+      dist: derived
+      expr: "randint(1, siblings + 1)"
+
+    - name: mother_education
+      dist: categorical
+      choices:
+        - ["زیر دیپلم", 0.26]
+        - ["دیپلم", 0.38]
+        - ["کاردانی یا کارشناسی", 0.30]
+        - ["کارشناسی ارشد و بالاتر", 0.06]
+
+    - name: father_education
+      dist: categorical
+      choices:
+        - ["زیر دیپلم", 0.24]
+        - ["دیپلم", 0.36]
+        - ["کاردانی یا کارشناسی", 0.32]
+        - ["کارشناسی ارشد و بالاتر", 0.08]
+
+    # Financial strain and marital conflict travel together in the family-stress
+    # literature, so income is drawn CONDITIONALLY on the conflict trait rather
+    # than independently. Without this the prose regularly contradicts the
+    # answers — a comfortable household whose parents fight daily over money.
+    - name: family_income
+      dist: conditional
+      cases:
+        - when: "z.interparental_conflict > 0.9"
+          dist: categorical
+          choices: [["ضعیف", 0.42], ["متوسط رو به پایین", 0.34], ["متوسط", 0.20], ["خوب", 0.04]]
+        - when: "z.interparental_conflict > 0.0"
+          dist: categorical
+          choices: [["ضعیف", 0.24], ["متوسط رو به پایین", 0.32], ["متوسط", 0.34], ["خوب", 0.10]]
+        - when: "z.interparental_conflict > -0.9"
+          dist: categorical
+          choices: [["ضعیف", 0.12], ["متوسط رو به پایین", 0.24], ["متوسط", 0.46], ["خوب", 0.18]]
+        - default: true
+          dist: categorical
+          choices: [["ضعیف", 0.06], ["متوسط رو به پایین", 0.16], ["متوسط", 0.48], ["خوب", 0.30]]
+
+  # The form asks for no factual value the model could get arithmetically wrong.
+  derived_fields: []
+
+# -----------------------------------------------------------------------------
+# 2. SCHEMA INTERPRETATION
+# -----------------------------------------------------------------------------
+# CODING DIRECTION — the one thing here that is silently wrong if you get it
+# wrong. `low_first` = option[0] is the LOW end (score = index + 1);
+# `high_first` = option[0] is the HIGH end (score = K - index).
+#
+# All four response formats on this form run LOW → HIGH, so all four are
+# low_first. That is a fact about this form, not a default.
+scales:
+  # The 30 تعارض والدین items AND the 19 بزهکاری items — 49 in total.
+  #
+  # `make inspect` reports these as two signatures, because the conflict block
+  # writes «کاملاً» with a tanwin (U+064B) and the delinquency block writes
+  # «کاملا» without one. They are one scale here on purpose: matching happens
+  # after normalization, which strips diacritics, so the two collapse to the
+  # same option set. Declaring both makes the second unreachable — the first
+  # rule wins and `validate-config` reports it as SCALES MATCHING NOTHING.
+  #
+  # Merging is safe only because both run the same direction. Two scales with
+  # the same options and OPPOSITE codings could not be told apart here, and
+  # would have to be split by question id instead.
+  - name: agreement5
+    match:
+      options_equal: ["کاملاً مخالفم", "مخالفم", "نظری ندارم", "موافقم", "کاملاً موافقم"]
+    coding: low_first
+
+  # The 15 دلبستگی items. Copied verbatim: «تقريباً هميشه» uses Arabic yeh
+  # (ي, U+064A) where the rest of the form uses Persian yeh.
+  - name: attachment_frequency5
+    match:
+      options_equal: ["هرگز", "بطور اتفاقی", "بعضی اوقات", "اغلب اوقات", "تقريباً هميشه"]
+    coding: low_first
+
+  # The 29 شادکامی items. A FOUR-point forced-choice agreement scale — no
+  # midpoint — so it cannot collide with `agreement5` above however the two are
+  # normalized: `options_equal` compares whole option lists, and a four-option
+  # question can never equal a five-option list. Note this block writes «کاملا»
+  # without the tanwin that the conflict block uses; normalization folds them,
+  # which is harmless here for exactly that reason.
+  - name: agreement4
+    match:
+      options_equal: ["کاملا مخالفم", "مخالفم", "موافقم", "کاملا موافقم"]
+    coding: low_first
+
+  # Declared so the coverage report accounts for it explicitly. Bound in
+  # `static_answers`, so it never reaches a construct or the reliability stats.
+  - name: demo_age4
+    match:
+      options_equal: ["۱ 14 سال", "۲ 15 سال", "۳ 16 سال", "۴ 17 سال"]
+    coding: low_first
+
+# -----------------------------------------------------------------------------
+# CONSTRUCTS — evaluated in order, first match wins.
+# -----------------------------------------------------------------------------
+constructs:
+  # --- تعارض والدین (CPIC-style), 30 items in three facets -------------------
+
+  # Properties of the conflict itself: how often, how loud, how it ends.
+  - key: conflict_properties
+    label: "ویژگی‌های تعارض میان پدر و مادر"
+    traits: [interparental_conflict]
+    match:
+      question_id_in:
+        - "53774823"   # والدینم اغلب بر سر مسائل کوچک با هم مشاجره می‌کنند.
+        - "53774824"   # در خانه، چند بار در هفته شاهد دعوای لفظی والدینم هستم.
+        - "53774826"   # اختلاف‌های والدینم معمولاً طولانی می‌شود و زود تمام نمی‌شود.
+        - "53774827"   # والدینم برای حل اختلاف، زیاد سر هم فریاد می‌زنند.
+        - "53774829"   # گاهی احساس می‌کنم والدینم در حال کشمکش دائمی با هم هستند.
+        - "53774830"   # در بیشتر روزها، بین والدینم بحث و جدل پیش می‌آید.
+        - "53774831"   # بیشتر وقت‌ها سکوت بین والدینم به خاطر ناراحتی و دلخوری است.
+        - "53774832"   # اختلاف‌های والدینم آن‌قدر زیاد است که روی فضای خانه سایه انداخته است.
+        - "53774833"   # هنگام بحث، یکی از والدین خانه را ترک می‌کند تا دعوا تمام شود.
+        - "53774834"   # معمولاً یکی از والدین، دیگری را مقصر همه چیز می‌داند.
+        - "53774835"   # والدینم به جای صحبت آرام، بیشتر دعوا می‌کنند.
+        - "53774836"   # وقتی با هم اختلاف دارند، به حرف هم گوش نمی‌دهند.
+        - "53774837"   # در بحث‌های‌شان از کلمات توهین‌آمیز استفاده می‌کنند.
+        - "53774838"   # والدینم تلاش می‌کنند احساسات همدیگر را درک کنند.        [reverse]
+        - "53774839"   # بحث والدینم معمولاً به صلح و سازش ختم می‌شود.           [reverse]
+    # The two constructive-resolution items: agreeing to them means LESS
+    # conflict, so they carry the trait backwards.
+    reverse_when:
+      question_id_in: ["53774838", "53774839"]
+
+  # The adolescent's own reaction — CPIC's threat / self-blame territory.
+  - key: conflict_distress
+    label: "پریشانی و احساس ناامنی ناشی از تعارض والدین"
+    traits: [conflict_distress]
+    match:
+      question_id_in:
+        - "53774840"   # وقتی والدینم دعوا می‌کنند، احساس ناامنی و ترس می‌کنم.
+        - "53774841"   # اختلاف‌های والدینم باعث می‌شود از خانه دوری کنم…
+        - "53774842"   # بعد از مشاجره‌ی والدینم، جو خانه سرد و متشنج است.
+        - "53774843"   # روی درس خواندن من تأثیر منفی می‌گذارد.
+        - "53774844"   # دوست دارم در اتاقم تنها باشم و در را ببندم.
+        - "53774845"   # دچار بی‌خوابی یا کابوس می‌شوم.
+        - "53774846"   # احساس می‌کنم هیچ‌کس به من توجهی ندارد.
+        - "53774847"   # والدینم بعد از دعوا آرامم می‌کنند.                      [reverse]
+        - "53774853"   # مشاجرات والدینم برایم عادی و همیشگی شده است.
+        - "53774854"   # دعواهای والدینم روی رفتار و اخلاق من تأثیر گذاشته است.
+        - "53774855"   # احساس می‌کنم اگر اختلاف پیش بیاید، تقصیر من است.
+    # REVIEW: 53774853 («برایم عادی شده») is keyed DIRECT — it reads as a marker
+    # of chronic exposure. It can also be read as habituation, i.e. LESS current
+    # distress, which would make it reverse. `make analyze` will flag it if the
+    # item-total correlation disagrees with this keying; that is the check.
+    reverse_when:
+      question_id_in: ["53774847"]
+
+  - key: triangulation
+    label: "کشیده‌شدن نوجوان به میان تعارض والدین"
+    traits: [triangulation]
+    match:
+      question_id_in:
+        - "53774848"   # از من می‌خواهند طرف یکی را بگیرم.
+        - "53774849"   # مشکلاتشان را پیش من مطرح می‌کنند و انتظار قضاوت دارند.
+        - "53774851"   # خودم برای آشتی دادن آن‌ها دخالت می‌کنم.
+        - "53774852"   # یکی از والدین از من می‌خواهد علیه والد دیگر صحبت کنم.
+    # Every item runs the same way: agreeing means more triangulation. Stated
+    # explicitly, because an empty list is rejected as a probable typo.
+    reverse_when: {never: true}
+
+  # --- سبک‌های دلبستگی (RAAS-style), 15 items in two facets -------------------
+
+  - key: attachment_avoidance
+    label: "اجتناب در دلبستگی — دشواری در نزدیک‌شدن و اعتمادکردن به دیگران"
+    traits: [attachment_avoidance]
+    match:
+      question_id_in:
+        - "53774862"   # برايم مشکل است به ديگران دلبسته شوم.
+        - "53774863"   # برايم مشکل است به ديگران اعتماد کنم.
+        - "53774865"   # از اينکه به ديگران نزديک شوم، احساس ناراحتی می کنم.
+        - "53774867"   # از اينکه ديگران زياد نزديکم شوند، احساس ناراحتی می کنم.
+        - "53774868"   # وقتی نياز دارم…، آنها قابل دسترس نيستند.
+        - "53774869"   # از اينکه به ديگران دلبسته شوم، خوشحال می شوم.          [reverse]
+        - "53774871"   # وقتی نياز دارم…، در دسترسم هستند.                       [reverse]
+        - "53774873"   # برايم راحت است با ديگران صميمی و نزديک شوم.            [reverse]
+        - "53774875"   # از اينکه ديگران به من دلبسته شوند، خوشحال می شوم.      [reverse]
+        - "53774876"   # مطمئن نيستم بتوانم به ديگران دل ببندم.
+    # The four securely-worded items. RAAS keys these against avoidance, so
+    # endorsing them means a LOWER level of the trait.
+    reverse_when:
+      question_id_in: ["53774869", "53774871", "53774873", "53774875"]
+
+  - key: attachment_anxiety
+    label: "اضطراب در دلبستگی — نگرانی از طردشدن و دوست‌داشته‌نشدن"
+    traits: [attachment_anxiety]
+    match:
+      question_id_in:
+        - "53774872"   # از اينکه توسط ديگران طرد شوم، نگران نيستم.             [reverse]
+        - "53774877"   # از اينکه اعضای خانواده… مرا دوست ندارند، نگرانم.
+        - "53774879"   # دوست دارم رابطه صميمی داشته باشم، ولی ديگران تمايل ندارند.
+        - "53774880"   # از اينکه… تمايل ندارند درکنارم باشند، نگرانم.
+        - "53774882"   # تمايل دارم با فرد ديگری پيوند يابم.
+    # The one item stated in the negative («نگران نيستم»).
+    reverse_when:
+      question_id_in: ["53774872"]
+
+  # --- نگرش به علل بزهکاری نوجوانان, 19 items in five facets ------------------
+  #
+  # This scale asks what the respondent BELIEVES causes delinquency in other
+  # teenagers. It is an attitude measure, not a self-report of offending, and
+  # nothing here should be read as the persona describing her own conduct.
+  #
+  # Every item is worded so that agreeing endorses the cause, so no facet has
+  # reverse items. Each `{never: true}` below is a statement, not a placeholder.
+
+  - key: delinquency_economic
+    label: "نگرش به نقش عوامل اقتصادی در بزهکاری نوجوانان"
+    traits: [delinq_attr_environmental]
+    match:
+      question_id_in:
+        - "53775068"   # وضعیت مالی نامساعد… تاثیر مستقیم دارد
+        - "53775069"   # نداشتن قدرت مالی جهت رسیدن به آرزوها…
+        - "53775071"   # زندگی در محله های دور و فقیرنشین…
+        - "53775072"   # فقر مالی منجر به شرایط فکری و روحی نامساعد…
+    reverse_when: {never: true}
+
+  - key: delinquency_peers
+    label: "نگرش به نقش دوستان و گروه همسالان در بزهکاری نوجوانان"
+    traits: [delinq_attr_environmental]
+    match:
+      question_id_in:
+        - "53775073"   # یکی از دلایل اصلی… وجود دوستان ناباب است
+        - "53775074"   # رفت و آمد با افراد ناباب…
+        - "53775075"   # …به راحتی دوستان خود را آلوده اعمال خود سازند
+        - "53775076"   # تاثیر دوستان بیشتر از تاثیر خانواده است
+    reverse_when: {never: true}
+
+  - key: delinquency_religiosity
+    label: "نگرش به نقش پایبندی مذهبی و اخلاقی خانواده در بزهکاری نوجوانان"
+    traits: [delinq_attr_family]
+    match:
+      question_id_in:
+        - "53775077"   # …تحت تاثیر میزان پایبندی مذهبی خانواده…
+        - "53775078"   # بیشتر نوجوانان بزهکار از خانواده های غیرمذهبی هستند
+        - "53775080"   # الگوبرداری از والدین… رابطه مستقیم با پایبندی آن‌ها
+    reverse_when: {never: true}
+
+  - key: delinquency_leisure
+    label: "نگرش به نقش نحوه گذران اوقات فراغت در بزهکاری نوجوانان"
+    traits: [delinq_attr_family]
+    match:
+      question_id_in:
+        - "53775081"   # …نحوه گذران اوقات فراغت آنهاست
+        - "53775083"   # تفریحات سالم… نوجوانان را در امان خواهد داشت
+        - "53775084"   # …تفریحات ناسالم و عدم توجه والدین به آن
+    reverse_when: {never: true}
+
+  - key: delinquency_family
+    label: "نگرش به نقش ساختار و کارکرد خانواده در بزهکاری نوجوانان"
+    traits: [delinq_attr_family]
+    match:
+      question_id_in:
+        - "53775085"   # شخصیت اخلاقی و اجتماعی والای اعضای خانواده…
+        - "53775086"   # فرزندان طلاق بیشتر در زمره نوجوانان بزهکار…
+        - "53775087"   # اوضاع خانوادگی نامساعد… حمایت خانوادگی را کاهش داده…
+        - "53775088"   # داشتن شغل مناسب والدین…
+        - "53775089"   # نحوه برخورد والدین با فرزندان…
+    reverse_when: {never: true}
+
+  # --- شادکامی (Oxford Happiness Inventory), 29 items ------------------------
+  #
+  # REVIEW: all five facets below carry the SAME trait, `happiness`. They are
+  # split by manifest content so that `chunk_by: construct` hands the model
+  # 3–8 related items at a time instead of one 29-item wall, and so that a
+  # failed chunk is retried narrowly — they are NOT a claim that the Persian
+  # OHI has this factor structure. If you want the published five-factor
+  # solution, re-key these blocks; if you want a single total score, merge
+  # them. Neither change touches the latent model, because the trait is one.
+  #
+  # Every item is worded positively — endorsing it means MORE happiness — so no
+  # facet has reverse items. Each `{never: true}` is a statement, not a
+  # placeholder.
+
+  - key: happiness_life_satisfaction
+    label: "رضایت از زندگی و احساس معنا"
+    traits: [happiness]
+    match:
+      question_id_in:
+        - "53774777"   # احساس اطمینان دارم که آینده سرشار از امید و تحقق است.
+        - "53774778"   # من در مجموع از همه چیز راضی هستم.
+        - "53774780"   # احساس می کنم زندگی سرشار از پاداش است.
+        - "53774789"   # کل دنیا به نظرم زیباست.
+        - "53774793"   # تمام رویداد های گذشته به نظر می آید فوق العاده شاد بودند.
+        - "53774795"   # هر چیزی را می خواستم انجام دادم.
+        - "53774799"   # زندگی من در مجموع هدفدار و معنی دار است.
+        - "53774801"   # من فکر می کنم دنیا یک مکان فوق العاده است.
+    reverse_when: {never: true}
+
+  - key: happiness_positive_affect
+    label: "خلق مثبت و نشاط"
+    traits: [happiness]
+    match:
+      question_id_in:
+        - "53774776"   # من بی نهایت شاد هستم.
+        - "53774781"   # از آنچه هستم، شادمانم.
+        - "53774783"   # من به زندگی عشق می ورزم.
+        - "53774791"   # احساس می کنم در اوج دنیا قرار دارم.
+        - "53774794"   # من همواره در احساس نشاط به سر می برم.
+        - "53774802"   # من همیشه می خندم.
+        - "53774804"   # هر چیزی مرا شگفت زده می کند.
+    reverse_when: {never: true}
+
+  - key: happiness_self_esteem
+    label: "حرمت خود و احساس کارآمدی و کنترل"
+    traits: [happiness]
+    match:
+      question_id_in:
+        - "53774779"   # احساس می کنم که تمام ابعاد زندگی تحت کنترل من قرار دارد.
+        - "53774785"   # هرنوع تصمیمی را می توانم به راحتی بگیرم.
+        - "53774786"   # احساس می کنم قادر به انجام هر کاری هستم.
+        - "53774796"   # وقت من طوری تنظیم شده است که میتوانم هرچیزی را می خواهم انجام دهم.
+        - "53774800"   # من همیشه متعهد و در گیر هستم.
+        - "53774803"   # من فکر می کنم به طور فوق العاده ای جذاب به نظر می رسم.
+    reverse_when: {never: true}
+
+  - key: happiness_vitality
+    label: "سرزندگی و هوشیاری ذهنی"
+    traits: [happiness]
+    match:
+      question_id_in:
+        - "53774787"   # …وقتی از خواب بیدار می شوم بیش از گذشته احساس انرژی دارم.
+        - "53774788"   # احساس می کنم انرژی بی حد و مرزی دارم.
+        - "53774790"   # من هرگز تا این حد از نظر فکری و ذهنی هوشیار نبودم…
+    reverse_when: {never: true}
+
+  - key: happiness_social
+    label: "پیوند اجتماعی مثبت و اثرگذاری بر دیگران"
+    traits: [happiness]
+    match:
+      question_id_in:
+        - "53774782"   # من همیشه یک اثر خوب روی رویداد ها دارم.
+        - "53774784"   # من شدیدا به سایرین علاقه مندم.
+        - "53774792"   # من همه را دوست دارم و به همه عشق می ورزم.
+        - "53774797"   # من همیشه ارتباط خوبی با سایرین دارم.
+        - "53774798"   # همیشه یک اثر نشاط آفرین بر دیگران می گذارم.
+    reverse_when: {never: true}
+
+# -----------------------------------------------------------------------------
+# STATIC ANSWERS — taken from the persona record, never from the LLM.
+# -----------------------------------------------------------------------------
+static_answers:
+  - name: age
+    match: {question_id_in: ["53774700"]}   # سن
+    value: "{{ persona.demographics.age_option }}"
+
+# The four section headings («ملاحظات اخلاقی پژوهش», «بزهکاری», «سبک های
+# دلبستگی», «تعارض والدین») own question ids but no answerable field, and the
+# provider drops them during extraction — they never reach this file. Nothing
+# on this form needs skipping.
+skip: []
+
+# -----------------------------------------------------------------------------
+# 3. ANSWERING POLICY
+# -----------------------------------------------------------------------------
+answering:
+  chunk_by: construct
+  shuffle_within_chunk: true
+  temperature: {min: 0.55, max: 0.85}
+
+  normalization:
+    unicode: NFKC
+    fold_arabic_to_persian: true      # ي→ی ، ك→ک — the دلبستگی items use Arabic yeh
+    zwnj: strip
+    strip_trailing: ".,؛،۔"
+
+  # 86 comfortably absorbs the one paraphrase this form invites: a model that
+  # writes «کاملا مخالفم» for the tanwin-carrying «کاملاً مخالفم» scores ~96
+  # against it and ~74 against «مخالفم», so the right end of the scale wins.
+  fuzzy: {algorithm: ratio, min_score: 86}
+
+  completeness:
+    # 1.0, not the 0.95 default: all 93 psychometric items are marked required
+    # on the form («*» in the item label), and a set accepted with blanks here
+    # stalls in phase 4 on an empty radio group.
+    min_ratio: 1.0
+    denominator: answerable
+    max_retries: 2
+    retry_scope: failed_constructs_only
+
+  careless:
+    enabled: true
+    anchor_stickiness: 0.70
+    drift: [-1, 1]
+    apply_static_answers: true
+
+  reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
+
+response_style_nudges:
+  rules:
+    - {when: "acquiescence > 0.30",      text: "در گویه‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های موافق/بالاتر داری."}
+    - {when: "acquiescence < -0.30",     text: "در گویه‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های مخالف/پایین‌تر داری."}
+    - {when: "extreme_response > 0.30",  text: "وقتی گزینه‌ای واقعاً با حال‌وروزت می‌خواند، راحت از گزینه‌ی انتهای طیف (مثل «کاملاً موافقم» یا «تقريباً هميشه») استفاده می‌کنی."}
+    - {when: "extreme_response < -0.30", text: "معمولاً گزینه‌های ملایم و میانی را به گزینه‌های انتهای طیف ترجیح می‌دهی."}
+  default: "سبک پاسخ‌دهی‌ات معمولی و متعادل است."
+
+# -----------------------------------------------------------------------------
+# 4. ANALYSIS
+# -----------------------------------------------------------------------------
+analysis:
+  reverse_keys_from: config
+  warn_on_sign_disagreement: true
+  response_style_min_scale_points: 3
+  straightlining: {scope: within_construct, sd_threshold: 0.5}
+  sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
+  min_items_for_alpha: 3

@@ -1,0 +1,295 @@
+# =============================================================================
+# PersonaBot survey spec — live Porsline form (sexual satisfaction + sexual
+# communication battery, Persian, 51 questions).
+#
+# STATUS: DRAFT — construct membership below is a PROPOSAL derived by reading
+# all 39 psychometric item texts. Items needing your judgement are marked
+# `# REVIEW:`. Nothing here is inferred by code; it is a domain decision.
+#
+# This file replaces, for this form: core/instrument.py (entirely), the
+# constants in core/trait_sampler.py, and the hard-coded question-ID table in
+# prompts/answer_generation_prompt.json.
+# =============================================================================
+version: 2
+id: sexual_intimacy_fa
+locale: fa
+
+# Migrated from the 2.x fork `PersonaBot-new` (its .env and Makefile).
+form:
+  provider: porsline
+  url: null   # the live form's URL was not recorded in any fork
+  max_pages: 400
+# -----------------------------------------------------------------------------
+# 1. POPULATION
+# -----------------------------------------------------------------------------
+# NOTE: the legacy 6-dimension model was built for a dyadic-adjustment battery
+# that this form is not. The 5 dimensions below map 1:1 onto the 5 constructs
+# actually measured here. Loadings are carried over from the legacy model where
+# the construct corresponds (satisfaction, partner responsiveness, the two
+# attachment poles) and sexual_communication is newly specified.
+#
+# Factor structure preserved from the legacy model (verified sound in the audit):
+#   R   = relationship security / positive bond
+#   AVO = attachment-avoidance proneness
+#   AX  = attachment-anxiety proneness
+# Constraint enforced by the loader: sum of squared loadings < 1 per dimension.
+population:
+  seed: null
+
+  latent_model:
+    common_factors: [R, AVO, AX]
+    dimensions:
+      sexual_satisfaction:
+        loadings: {R: 0.75, AVO: -0.30, AX: -0.15}   # was marital_satisfaction
+        label: "رضایت جنسی (لذت کلی، رضایت از دفعات، نبود درد و دلزدگی)"
+      partner_responsiveness:
+        loadings: {R: 0.60, AVO: -0.20, AX: -0.30}   # unchanged
+        label: "پاسخگویی جنسی همسر (اهمیت‌دادن به لذت من، نوازش، توجه)"
+      sexual_communication:
+        loadings: {R: 0.55, AVO: -0.35, AX: -0.10}   # NEW — see note below
+        label: "گفتگوی جنسی (راحتی در بیان خواسته‌ها و ترجیحات جنسی)"
+      attachment_avoidance:
+        loadings: {R: -0.30, AVO: 0.70, AX: 0.05}    # unchanged
+        label: "اجتناب جنسی (اجبار، بی‌میلی، فاصله عاطفی در رابطه)"
+      attachment_anxiety:
+        loadings: {R: -0.15, AVO: 0.05, AX: 0.75}    # unchanged
+        label: "اضطراب جنسی (ترس از خیانت، نگرانی از متوجه‌شدن دیگران)"
+    # REVIEW: sexual_communication loadings are my proposal, not carried over.
+    # Rationale: disclosure correlates positively with bond (R) and negatively
+    # with avoidance (AVO) more strongly than with anxiety. Implied correlations
+    # the loader will print for you to sanity-check:
+    #   r(satisfaction, communication)   = +0.53
+    #   r(communication, avoidance)      = -0.41
+    #   r(communication, responsiveness) = +0.43
+
+  bands:
+    cuts:   [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5]
+    labels: ["خیلی پایین", "پایین", "کمی پایین", "متوسط", "کمی بالا", "بالا", "خیلی بالا"]
+
+  response_style:
+    acquiescence:     {dist: normal, mu: 0.0, sigma: 0.40}
+    extreme_response: {dist: normal, mu: 0.0, sigma: 0.40}
+    careless:         {dist: bernoulli, p: 0.04}
+
+  # --- demographics -----------------------------------------------------------
+  # REVIEW: the age frame is the ONLY place a population is defined. The form
+  # asks menopause age and duration, so the frame must be post-menopausal for
+  # those answers to be coherent. 40–65 proposed; change these two numbers and
+  # everything downstream follows.
+  demographics:
+    - name: age
+      dist: uniform_int
+      low: 40
+      high: 65
+
+    # Matches the form's own 2-option question (39020974), so the static answer
+    # is guaranteed to be a literal option string.
+    - name: occupation
+      dist: categorical
+      choices: [["خانه دار", 0.62], ["شاغل", 0.38]]
+
+    # Matches 39021195 exactly.
+    - name: education_level
+      dist: conditional
+      cases:
+        - when: "age >= 55"
+          dist: categorical
+          choices: [["زیر دیپلم", 0.45], ["دیپلم", 0.38], ["دانشگاهی", 0.17]]
+        - default: true
+          dist: categorical
+          choices: [["زیر دیپلم", 0.22], ["دیپلم", 0.40], ["دانشگاهی", 0.38]]
+
+    # Matches 39021236 exactly.
+    - name: income_adequacy
+      dist: categorical
+      choices: [["عدم کفایت", 0.30], ["نسبتا کافی", 0.45], ["کافی", 0.25]]
+
+    - name: marriage_age
+      dist: normal
+      mu: 21
+      sigma: 3.2
+      round: int
+      clip: [15, "min(age - 1, 32)"]
+      on_out_of_range: resample        # fixes audit A8 (boundary pile-up)
+      persist: false
+
+    - {name: years_married, dist: derived, expr: "max(1, age - marriage_age)"}
+
+    - name: children_count
+      dist: categorical
+      choices: [[0, 0.06], [1, 0.18], [2, 0.36], [3, 0.24], [4, 0.11], [5, 0.05]]
+
+  # --- fields the LLM must NOT invent -----------------------------------------
+  # These feed `static_answers` below and are what let us delete the hard-coded
+  # question-ID table from the answer prompt entirely.
+  derived_fields:
+    - {name: spouse_age, dist: derived, expr: "age + randint(2, 8)"}
+
+    # Menopause age must be < current age and >= 1 year ago (form requires it).
+    - name: menopause_age
+      dist: normal
+      mu: 49
+      sigma: 3.0
+      round: int
+      clip: [38, "age - 1"]
+      on_out_of_range: resample
+    - {name: menopause_duration_years, dist: derived, expr: "max(1, age - menopause_age)"}
+
+    - {name: weight_kg, dist: normal, mu: 72, sigma: 10, round: int, clip: [45, 115]}
+    - {name: height_cm, dist: normal, mu: 160, sigma: 6,  round: int, clip: [145, 180]}
+
+# -----------------------------------------------------------------------------
+# 2. SCHEMA INTERPRETATION
+# -----------------------------------------------------------------------------
+# Only two psychometric option signatures exist across 39 items, so scales carry
+# the response format and CONSTRUCTS are assigned by explicit question id.
+# This is why `question_id_in` is a first-class matcher leaf.
+scales:
+  - name: freq5                       # هرگز → همیشه   (27 items)
+    match: {options_equal: ["هرگز", "به ندرت", "گاهی", "اکثرا", "همیشه"]}
+    coding: low_first                 # index 0 = هرگز = 1  ✓ low→high
+  - name: amount5                     # بسیار کم → بسیار زیاد  (12 items)
+    match: {options_equal: ["بسیار کم", "کم", "متوسط", "زیاد", "بسیار زیاد"]}
+    coding: low_first
+  - name: education3
+    match: {options_equal: ["زیر دیپلم", "دیپلم", "دانشگاهی"]}
+    coding: low_first
+  - name: income3
+    match: {options_equal: ["عدم کفایت", "نسبتا کافی", "کافی"]}
+    coding: low_first
+  - name: occupation2
+    match: {options_equal: ["خانه دار", "شاغل"]}
+    coding: low_first
+
+constructs:
+  - key: sexual_satisfaction
+    label: "رضایت جنسی"
+    traits: [sexual_satisfaction]
+    match:
+      question_id_in: ["39021295", "39021296", "39021302", "39021341", "39021359",
+                       "39021396", "39021403", "39021475", "39021487", "39021498",
+                       "39021513", "39021527", "39021588"]
+    reverse_when:
+      question_id_in: ["39021302",   # sex has become repetitive / a chore
+                       "39021359",   # life's troubles block my enjoyment
+                       "39021403",   # not reaching orgasm bothers me
+                       "39021498",   # pain blocks my enjoyment
+                       "39021513"]   # his erectile difficulty bothers me
+
+  - key: partner_responsiveness
+    label: "پاسخگویی جنسی همسر"
+    traits: [partner_responsiveness]
+    match:
+      question_id_in: ["39021353", "39021369", "39021386", "39021399", "39021449",
+                       "39021455", "39021459", "39021471", "39021482"]
+    reverse_when:
+      question_id_in: ["39021369",   # his insults/inattention block my enjoyment
+                       "39021471",   # he never initiates, I have to
+                       "39021482"]   # he demands sex at inappropriate times
+
+  - key: sexual_communication
+    label: "گفتگوی جنسی"
+    traits: [sexual_communication]
+    match:
+      any:
+        - {scale: amount5}            # all 12 Scale-B items are disclosure items
+        - {question_id_in: ["39021466"]}   # REVIEW: Scale-A item, communication content
+    reverse_when: {never: true}
+
+  - key: attachment_avoidance
+    label: "اجتناب جنسی"
+    traits: [attachment_avoidance]
+    match: {question_id_in: ["39021312", "39021323"]}
+    reverse_when: {never: true}
+
+  - key: attachment_anxiety
+    label: "اضطراب جنسی"
+    traits: [attachment_anxiety]
+    match: {question_id_in: ["39021330", "39021596"]}
+    reverse_when: {never: true}
+
+  # NO catch-all. A question reaching the end of this list is a coverage error
+  # and `validate-config` fails. This is the check that would have caught the
+  # legacy all-to-'other' collapse on day one.
+
+# -----------------------------------------------------------------------------
+# 3. STATIC ANSWERS — answered from the persona, never by the LLM
+# -----------------------------------------------------------------------------
+# Ordered, first match wins. A question matched here is excluded from every
+# construct chunk. This block replaces the literal Porsline ID table that used
+# to live in the answer prompt, and moves the arithmetic (spouse age, menopause
+# age) out of the LLM and into the sampler where it is deterministic.
+static_answers:
+  - {name: occupation, match: {question_id_in: ["39020974"]}, value: "{{ persona.demographics.occupation }}"}
+  - {name: education,  match: {question_id_in: ["39021195"]}, value: "{{ persona.demographics.education_level }}"}
+  - {name: income,     match: {question_id_in: ["39021236"]}, value: "{{ persona.demographics.income_adequacy }}"}
+
+  - {name: age,                match: {question_id_in: ["39020952"]}, value: "{{ persona.demographics.age }}"}
+  - {name: spouse_age,         match: {question_id_in: ["39020953"]}, value: "{{ persona.derived.spouse_age }}"}
+  - {name: menopause_age,      match: {question_id_in: ["39021251"]}, value: "{{ persona.derived.menopause_age }}"}
+  - {name: menopause_duration, match: {question_id_in: ["39021257"]}, value: "{{ persona.derived.menopause_duration_years }}"}
+  - {name: marriage_duration,  match: {question_id_in: ["39021262"]}, value: "{{ persona.demographics.years_married }}"}
+  - {name: weight,             match: {question_id_in: ["39021264"]}, value: "{{ persona.derived.weight_kg }}"}
+  - {name: height,             match: {question_id_in: ["39021267"]}, value: "{{ persona.derived.height_cm }}"}
+
+  # 39020853 / 44413635 are instruction prose the extractor typed as TEXT_INPUT.
+  # They still need a value for the form to submit.
+  - name: instruction_blocks
+    match: {question_id_in: ["39020853", "44413635"]}
+    value: "خواندم"
+    exclude_from_psychometrics: true
+
+skip: []
+
+# -----------------------------------------------------------------------------
+# 4. ANSWERING POLICY
+# -----------------------------------------------------------------------------
+answering:
+  chunk_by: construct
+  shuffle_within_chunk: true
+  temperature: {min: 0.55, max: 0.85}
+
+  normalization:                      # fixes audit A2
+    unicode: NFKC
+    fold_arabic_to_persian: true      # ي→ی ، ك→ک
+    zwnj: strip
+    strip_trailing: ".,؛،۔"          # includes the Persian comma «،» (U+060C)
+
+  fuzzy: {algorithm: ratio, min_score: 86}
+
+  completeness:
+    min_ratio: 0.95
+    denominator: answerable
+    max_retries: 2
+    retry_scope: failed_constructs_only
+
+  careless:
+    enabled: true
+    anchor_stickiness: 0.70
+    drift: [-1, 1]
+    apply_static_answers: true        # fixes audit A10
+
+  reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
+
+response_style_nudges:
+  rules:
+    - {when: "acquiescence > 0.30",      text: "در سؤال‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های موافق/بالاتر داری."}
+    - {when: "acquiescence < -0.30",     text: "در سؤال‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های مخالف/پایین‌تر داری."}
+    - {when: "extreme_response > 0.30",  text: "وقتی گزینه‌ای واقعاً با حال‌وروزت می‌خواند، راحت از گزینه‌ی نهاییِ طیف (مثل «همیشه» یا «بسیار زیاد») استفاده می‌کنی."}
+    - {when: "extreme_response < -0.30", text: "معمولاً گزینه‌های ملایم/میانی را به گزینه‌های نهاییِ طیف ترجیح می‌دهی."}
+  default: "سبک پاسخ‌دهی‌ات معمولی و متعادل است."
+
+# -----------------------------------------------------------------------------
+# 5. ANALYSIS
+# -----------------------------------------------------------------------------
+analysis:
+  reverse_keys_from: config           # fixes audit A3 — never auto-flip
+  warn_on_sign_disagreement: true
+  response_style_min_scale_points: 3  # fixes audit A4 — excludes the 2-option item
+  straightlining: {scope: within_construct, sd_threshold: 0.5}   # fixes A5
+  sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
+  # REVIEW: attachment_avoidance and attachment_anxiety have only 2 items each.
+  # Cronbach's alpha on 2 items is unstable and should be read as a correlation,
+  # not a reliability coefficient. The harness will warn rather than report alpha
+  # for constructs with fewer than this many items.
+  min_items_for_alpha: 3

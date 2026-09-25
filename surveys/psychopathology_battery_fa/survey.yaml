@@ -1,0 +1,525 @@
+# =============================================================================
+# PersonaBot survey spec — live Porsline form, Persian, 237 questions.
+#
+# STATUS: DRAFT. Scale identification and construct membership below are a
+# PROPOSAL derived by reading all 237 item texts. Judgement calls are marked
+# `# REVIEW:`. Nothing here is inferred by code; it is a domain decision.
+#
+# WHAT THE FORM APPEARS TO CONTAIN (10 blocks, 4 response formats):
+#   بله/خیر, 106 items  — SCID-II / SCID-5-PD screening questionnaire, in DSM
+#                          order: avoidant, dependent, obsessive-compulsive,
+#                          paranoid, schizotypal, schizoid, histrionic,
+#                          narcissistic, borderline, antisocial (conduct <15)
+#   5-point,   95 items — HSNS (10) + NPI (33) + BPNSFS frustration (12) +
+#                          NEO-FFI neuroticism (12) + a detachment/schizoid
+#                          battery (28)
+#   7-point,   16 items — ECR-style attachment: anxiety (8) + avoidance (8)
+#   4-point,   15 items — PQ-16-style psychotic-like experiences
+#   singletons, 5 items — demographics, bound in `static_answers`
+#
+# TWO ITEMS HAVE MALFORMED OPTION LISTS ON THE LIVE FORM. They are matched by
+# their own scales rather than being "corrected" — the schema records what is
+# actually on the page, and an option string the browser cannot find cannot be
+# clicked. See `scid_yesno_broken` and `agree7_typo` below.
+# =============================================================================
+version: 2
+id: psychopathology_battery_fa
+locale: fa
+
+# Migrated from the 2.x fork `PersonaBot-new` (its .env and Makefile).
+form:
+  provider: porsline
+  url: https://survey.porsline.ir/s/NhLQwXsd
+  max_pages: 400
+# -----------------------------------------------------------------------------
+# 1. POPULATION
+# -----------------------------------------------------------------------------
+# The factor model is the DSM-5 AMPD / PID-5 domain structure, which is the
+# standard higher-order account of exactly the constructs this battery measures:
+#   NA  = negative affectivity   DET = detachment      ANT = antagonism
+#   DIS = disinhibition          PSY = psychoticism    COM = compulsivity
+# One latent dimension per construct, each loading on the domains it belongs to.
+# Constraint enforced by the loader: squared loadings sum to < 1 per dimension.
+# `make validate` prints the implied correlation matrix — read it.
+population:
+  seed: null
+
+  latent_model:
+    common_factors: [NA, DET, ANT, DIS, PSY, COM]
+    dimensions:
+      # --- SCID screening blocks ---
+      pd_avoidant:
+        loadings: {NA: 0.60, DET: 0.55}
+        label: "اجتناب‌گری بین‌فردی: ترس از طرد، انتقاد و شرمساری در موقعیت‌های اجتماعی"
+      pd_dependent:
+        loadings: {NA: 0.65, DET: -0.25}
+        label: "وابستگی: نیاز به اطمینان‌خواهی و اتکا به دیگران برای تصمیم‌ها و اداره‌ی زندگی"
+      pd_obsessive_compulsive:
+        loadings: {COM: 0.75, NA: 0.25}
+        label: "وسواس‌گونگی: کمال‌گرایی، نظم‌گرایی افراطی، سرسختی و انعطاف‌ناپذیری"
+      pd_paranoid:
+        loadings: {NA: 0.45, ANT: 0.45, PSY: 0.35}
+        label: "بدگمانی: سوءظن به نیت دیگران، کینه‌ورزی و احساس تهدیدشدن"
+      pd_schizotypal:
+        loadings: {PSY: 0.70, DET: 0.35}
+        label: "اسکیزوتایپی: تجربه‌های ادراکی نامتعارف، تفکر جادویی و ارجاع به خود"
+      pd_schizoid:
+        loadings: {DET: 0.80}
+        label: "گسستگی هیجانی: بی‌علاقگی به روابط نزدیک و دامنه‌ی هیجانی محدود"
+      pd_histrionic:
+        loadings: {ANT: 0.45, NA: 0.30, DIS: 0.35}
+        label: "نمایشی‌بودن: نیاز به مرکز توجه بودن، هیجان‌نمایی و اغواگری"
+      pd_narcissistic:
+        loadings: {ANT: 0.75, NA: 0.10}
+        label: "خودشیفتگی آشکار: احساس برتری، استحقاق و بی‌اعتنایی به نیاز دیگران"
+      pd_borderline:
+        loadings: {NA: 0.65, DIS: 0.45, ANT: 0.30}
+        label: "بی‌ثباتی مرزی: نوسان هویت و خلق، تکانشگری، ترس از رهاشدگی و خشم"
+      pd_antisocial_conduct:
+        loadings: {ANT: 0.55, DIS: 0.65}
+        label: "رفتار ضداجتماعی پیش از ۱۵ سالگی: پرخاش، تخریب، فریب و قانون‌شکنی"
+
+      # --- HSNS ---
+      narcissism_vulnerable:
+        loadings: {NA: 0.55, ANT: 0.40, DET: 0.35}
+        label: "خودشیفتگی آسیب‌پذیر: حساسیت پنهان به انتقاد، خودمشغولی و رنجش خاموش"
+
+      # --- NPI, three-factor (Ackerman et al., 2011) ---
+      npi_leadership_authority:
+        loadings: {ANT: 0.45, NA: -0.30, DET: -0.30}
+        label: "رهبری و اقتدار: میل به مسئولیت‌داشتن، اتکا به خود و احساس توانمندی"
+      npi_grandiose_exhibitionism:
+        loadings: {ANT: 0.55, DIS: 0.25, DET: -0.25}
+        label: "خودنمایی بزرگ‌منشانه: جلب توجه، اهمیت ظاهر و مرکز صحنه بودن"
+      npi_entitlement_exploitativeness:
+        loadings: {ANT: 0.75, DIS: 0.25}
+        label: "استحقاق و بهره‌کشی: انتظار رفتار ویژه و استفاده‌ی ابزاری از دیگران"
+
+      # --- Basic psychological need frustration ---
+      need_frustration_autonomy:
+        loadings: {NA: 0.55, DET: 0.25}
+        label: "ناکامی خودمختاری: احساس اجبار و انجام کارهایی که انتخاب خود فرد نبوده"
+      need_frustration_relatedness:
+        loadings: {NA: 0.55, DET: 0.45}
+        label: "ناکامی تعلق: احساس طردشدگی و بی‌مهری از سوی افراد مهم زندگی"
+      need_frustration_competence:
+        loadings: {NA: 0.70, DET: 0.20}
+        label: "ناکامی شایستگی: تردید در توانایی‌ها و احساس ناکارآمدی"
+
+      # --- NEO-FFI neuroticism ---
+      neuroticism:
+        loadings: {NA: 0.85}
+        label: "روان‌رنجورخویی: نگرانی، تنش، غم و آسیب‌پذیری در برابر فشار"
+
+      # --- Detachment battery ---
+      social_withdrawal:
+        loadings: {DET: 0.80, NA: 0.30}
+        label: "کناره‌گیری اجتماعی: ترجیح تنهایی و ناراحتی در تعامل و جمع"
+      anhedonia_flat_affect:
+        loadings: {DET: 0.70, NA: 0.35}
+        label: "بی‌لذتی و کرختی هیجانی: از دست رفتن علاقه، انگیزه و واکنش هیجانی"
+      interpersonal_alienation:
+        loadings: {DET: 0.60, NA: 0.50}
+        label: "بیگانگی بین‌فردی: احساس بیرون‌ماندن از جمع و نداشتن محرم راز"
+      inner_fantasy_life:
+        loadings: {PSY: 0.55, DET: 0.40}
+        label: "زندگی درونی و خیال‌پردازی: غرق‌شدن در افکار و ترجیح دنیای ذهنی"
+
+      # --- ECR ---
+      attachment_anxiety:
+        loadings: {NA: 0.75, DET: -0.15}
+        label: "اضطراب دلبستگی: دلهره از رهاشدگی و نیاز به تأیید مداوم نزدیکان"
+      attachment_avoidance:
+        loadings: {DET: 0.75, NA: 0.20}
+        label: "اجتناب دلبستگی: ناراحتی از صمیمیت و بی‌میلی به افشای خود"
+
+      # --- PQ-style psychotic-like experiences ---
+      paranoid_ideation:
+        loadings: {PSY: 0.60, NA: 0.40, ANT: 0.25}
+        label: "افکار گزندوبدگمانی: احساس تعقیب، توطئه و نگاه‌های معنادار دیگران"
+      thought_interference:
+        loadings: {PSY: 0.80}
+        label: "تداخل در افکار: احساس کنترل‌شدن، ربوده‌شدن یا پژواک افکار"
+      hallucinations:
+        loadings: {PSY: 0.75}
+        label: "تجربه‌های ادراکی: شنیدن صداها یا دیدن چیزهایی که دیگران نمی‌بینند"
+
+  # Persian band words — these strings reach the prompt verbatim.
+  bands:
+    cuts:   [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5]
+    labels: ["خیلی پایین", "پایین", "تا حدی پایین", "متوسط",
+             "تا حدی بالا", "بالا", "خیلی بالا"]
+
+  response_style:
+    acquiescence:     {dist: normal, mu: 0.0, sigma: 0.40}
+    extreme_response: {dist: normal, mu: 0.0, sigma: 0.40}
+    careless:         {dist: bernoulli, p: 0.04}
+
+  # Every demographic on this form is a RADIO, and static answers are written
+  # straight into the answer file without fuzzy correction. So each variable is
+  # sampled as the EXACT option string the form offers — copied from the schema,
+  # not retyped. Note "31 تا 35سال" is missing a space on the live form.
+  demographics:
+    - name: gender
+      dist: categorical
+      choices: [["خانم", 0.60], ["آقا", 0.40]]
+
+    # Numeric age drives the band and marital status, then is dropped.
+    - {name: age_years, dist: uniform_int, low: 18, high: 40, persist: false}
+
+    - name: age_band
+      dist: conditional
+      cases:
+        - {when: "age_years <= 25", dist: constant, value: "18 تا 25 سال"}
+        - {when: "age_years <= 30", dist: constant, value: "26 تا 30 سال"}
+        - {when: "age_years <= 35", dist: constant, value: "31 تا 35سال"}
+        - {default: true, dist: constant, value: "36 تا 40 سال"}
+
+    # REVIEW: an online Persian convenience sample skews educated. Adjust if
+    # your recruitment frame says otherwise.
+    - name: education
+      dist: categorical
+      choices: [["دیپلم", 0.22], ["کاردانی", 0.14], ["کارشناسی", 0.40],
+                ["کارشناسی ارشد", 0.20], ["دکتری", 0.04]]
+
+    - name: marital_status
+      dist: conditional
+      cases:
+        - {when: "age_years <= 25", dist: bernoulli, p: 0.20,
+           labels: {"true": "متاهل", "false": "مجرد"}}
+        - {when: "age_years <= 30", dist: bernoulli, p: 0.45,
+           labels: {"true": "متاهل", "false": "مجرد"}}
+        - {default: true, dist: bernoulli, p: 0.70,
+           labels: {"true": "متاهل", "false": "مجرد"}}
+
+    # Trait-informed: distress raises the odds of a treatment history.
+    - name: psychiatric_history
+      dist: bernoulli
+      p: "clamp(0.05 + 0.22 * sigmoid(1.2 * z.neuroticism) + 0.18 * sigmoid(1.2 * z.pd_borderline), 0.03, 0.60)"
+      labels: {"true": "دارم", "false": "ندارم"}
+
+  # Nothing on this form asks for a computed fact (no ages, weights, durations),
+  # because every question is a radio button. Kept empty deliberately.
+  derived_fields: []
+
+# -----------------------------------------------------------------------------
+# 2. SCHEMA INTERPRETATION
+# -----------------------------------------------------------------------------
+# Constructs are matched by explicit id lists rather than by `{scale: …}`. With
+# 106 yes/no items spanning ten different disorders, a scale-based rule cannot
+# separate them, and the two malformed items below would fall through to
+# UNASSIGNED.
+scales:
+  # بله = symptom present = the HIGH end, and it sits at index 0 → high_first.
+  - name: scid_yesno
+    match: {options_equal: ["بله", "خیر"]}
+    coding: high_first
+
+  # REVIEW / FORM DEFECT: question 51533842 offers «بله» and «خانم» — the second
+  # option should read «خیر». Matched as-is so the answer can actually be
+  # clicked. Worth fixing in the Porsline editor and re-running phase 1.
+  - name: scid_yesno_broken
+    match: {options_equal: ["بله", "خانم"]}
+    coding: high_first
+
+  - name: agree5
+    match: {options_equal: ["کاملا مخالفم", "مخالفم", "نظری ندارم",
+                            "موافقم", "کاملا موافقم"]}
+    coding: low_first
+
+  - name: agree7
+    match: {options_equal: ["کاملا مخالفم", "مخالفم", "تا حدودی مخالفم", "نظری ندارم",
+                            "تا حدودی موافقم", "موافقم", "کاملا موافقم"]}
+    coding: low_first
+
+  # REVIEW / FORM DEFECT: question 51543993 has «تا حدوی موافقم» (missing ی), so
+  # it forms its own signature. Same coding as agree7.
+  - name: agree7_typo
+    match: {options_equal: ["کاملا مخالفم", "مخالفم", "تا حدودی مخالفم", "نظری ندارم",
+                            "تا حدوی موافقم", "موافقم", "کاملا موافقم"]}
+    coding: low_first
+
+  - name: freq4
+    match: {options_equal: ["هرگز", "گاهی اوقات", "اغلب", "همیشه"]}
+    coding: low_first
+
+# The five demographic singletons intentionally have no scale: they are answered
+# from the persona and carry no trait score.
+
+constructs:
+  # ===== SCID-5-PD screening questionnaire (بله/خیر) =====
+  - key: pd_avoidant
+    label: "اجتناب‌گری و ترس از طرد"
+    traits: [pd_avoidant]
+    match:
+      question_id_in: ["51532423", "51532439", "51532456", "51532477",
+                       "51532527", "51532564", "51532599"]
+
+  - key: pd_dependent
+    label: "وابستگی به دیگران"
+    traits: [pd_dependent]
+    match:
+      question_id_in: ["51532619", "51532651", "51532679", "51532694",
+                       "51532705", "51532719", "51532735", "51532755"]
+
+  - key: pd_obsessive_compulsive
+    label: "کمال‌گرایی و نظم‌گرایی وسواس‌گونه"
+    traits: [pd_obsessive_compulsive]
+    match:
+      question_id_in: ["51532805", "51532838", "51532924", "51532936", "51532952",
+                       "51533001", "51533020", "51533242", "51533273"]
+
+  - key: pd_paranoid
+    label: "بدگمانی و سوءظن"
+    traits: [pd_paranoid]
+    match:
+      question_id_in: ["51533314", "51533341", "51533357", "51533368",
+                       "51533380", "51533394", "51533415", "51533477"]
+
+  - key: pd_schizotypal
+    label: "تجربه‌های نامتعارف ادراکی و فکری"
+    traits: [pd_schizotypal]
+    # 51533842 is the item with the broken option list; it belongs here.
+    match:
+      question_id_in: ["51533537", "51533546", "51533556", "51533581", "51533598",
+                       "51533645", "51533735", "51533772", "51533803", "51533824",
+                       "51533842", "51533853", "51533883"]
+
+  - key: pd_schizoid
+    label: "بی‌علاقگی به روابط نزدیک"
+    traits: [pd_schizoid]
+    match:
+      question_id_in: ["51533960", "51533976", "51534001",
+                       "51534026", "51534051", "51534078"]
+
+  - key: pd_histrionic
+    label: "نمایشی‌بودن و جلب توجه"
+    traits: [pd_histrionic]
+    match:
+      question_id_in: ["51534094", "51534132", "51534204", "51534235",
+                       "51534285", "51534302", "51534330", "51534383"]
+
+  - key: pd_narcissistic
+    label: "احساس برتری و استحقاق"
+    traits: [pd_narcissistic]
+    match:
+      question_id_in: ["51534414", "51534426", "51534465", "51534541", "51534566",
+                       "51534579", "51534599", "51534631", "51534692", "51534713",
+                       "51534771", "51534834", "51534920", "51534950", "51534969",
+                       "51535014", "51535037"]
+
+  - key: pd_borderline
+    label: "بی‌ثباتی هیجان، هویت و رابطه"
+    traits: [pd_borderline]
+    match:
+      question_id_in: ["51535112", "51535151", "51535178", "51535196", "51535212",
+                       "51535228", "51535244", "51535260", "51535288", "51535316",
+                       "51535418", "51535435", "51535446", "51535586", "51535666"]
+
+  - key: pd_antisocial_conduct
+    label: "رفتارهای دوران نوجوانی (پیش از ۱۵ سالگی)"
+    traits: [pd_antisocial_conduct]
+    match:
+      question_id_in: ["51535894", "51535922", "51535934", "51535986", "51536043",
+                       "51536140", "51536150", "51536164", "51536199", "51536216",
+                       "51536235", "51536252", "51536270", "51536287", "51536303"]
+
+  # ===== HSNS — hypersensitive (vulnerable) narcissism =====
+  - key: narcissism_vulnerable
+    label: "حساسیت پنهان و خودمشغولی"
+    traits: [narcissism_vulnerable]
+    match:
+      question_id_in: ["51536471", "51536492", "51536523", "51536537", "51536554",
+                       "51536592", "51536609", "51536625", "51536665", "51536688"]
+
+  # ===== NPI — three-factor structure =====
+  - key: npi_leadership_authority
+    label: "رهبری، اقتدار و اتکا به خود"
+    traits: [npi_leadership_authority]
+    match:
+      question_id_in: ["51536723", "51536755", "51536796", "51536827", "51536855",
+                       "51536951", "51536977", "51537011", "51537037", "51537111",
+                       "51537165", "51537191", "51537216", "51537239"]
+
+  - key: npi_grandiose_exhibitionism
+    label: "خودنمایی و اهمیت ظاهر"
+    traits: [npi_grandiose_exhibitionism]
+    match:
+      question_id_in: ["51537260", "51537289", "51537331", "51537465", "51537498",
+                       "51537519", "51537545", "51537571", "51537616", "51537625"]
+
+  - key: npi_entitlement_exploitativeness
+    label: "احساس استحقاق و استفاده از دیگران"
+    traits: [npi_entitlement_exploitativeness]
+    match:
+      question_id_in: ["51537644", "51537681", "51537716", "51537799", "51537816",
+                       "51537871", "51537954", "51537974", "51538062"]
+
+  # ===== Basic psychological need frustration =====
+  - key: need_frustration_autonomy
+    label: "احساس اجبار و نداشتن اختیار"
+    traits: [need_frustration_autonomy]
+    match: {question_id_in: ["51538527", "51538566", "51538615", "51538747"]}
+
+  - key: need_frustration_relatedness
+    label: "احساس طردشدگی از سوی نزدیکان"
+    traits: [need_frustration_relatedness]
+    match: {question_id_in: ["51538760", "51538793", "51538821", "51538923"]}
+
+  - key: need_frustration_competence
+    label: "تردید در توانایی‌های خود"
+    traits: [need_frustration_competence]
+    match: {question_id_in: ["51538967", "51538982", "51539051", "51539193"]}
+
+  # ===== NEO-FFI neuroticism =====
+  - key: neuroticism
+    label: "نگرانی، تنش و آسیب‌پذیری هیجانی"
+    traits: [neuroticism]
+    match:
+      question_id_in: ["51539304", "51539326", "51539346", "51539391", "51539427",
+                       "51539505", "51539568", "51539639", "51539659", "51539679",
+                       "51539712", "51539739"]
+    # The four «به ندرت…» / «اصولا نگران نیستم» items: agreeing means LOWER
+    # neuroticism.
+    reverse_when:
+      question_id_in: ["51539304", "51539391", "51539568", "51539679"]
+
+  # ===== Detachment battery =====
+  - key: social_withdrawal
+    label: "کناره‌گیری و ترجیح تنهایی"
+    traits: [social_withdrawal]
+    # REVIEW: 51548992 and 51549006 («از تنهایی لذت می‌برم» / «تنهایی آرامش
+    # می‌دهد») are keyed DIRECT here — in a schizoid frame, enjoying solitude is
+    # the trait, not its opposite. Flip them into `reverse_when` if you read the
+    # scale as social *discomfort* rather than preference for solitude.
+    match:
+      question_id_in: ["51548588", "51548720", "51548741", "51548829", "51548957",
+                       "51548979", "51548984", "51548992", "51549006", "51549016",
+                       "51549026", "51549061", "51549276", "51549430"]
+
+  - key: anhedonia_flat_affect
+    label: "بی‌لذتی و کرختی هیجانی"
+    traits: [anhedonia_flat_affect]
+    match:
+      question_id_in: ["51548900", "51548909", "51548912", "51548914", "51548974"]
+
+  - key: interpersonal_alienation
+    label: "احساس بیگانگی و بیرون‌ماندن از جمع"
+    traits: [interpersonal_alienation]
+    match:
+      question_id_in: ["51549078", "51549088", "51549109", "51549221", "51549394"]
+
+  - key: inner_fantasy_life
+    label: "زندگی درونی و خیال‌پردازی"
+    traits: [inner_fantasy_life]
+    match: {question_id_in: ["51549458", "51549492", "51549513", "51549578"]}
+
+  # ===== ECR attachment =====
+  - key: attachment_anxiety
+    label: "اضطراب دلبستگی"
+    traits: [attachment_anxiety]
+    match:
+      question_id_in: ["51540017", "51540131", "51540511", "51540671",
+                       "51542683", "51542946", "51543016", "51543093"]
+
+  - key: attachment_avoidance
+    label: "اجتناب از صمیمیت"
+    traits: [attachment_avoidance]
+    # 51543993 is the item with the typo'd 7-point option list.
+    match:
+      question_id_in: ["51543119", "51543156", "51543486", "51543544",
+                       "51543848", "51543867", "51543993", "51544018"]
+    # Items about willingly seeking help and disclosing to intimates: agreeing
+    # means LOWER avoidance.
+    reverse_when:
+      question_id_in: ["51543848", "51543867", "51543993", "51544018"]
+
+  # ===== PQ-style psychotic-like experiences =====
+  - key: paranoid_ideation
+    label: "احساس تعقیب و بدگمانی در ماه‌های اخیر"
+    traits: [paranoid_ideation]
+    match:
+      question_id_in: ["51848214", "51849769", "51875784", "51875923", "51875997"]
+
+  - key: thought_interference
+    label: "تداخل و کنترل افکار در ماه‌های اخیر"
+    traits: [thought_interference]
+    match:
+      question_id_in: ["51876150", "51876165", "51876180",
+                       "51876198", "51876254", "51876280", "51876308"]
+
+  - key: hallucinations
+    label: "تجربه‌های ادراکی در ماه‌های اخیر"
+    traits: [hallucinations]
+    match: {question_id_in: ["51876352", "51876391", "51876427"]}
+
+# -----------------------------------------------------------------------------
+# Demographics — answered from the persona, never by the model. Each value must
+# render EXACTLY one of that radio group's option strings.
+# -----------------------------------------------------------------------------
+static_answers:
+  - {name: gender,    match: {question_id_in: ["51531905"]}, value: "{{ persona.demographics.gender }}"}
+  - {name: education, match: {question_id_in: ["51532015"]}, value: "{{ persona.demographics.education }}"}
+  - {name: age_band,  match: {question_id_in: ["51532078"]}, value: "{{ persona.demographics.age_band }}"}
+  - {name: marital,   match: {question_id_in: ["51532107"]}, value: "{{ persona.demographics.marital_status }}"}
+  - {name: psych_history, match: {question_id_in: ["51532120"]}, value: "{{ persona.demographics.psychiatric_history }}"}
+
+skip: []
+
+# -----------------------------------------------------------------------------
+# 3. ANSWERING POLICY
+# -----------------------------------------------------------------------------
+answering:
+  chunk_by: construct          # 27 constructs → 27 requests per respondent
+  shuffle_within_chunk: true
+
+  temperature: {min: 0.55, max: 0.85}
+
+  normalization:
+    unicode: NFKC
+    fold_arabic_to_persian: true
+    zwnj: strip
+    strip_trailing: ".,؛،۔"
+
+  fuzzy: {algorithm: ratio, min_score: 86}
+
+  completeness:
+    # Every question on this form is required and Porsline shows one per page,
+    # so anything short of 1.0 stalls in phase 4 on a blank field.
+    min_ratio: 1.0
+    denominator: answerable
+    max_retries: 2
+    retry_scope: failed_constructs_only
+
+  careless:
+    enabled: true
+    anchor_stickiness: 0.70
+    drift: [-1, 1]
+    apply_static_answers: true
+
+  reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
+
+response_style_nudges:
+  rules:
+    - {when: "acquiescence > 0.30",
+       text: "در گویه‌های مرزی، کمی به سمت موافقت متمایل می‌شوی."}
+    - {when: "acquiescence < -0.30",
+       text: "در گویه‌های مرزی، کمی به سمت مخالفت متمایل می‌شوی."}
+    - {when: "extreme_response > 0.30",
+       text: "وقتی گویه‌ای واقعاً با حال‌وروزت می‌خواند، بی‌تردید سرِ طیف را انتخاب می‌کنی."}
+    - {when: "extreme_response < -0.30",
+       text: "معمولاً گزینه‌های میانی را به دو سرِ طیف ترجیح می‌دهی."}
+  default: "سبک پاسخ‌دهی تو عادی و متعادل است."
+
+# -----------------------------------------------------------------------------
+# 4. ANALYSIS
+# -----------------------------------------------------------------------------
+analysis:
+  reverse_keys_from: config
+  warn_on_sign_disagreement: true
+  # 106 of the items are two-option; including them would structurally inflate
+  # the response-style indices.
+  response_style_min_scale_points: 3
+  straightlining: {scope: within_construct, sd_threshold: 0.5}
+  sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
+  min_items_for_alpha: 3

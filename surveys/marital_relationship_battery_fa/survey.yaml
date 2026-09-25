@@ -1,0 +1,468 @@
+# =============================================================================
+# PersonaBot survey spec — live Google Form, Persian couple-relationship
+# battery, 101 questions (8 answered from the persona record, 93 psychometric).
+#
+# Instrument layout as extracted on 2026-08-09:
+#   q0            consent
+#   q1..q7        demographics
+#   q8..q44   (37) coercive tactics the RESPONDENT uses    — 5-pt «مناسب بودن»
+#   q45..q56  (12) aggression the RESPONDENT PERCEIVES     — 7-pt «کم/زیاد»
+#   q57..q66  (10) marital satisfaction (ENRICH-style)     — 5-pt, agree-first
+#   q67..q83  (17) affectional bond / love                 — 7-pt «هرگز…همیشه»
+#   q84..q98  (15) communication + physical intimacy       — 5-pt, disagree-first
+#   q99..q100  (2) global happiness with relationship/partner
+#
+# STATUS: DRAFT. Construct membership is a PROPOSAL derived by reading all 93
+# item texts; lines marked `# REVIEW:` are the ones a domain expert should
+# confirm. Nothing here was inferred by code.
+#
+# Every entry id and option string below was copied programmatically out of
+# output/form_schema.json. When you edit them, copy/paste from that file rather
+# than retyping: the Persian strings carry ZWNJ (U+200C) and the Persian comma
+# «،» (U+060C), and they must match the live form byte for byte or the static
+# answers silently fall through to fuzzy matching.
+# =============================================================================
+version: 2
+id: marital_relationship_battery_fa
+locale: fa
+
+# Migrated from the 2.x fork `PersonaBot-new-fatemehf` (its .env and Makefile).
+form:
+  provider: google_forms
+  url: https://docs.google.com/forms/d/e/1FAIpQLSfsaStbxo0-HklsMGekdQzpq5PNh6cnjaHppUq9ayrA_gK-Rw/viewform
+  max_pages: 40
+# -----------------------------------------------------------------------------
+# 1. POPULATION
+# -----------------------------------------------------------------------------
+# Three common factors carry the whole battery:
+#   R = relationship security / positive bond
+#   C = own coercive-control proneness   (drives q8..q44)
+#   V = perceived partner aggression     (drives q45..q56)
+#
+# C and V are separate factors on purpose. Collapsing them would make a
+# respondent who reports using many tactics automatically report suffering many,
+# which is exactly the spurious correlation this study would be trying to test.
+# The loader prints the implied correlation matrix — read it before a real run.
+population:
+  seed: null
+
+  latent_model:
+    common_factors: [R, C, V]
+    dimensions:
+      criticism_blame:
+        loadings: {R: -0.30, C: 0.72, V: 0.20}
+        label: "انتقاد و سرزنش همسر (ایرادگرفتن از رفتار، ظاهر و خانواده‌ی او)"
+      nagging_complaining:
+        loadings: {R: -0.28, C: 0.68, V: 0.18}
+        label: "غر زدن و شکایت (بی‌توجهی، وقت‌نگذاشتن، انجام‌ندادن مسئولیت‌ها)"
+      threat_punishment:
+        loadings: {R: -0.25, C: 0.78, V: 0.22}
+        label: "تهدید و تنبیه (قهر، محدودکردن، تحقیر، تلافی‌کردن)"
+      conditional_reward:
+        loadings: {R: -0.20, C: 0.70, V: 0.18}
+        label: "پاداش و امتیاز مشروط (محبت و همراهی در ازای برآورده‌شدن خواسته)"
+      partner_withdrawal:
+        loadings: {R: -0.35, C: 0.20, V: 0.75}
+        label: "دریغ‌کردن محبت از سوی همسر (بی‌اعتنایی و سکوت در زمان دلخوری)"
+      partner_sabotage:
+        loadings: {R: -0.25, C: 0.22, V: 0.78}
+        label: "آسیب‌زدن همسر به اعتبار من نزد دیگران (فاش‌کردن و تحقیر اجتماعی)"
+      marital_satisfaction:
+        loadings: {R: 0.82, C: -0.25, V: -0.30}
+        label: "رضایت زناشویی (رضایت از نقش‌ها، تصمیم‌گیری، اقتصاد و اوقات فراغت)"
+      marital_love:
+        loadings: {R: 0.80, C: -0.22, V: -0.28}
+        label: "پیوند عاطفی و دوست‌داشتن (صمیمیت، احترام متقابل، با هم بودن)"
+      couple_communication:
+        loadings: {R: 0.75, C: -0.25, V: -0.25}
+        label: "ارتباط و گفت‌وگوی زوجی (صراحت، درک متقابل، حل تعارض)"
+      sexual_intimacy:
+        loadings: {R: 0.68, C: -0.18, V: -0.22}
+        label: "صمیمیت جسمانی و جنسی (راحتی در گفت‌وگو و ابراز محبت جسمی)"
+      global_happiness:
+        loadings: {R: 0.85, C: -0.20, V: -0.25}
+        label: "خوشحالی کلی از رابطه و از همسر"
+
+  bands:
+    cuts:   [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5]
+    labels: ["خیلی پایین", "پایین", "کمی پایین", "متوسط", "کمی بالا", "بالا", "خیلی بالا"]
+
+  response_style:
+    acquiescence:     {dist: normal, mu: 0.0, sigma: 0.40}
+    extreme_response: {dist: normal, mu: 0.0, sigma: 0.40}
+    careless:         {dist: bernoulli, p: 0.04}
+
+  # --- demographics -----------------------------------------------------------
+  # Every categorical below draws LITERAL option strings from the live form, so
+  # the static answers in section 3 are guaranteed to match an option exactly and
+  # never go through fuzzy matching.
+  demographics:
+    # REVIEW: the age frame is the only place the population is really defined.
+    # 22–58 assumes married / stably partnered adults.
+    - name: age
+      dist: uniform_int
+      low: 22
+      high: 58
+
+    - name: gender
+      dist: categorical
+      choices: [["زن", 0.62], ["مرد", 0.38]]
+
+    - name: relationship_status
+      dist: categorical
+      choices: [["متأهل", 0.88], ["در رابطه عاطفی پایدار", 0.12]]
+
+    # Numeric first, bucket second: the form only offers ranges, but children
+    # count and the duration bucket must agree, which needs the number.
+    - name: relationship_years
+      dist: normal
+      mu: "clamp((age - 24) * 0.8, 1, 24)"
+      sigma: 4.5
+      round: int
+      clip: [0, "max(0, age - 18)"]
+      on_out_of_range: resample
+      persist: false
+
+    - name: relationship_duration
+      dist: conditional
+      cases:
+        - {when: "relationship_years < 1",  dist: constant, value: "کمتر از ۱ سال"}
+        - {when: "relationship_years < 3",  dist: constant, value: "۱ تا ۳ سال"}
+        - {when: "relationship_years < 5",  dist: constant, value: "۳ تا ۵ سال"}
+        - {when: "relationship_years < 10", dist: constant, value: "۵ تا ۱۰ سال"}
+        - {when: "relationship_years < 15", dist: constant, value: "۱۰ تا ۱۵ سال"}
+        - {default: true,                   dist: constant, value: "بیشتر از ۱۵ سال"}
+
+    - name: education_level
+      dist: categorical
+      choices:
+        - ["زیر دیپلم", 0.08]
+        - ["دیپلم", 0.24]
+        - ["کاردانی", 0.14]
+        - ["کارشناسی", 0.34]
+        - ["کارشناسی ارشد", 0.16]
+        - ["دکتری", 0.04]
+
+    # Employment depends on gender: «خانه‌دار» is overwhelmingly reported by
+    # women in Iranian samples, and a flat frame would make ~a third of the men
+    # homemakers, which reads as obviously synthetic in the persona prose.
+    - name: employment
+      dist: conditional
+      cases:
+        - when: "gender == 'زن'"
+          dist: categorical
+          choices:
+            - ["شاغل تمام‌وقت", 0.24]
+            - ["شاغل پاره‌وقت", 0.12]
+            - ["دانشجو", 0.12]
+            - ["خانه‌دار", 0.34]
+            - ["بیکار", 0.13]
+            - ["بازنشسته", 0.05]
+        - default: true
+          dist: categorical
+          choices:
+            - ["شاغل تمام‌وقت", 0.58]
+            - ["شاغل پاره‌وقت", 0.12]
+            - ["دانشجو", 0.10]
+            - ["خانه‌دار", 0.01]
+            - ["بیکار", 0.12]
+            - ["بازنشسته", 0.07]
+
+    # Conditioned on relationship_years so "married 6 months, three children"
+    # cannot be drawn.
+    - name: children
+      dist: conditional
+      cases:
+        - when: "relationship_years < 2"
+          dist: categorical
+          choices: [["خیر", 0.76], ["بله، یک فرزند", 0.22],
+                    ["بله، دو فرزند", 0.02], ["بله، سه فرزند یا بیشتر", 0.00]]
+        - when: "relationship_years < 6"
+          dist: categorical
+          choices: [["خیر", 0.34], ["بله، یک فرزند", 0.45],
+                    ["بله، دو فرزند", 0.19], ["بله، سه فرزند یا بیشتر", 0.02]]
+        - when: "relationship_years < 12"
+          dist: categorical
+          choices: [["خیر", 0.15], ["بله، یک فرزند", 0.37],
+                    ["بله، دو فرزند", 0.37], ["بله، سه فرزند یا بیشتر", 0.11]]
+        - default: true
+          dist: categorical
+          choices: [["خیر", 0.09], ["بله، یک فرزند", 0.27],
+                    ["بله، دو فرزند", 0.42], ["بله، سه فرزند یا بیشتر", 0.22]]
+
+  # Consent is a fact of the record, not something the LLM gets to decide: a
+  # persona that declines would produce an unusable (and unsubmittable) form.
+  derived_fields:
+    - {name: consent, dist: constant, value: "بله، رضایت دارم و مایل به شرکت در پژوهش هستم"}
+
+# -----------------------------------------------------------------------------
+# 2. SCHEMA INTERPRETATION
+# -----------------------------------------------------------------------------
+# `coding` is per scale because this form mixes directions: q57..q66 runs
+# agree -> disagree while q84..q98 runs disagree -> agree, with almost the same
+# words. Getting this wrong silently reverses ten items.
+scales:
+  - name: appropriate5                # اصلاً مناسب نیست → کاملاً مناسب است (37 items)
+    match:
+      options_equal: ["اصلاً مناسب نیست", "کمی مناسب است", "تا حدی مناسب است",
+                      "زیاد مناسب است", "کاملاً مناسب است"]
+    coding: low_first
+
+  # ⚠ REVIEW — THE OPTION ORDER ON THE LIVE FORM IS NOT MONOTONIC.
+  # It reads: خیلی کم ، نسبتاً کم ، کم ، متوسط ، زیاد ، نسبتاً زیاد ، خیلی زیاد
+  # so «نسبتاً کم» sits below «کم» and «زیاد» sits below «نسبتاً زیاد».
+  # `low_first` scores by position, so items 2/3 and 5/6 are scored swapped
+  # relative to their meaning. The ends are still correct. Either fix the option
+  # order in the Google Form (preferred) or treat these 12 items as ordinal-only.
+  - name: amount7                     # 12 items, q45..q56
+    match:
+      options_equal: ["خیلی کم", "نسبتاً کم", "کم",
+                      "متوسط", "زیاد", "نسبتاً زیاد",
+                      "خیلی زیاد"]
+    coding: low_first
+
+  - name: agreement5_desc             # کاملاً موافقم → کاملاً مخالفم (10 items)
+    match:
+      options_equal: ["کاملاً موافقم", "موافقم", "نه موافق نه مخالف",
+                      "مخالفم", "کاملاً مخالفم"]
+    coding: high_first                # index 0 is the HIGH end
+
+  - name: frequency7                  # هرگز → همیشه (17 items)
+    match:
+      options_equal: ["هرگز", "به ندرت", "گاهی",
+                      "اغلب", "اکثراً", "تقریباً همیشه",
+                      "همیشه"]
+    coding: low_first
+
+  - name: agreement5_asc              # کاملاً مخالفم → کاملاً موافقم (15 items)
+    match:
+      options_equal: ["کاملاً مخالفم", "مخالفم", "نه موافقم نه مخالف",
+                      "موافقم", "کاملاً موافقم"]
+    coding: low_first
+
+  - name: happiness5                  # خیلی ناخوشحال → خیلی خوشحال (2 items)
+    match:
+      options_equal: ["خیلی ناخوشحال", "ناخوشحال", "نه خوشحال نه ناخوشحال",
+                      "خوشحال", "خیلی خوشحال"]
+    coding: low_first
+
+  # Demographic response formats. Declared so `inspect-schema` and the analysis
+  # harness can tell them apart from the psychometric ones; no construct uses them.
+  - name: consent2
+    match: {options_equal: ["بله، رضایت دارم و مایل به شرکت در پژوهش هستم", "خیر، رضایت ندارم"]}
+    coding: high_first
+  - name: gender2
+    match: {options_equal: ["زن", "مرد"]}
+    coding: low_first
+  - name: relationship_status2
+    match: {options_equal: ["متأهل", "در رابطه عاطفی پایدار"]}
+    coding: low_first
+  - name: duration6
+    match:
+      options_equal: ["کمتر از ۱ سال", "۱ تا ۳ سال", "۳ تا ۵ سال",
+                      "۵ تا ۱۰ سال", "۱۰ تا ۱۵ سال", "بیشتر از ۱۵ سال"]
+    coding: low_first
+  - name: education6
+    match:
+      options_equal: ["زیر دیپلم", "دیپلم", "کاردانی",
+                      "کارشناسی", "کارشناسی ارشد", "دکتری"]
+    coding: low_first
+  - name: employment6
+    match:
+      options_equal: ["شاغل تمام‌وقت", "شاغل پاره‌وقت", "دانشجو",
+                      "خانه‌دار", "بیکار", "بازنشسته"]
+    coding: low_first
+  - name: children4
+    match:
+      options_equal: ["خیر", "بله، یک فرزند", "بله، دو فرزند",
+                      "بله، سه فرزند یا بیشتر"]
+    coding: low_first
+
+# All 37 tactic items share one option set, so the four subscales can only be
+# separated by explicit id. Same for the two 6-item halves of the amount7 block
+# and the two halves of the agreement5_asc block.
+constructs:
+  - key: criticism_blame
+    label: "انتقاد و سرزنش همسر"
+    traits: [criticism_blame]
+    match:
+      question_id_in: ["entry.1389278440", "entry.1431458257", "entry.1314817443",
+                      "entry.1060760414", "entry.298616210", "entry.634015407",
+                      "entry.1119912103", "entry.1530945233", "entry.670410115",
+                      "entry.606360131", "entry.1269817650", "entry.625442902"]
+    reverse_when: {never: true}     # every tactic item is worded in the same direction
+
+  - key: nagging_complaining
+    label: "غر زدن و شکایت از همسر"
+    traits: [nagging_complaining]
+    match:
+      question_id_in: ["entry.126624410", "entry.52299734", "entry.1418777664",
+                      "entry.565767223", "entry.1199528488", "entry.468911105",
+                      "entry.2034118983", "entry.1700852352", "entry.1938650226"]
+    reverse_when: {never: true}
+
+  - key: threat_punishment
+    label: "تهدید و تنبیه همسر"
+    traits: [threat_punishment]
+    match:
+      question_id_in: ["entry.1783945090", "entry.976420977", "entry.570214908",
+                      "entry.1503694317", "entry.1883697227", "entry.1824072965",
+                      "entry.1102274894", "entry.674699431", "entry.1321036247",
+                      "entry.906629952", "entry.1110384768"]
+    reverse_when: {never: true}
+
+  # REVIEW: the split between threat_punishment and conditional_reward is the
+  # least obvious one in this file. Punishment items withdraw something the
+  # partner has; reward items offer something contingent on compliance. q44
+  # («تا خواسته‌ام را برآورده نکند آشتی نمی‌کنم») sits on the boundary and is
+  # filed here because the contingency, not the withdrawal, is its point.
+  - key: conditional_reward
+    label: "پاداش و امتیاز مشروط"
+    traits: [conditional_reward]
+    match:
+      question_id_in: ["entry.838529944", "entry.1283074870", "entry.1539898072",
+                      "entry.1141559443", "entry.1194222635"]
+    reverse_when: {never: true}
+
+  - key: partner_withdrawal
+    label: "دریغ‌کردن محبت و بی‌اعتنایی از سوی همسر"
+    traits: [partner_withdrawal]
+    match:
+      question_id_in: ["entry.234673934", "entry.1743794803", "entry.1866692444",
+                      "entry.99232005", "entry.472134526", "entry.1684212899"]
+    reverse_when: {never: true}
+
+  - key: partner_sabotage
+    label: "آسیب‌زدن همسر به اعتبار من نزد دیگران"
+    traits: [partner_sabotage]
+    match:
+      question_id_in: ["entry.1247250624", "entry.945150429", "entry.1900949174",
+                      "entry.1888550004", "entry.1082106323", "entry.1064347267"]
+    reverse_when: {never: true}
+
+  # The only construct with genuinely mixed item wording. Five items are
+  # complaints ("I am NOT satisfied with…"); their high end means LOW
+  # satisfaction. This list — not the observed correlation sign — is what the
+  # analysis harness reverse-keys from.
+  - key: marital_satisfaction
+    label: "رضایت زناشویی"
+    traits: [marital_satisfaction]
+    match:
+      question_id_in: ["entry.1824288573", "entry.717362934", "entry.1612388070",
+                      "entry.1388533202", "entry.679558285", "entry.1758862116",
+                      "entry.1659679117", "entry.1425978802", "entry.852310711",
+                      "entry.974743813"]
+    reverse_when:
+      question_id_in: ["entry.1824288573", "entry.1612388070", "entry.679558285",
+                      "entry.1425978802", "entry.852310711"]
+
+  - key: marital_love
+    label: "پیوند عاطفی و دوست‌داشتن"
+    traits: [marital_love]
+    match:
+      question_id_in: ["entry.48697468", "entry.607745927", "entry.637113964",
+                      "entry.1063881807", "entry.791554998", "entry.2068316022",
+                      "entry.514854042", "entry.1185004433", "entry.852615119",
+                      "entry.179846395", "entry.419335331", "entry.785825765",
+                      "entry.1790527444", "entry.468093024", "entry.247956853",
+                      "entry.1766708578", "entry.970201573"]
+    reverse_when: {never: true}
+
+  - key: couple_communication
+    label: "ارتباط و گفت‌وگوی زوجی"
+    traits: [couple_communication]
+    match:
+      question_id_in: ["entry.2095290734", "entry.862132432", "entry.275605283",
+                      "entry.417901170", "entry.1468687681", "entry.2068479124",
+                      "entry.1213925808", "entry.874301501", "entry.1192781683",
+                      "entry.1987831427", "entry.46639430"]
+    reverse_when: {never: true}
+
+  - key: sexual_intimacy
+    label: "صمیمیت جسمانی و جنسی"
+    traits: [sexual_intimacy]
+    match:
+      question_id_in: ["entry.729104651", "entry.1968138320", "entry.887155141",
+                      "entry.1414819642"]
+    reverse_when: {never: true}
+
+  - key: global_happiness
+    label: "خوشحالی کلی از رابطه"
+    traits: [global_happiness]
+    match:
+      question_id_in: ["entry.1690956461", "entry.176395926"]
+    reverse_when: {never: true}
+
+  # NO catch-all: a question reaching the end of this list fails validate-config.
+
+# -----------------------------------------------------------------------------
+# 3. STATIC ANSWERS — taken from the persona record, never asked of the LLM
+# -----------------------------------------------------------------------------
+static_answers:
+  - name: consent
+    match: {question_id_in: ["entry.111690692"]}
+    value: "{{ persona.derived.consent }}"
+    exclude_from_psychometrics: true   # not an item; keep it out of the statistics
+
+  - {name: age,                 match: {question_id_in: ["entry.897705064"]}, value: "{{ persona.demographics.age }}"}
+  - {name: gender,              match: {question_id_in: ["entry.711636504"]}, value: "{{ persona.demographics.gender }}"}
+  - {name: relationship_status, match: {question_id_in: ["entry.1195437738"]}, value: "{{ persona.demographics.relationship_status }}"}
+  - {name: relationship_length, match: {question_id_in: ["entry.1200274208"]}, value: "{{ persona.demographics.relationship_duration }}"}
+  - {name: education,           match: {question_id_in: ["entry.1430311126"]}, value: "{{ persona.demographics.education_level }}"}
+  - {name: employment,          match: {question_id_in: ["entry.417145950"]}, value: "{{ persona.demographics.employment }}"}
+  - {name: children,            match: {question_id_in: ["entry.902921380"]}, value: "{{ persona.demographics.children }}"}
+
+skip: []
+
+# -----------------------------------------------------------------------------
+# 4. ANSWERING POLICY
+# -----------------------------------------------------------------------------
+answering:
+  chunk_by: construct
+  shuffle_within_chunk: true
+  temperature: {min: 0.55, max: 0.85}
+
+  normalization:
+    unicode: NFKC
+    fold_arabic_to_persian: true      # ي→ی ، ك→ک
+    zwnj: strip                       # this form is full of ZWNJ
+    strip_trailing: ".,؛،۔"
+
+  fuzzy: {algorithm: ratio, min_score: 86}
+
+  completeness:
+    # Every question on this form except q16, q73 and q82 is marked required, so
+    # a persona accepted at 0.95 would stall in phase 4 on an empty radio group.
+    min_ratio: 1.0
+    denominator: answerable
+    max_retries: 2
+    retry_scope: failed_constructs_only
+
+  careless:
+    enabled: true
+    anchor_stickiness: 0.70
+    drift: [-1, 1]
+    apply_static_answers: true
+
+  reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
+
+response_style_nudges:
+  rules:
+    - {when: "acquiescence > 0.30",      text: "در گویه‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های موافق/بالاتر داری."}
+    - {when: "acquiescence < -0.30",     text: "در گویه‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های مخالف/پایین‌تر داری."}
+    - {when: "extreme_response > 0.30",  text: "وقتی گزینه‌ای واقعاً با حال‌وروزت می‌خواند، راحت از گزینه‌ی انتهایی طیف (مثل «همیشه» یا «خیلی زیاد») استفاده می‌کنی."}
+    - {when: "extreme_response < -0.30", text: "معمولاً گزینه‌های ملایم و میانی را به گزینه‌های انتهایی طیف ترجیح می‌دهی."}
+  default: "سبک پاسخ‌دهی‌ات معمولی و متعادل است."
+
+# -----------------------------------------------------------------------------
+# 5. ANALYSIS
+# -----------------------------------------------------------------------------
+analysis:
+  reverse_keys_from: config           # never flip a key from the observed sign
+  warn_on_sign_disagreement: true
+  response_style_min_scale_points: 3  # excludes nothing here; every item has 5+
+  straightlining: {scope: within_construct, sd_threshold: 0.5}
+  sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
+  # global_happiness has 2 items and sexual_intimacy has 4. Alpha on 2 items is a
+  # correlation, not a reliability coefficient; the harness warns instead.
+  min_items_for_alpha: 3

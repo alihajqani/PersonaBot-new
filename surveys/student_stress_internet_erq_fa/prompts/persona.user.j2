@@ -1,0 +1,21 @@
+در زیر {{ profiles | length }} دانش‌آموز از پیش نمونه‌گیری‌شده آمده است. برای هرکدام نثر فارسی `details` را بنویس، کاملاً منطبق بر جمعیت‌شناسی و بندهای صفات داده‌شده.
+
+{% for profile in profiles %}
+--- پاسخ‌دهنده {{ profile.id }} ---
+جمعیت‌شناسی:
+{% for key, value in profile.demographics.items() %}
+  - {{ key }}: {{ value }}
+{% endfor %}
+{% if profile.derived %}
+مشخصات تکمیلی:
+{% for key, value in profile.derived.items() %}
+  - {{ key }}: {{ value }}
+{% endfor %}
+{% endif %}
+سطح صفات:
+{% for label, band in profile.bands.items() %}
+  - {{ label }}: {{ band }}
+{% endfor %}
+
+{% endfor %}
+فقط یک آرایه‌ی JSON با {{ profiles | length }} شیء برگردان، به همان ترتیب بالا، هرکدام با `id` (عیناً کپی‌شده) و `details`.

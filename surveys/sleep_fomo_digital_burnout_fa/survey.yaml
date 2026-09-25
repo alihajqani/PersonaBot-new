@@ -1,0 +1,617 @@
+# =============================================================================
+# PersonaBot survey spec — «کیفیت خواب، ترس از جاماندن (FoMO) و فرسودگی دیجیتال»
+# Live Porsline form, Persian, 62 questions.
+#
+# Instrument, as read off output/form_schema.json:
+#   • 3 items   demographics (age band, gender, education) — RADIO
+#   • PSQI      Pittsburgh Sleep Quality Index, Persian:
+#                 4 free-text  — bedtime, wake time, sleep latency, sleep duration
+#                 9 RADIO      — item 5 a–خ (nocturnal disturbances, 4-point)
+#                 1 free-text  — item 5 د «سایر دلایل»
+#                 2 free-text  — items 6 and 7 (sleep medication, daytime sleepiness)
+#                 1 RADIO      — item 9, global sleep-quality rating
+#   • 18 items  FoMO / ترس از جاماندن، 5-point «صدق نمی کند … به شدت صدق می کند»
+#   • 24 items  Digital Burnout Scale، 5-point «کاملا موافقم … کاملا مخالفم»
+#
+# NOTE ON THE 7 FREE-TEXT ITEMS. On this form, PSQI items 1–4, 5د, 6 and 7 are
+# plain text boxes rather than the 4-point grids the instrument specifies. Every
+# one of them is a FACT about the respondent, and four of them are mutually
+# constrained (bed time + latency + duration must imply the reported wake time,
+# or sleep efficiency is nonsense). They are therefore computed by the sampler
+# from the sleep-problems trait and bound in `static_answers` — never left to
+# the model, which has no way to keep four numbers arithmetically coherent
+# across four separate requests.
+#
+# STATUS: construct membership is a PROPOSAL derived by reading all 52
+# psychometric item texts. Judgement calls are marked `# REVIEW:`. The validator
+# can prove this file is COMPLETE; only you can decide whether it is CORRECT.
+#
+# Ids and option strings are copied verbatim from form_schema.json.
+# =============================================================================
+version: 2
+id: sleep_fomo_digital_burnout_fa
+locale: fa
+
+# Migrated from the 2.x fork `PersonaBot-new-azaduni` (its .env and Makefile).
+form:
+  provider: porsline
+  url: https://survey.porsline.ir/s/tyPubcik
+  max_pages: 400
+# -----------------------------------------------------------------------------
+# 1. POPULATION — Iranian young adults, 18–38, an online convenience sample
+# -----------------------------------------------------------------------------
+population:
+  seed: null
+
+  # Two common factors carry the study's hypotheses:
+  #   D = problematic digital involvement (screen attachment, online vigilance)
+  #   N = negative affectivity / distress
+  #
+  # Sleep problems load mainly on N and moderately on D, which is exactly the
+  # mediation this design is built to exercise: digital involvement and FoMO
+  # raise distress, distress degrades sleep.
+  #
+  # Implied correlations (`make validate` prints the full matrix — read it):
+  #   r(fomo_social_exclusion,          sleep_problems) = +0.40
+  #   r(digital_deprivation,            sleep_problems) = +0.34
+  #   r(digital_emotional_exhaustion,   sleep_problems) = +0.51
+  #   r(digital_aging,                  sleep_problems) = +0.46
+  #   r(fomo_online_engagement, digital_deprivation)    = +0.60
+  #
+  # Magnitudes sit at the strong end of the published FoMO / sleep-quality band
+  # (r ≈ .25–.45), which is what you want from a simulation meant to exercise a
+  # hypothesis rather than to reproduce one field study.
+  latent_model:
+    common_factors: [D, N]
+    dimensions:
+      sleep_problems:
+        loadings: {D: 0.25, N: 0.55}       # ΣL² = 0.365
+        label: "مشکلات خواب (دیر به خواب رفتن، بیدارشدن‌های شبانه، خواب کم‌کیفیت و ناکافی)"
+
+      fomo_social_exclusion:
+        loadings: {D: 0.62, N: 0.45}       # ΣL² = 0.587
+        label: "ترس از جاماندن از جمع (نگرانی از اینکه دوستان بدون تو خوش می‌گذرانند و تو بیرون مانده‌ای)"
+
+      fomo_online_engagement:
+        loadings: {D: 0.72, N: 0.20}       # ΣL² = 0.558
+        label: "پایش و اشتراک‌گذاری آنلاین (دنبال‌کردن مداوم صفحات دیگران و نشان‌دادن فوری لحظه‌های خود)"
+
+      fomo_social_comparison:
+        loadings: {D: 0.50, N: 0.58}       # ΣL² = 0.586
+        label: "مقایسه‌ی اجتماعی (سنجیدن پیشرفت و ارزش خود در برابر همسالان و ترس از عقب‌ماندن)"
+
+      digital_deprivation:
+        loadings: {D: 0.75, N: 0.28}       # ΣL² = 0.641
+        label: "وابستگی و محرومیت دیجیتال (بی‌قراری هنگام آفلاین‌بودن و ناتوانی در فاصله‌گرفتن از گوشی)"
+
+      digital_emotional_exhaustion:
+        loadings: {D: 0.42, N: 0.74}       # ΣL² = 0.724
+        label: "فرسودگی هیجانی (خستگی، استرس، غم و احساس تنهایی و درماندگی)"
+
+      digital_aging:
+        loadings: {D: 0.52, N: 0.60}       # ΣL² = 0.630
+        label: "کهولت دیجیتال (افت تمرکز و حافظه، کرختی هیجانی، زودرنجی و تحلیل‌رفتن روابط)"
+
+  bands:
+    cuts:   [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5]
+    labels: ["خیلی پایین", "پایین", "کمی پایین", "متوسط", "کمی بالا", "بالا", "خیلی بالا"]
+
+  response_style:
+    acquiescence:     {dist: normal, mu: 0.0, sigma: 0.40}
+    extreme_response: {dist: normal, mu: 0.0, sigma: 0.40}
+    careless:         {dist: bernoulli, p: 0.04}
+
+  # --- demographics, in dependency order --------------------------------------
+  # `age_band`, `gender` and `education` are bound to RADIO groups in
+  # `static_answers`. Static answers are NOT fuzzy-corrected — they are written
+  # into the answer file and then clicked on a live radio group, so each one is
+  # sampled as the form's LITERAL option string, copied from the schema.
+  demographics:
+    # Normal rather than uniform: an online sample of this kind is dominated by
+    # people in their early twenties with a thinning tail into the late thirties.
+    - name: age
+      dist: normal
+      mu: 24
+      sigma: 5
+      round: int
+      clip: [18, 38]
+      on_out_of_range: resample
+
+    # REVIEW / FORM DEFECT: the form's own bands overlap at every boundary
+    # («18 تا 22» then «22 تا 28» then «28 تا 32»). A 22-year-old fits two of
+    # them. Resolved here as "upper bound wins the lower band", i.e. 22 → «18 تا
+    # 22». Left exactly as extracted; an option string the browser cannot find
+    # is an unclickable radio.
+    - name: age_band
+      dist: conditional
+      cases:
+        - {when: "age <= 22", dist: constant, value: "18 تا 22"}
+        - {when: "age <= 28", dist: constant, value: "22 تا 28"}
+        - {when: "age <= 32", dist: constant, value: "28 تا 32"}
+        - {default: true,     dist: constant, value: "32 تا 38"}
+
+    # REVIEW: online Persian survey panels of this type skew female. Adjust if
+    # your recruitment frame says otherwise.
+    - name: gender
+      dist: categorical
+      choices: [["دختر", 0.58], ["پسر", 0.42]]
+
+    # The form offers no option below کاردانی, so the frame is implicitly
+    # post-secondary — students and graduates. Education follows age.
+    - name: education
+      dist: conditional
+      cases:
+        - when: "age <= 22"
+          dist: categorical
+          choices: [["کاردانی", 0.22], ["کارشناسی", 0.74], ["ارشد", 0.04], ["دکتری", 0.0]]
+        - when: "age <= 28"
+          dist: categorical
+          choices: [["کاردانی", 0.10], ["کارشناسی", 0.55], ["ارشد", 0.32], ["دکتری", 0.03]]
+        - when: "age <= 32"
+          dist: categorical
+          choices: [["کاردانی", 0.06], ["کارشناسی", 0.34], ["ارشد", 0.45], ["دکتری", 0.15]]
+        - default: true
+          dist: categorical
+          choices: [["کاردانی", 0.05], ["کارشناسی", 0.30], ["ارشد", 0.40], ["دکتری", 0.25]]
+
+  # --- derived sleep facts -----------------------------------------------------
+  # PSQI items 1–4 are four numbers that have to agree with each other: the
+  # reported wake time must equal bed time + latency + time asleep + night-time
+  # awakenings, or the sleep-efficiency component the instrument computes from
+  # them is meaningless. Every one of them is therefore drawn here, from the same
+  # `sleep_problems` trait that drives the 10 sleep radios, and rendered into the
+  # text boxes by `static_answers`.
+  #
+  # Clock arithmetic runs in minutes-from-midnight and is converted to hour and
+  # minute at the end; the Jinja binding does the zero-padding.
+  derived_fields:
+    # Minutes after 21:00 at which the respondent goes to bed. Worse sleepers go
+    # to bed later. Range 21:30 – 02:00.
+    - name: bed_offset_minutes
+      persist: false
+      dist: normal
+      mu: "125 + 40 * z.sleep_problems"
+      sigma: 45
+      round: int
+      clip: [30, 300]
+      on_out_of_range: resample
+
+    # 21:00 is 1260 minutes past midnight. Quantized to a quarter hour, because
+    # nobody reports going to bed at 23:07.
+    - {name: bedtime_total, persist: false,
+       dist: derived, expr: "1260 + round(bed_offset_minutes / 15) * 15"}
+    - {name: bedtime_hour,   dist: derived, expr: "floor((bedtime_total % 1440) / 60)"}
+    - {name: bedtime_minute, dist: derived, expr: "bedtime_total % 60"}
+
+    # Sleep-onset latency in minutes, quantized to 5. PSQI item 2.
+    - name: latency_raw
+      persist: false
+      dist: normal
+      mu: "14 + 20 * z.sleep_problems"
+      sigma: 10
+      round: int
+      clip: [3, 90]
+      on_out_of_range: resample
+    - {name: sleep_latency_minutes,
+       dist: derived, expr: "max(5, round(latency_raw / 5) * 5)"}
+
+    # Hours actually asleep, quantized to the half hour. PSQI item 4.
+    - name: sleep_hours_raw
+      persist: false
+      dist: normal
+      mu: "7.4 - 0.7 * z.sleep_problems"
+      sigma: 0.85
+      clip: [4.0, 9.0]
+      on_out_of_range: resample
+    - {name: sleep_hours, dist: derived, expr: "round(sleep_hours_raw * 2) / 2"}
+
+    # Wake after sleep onset — the time spent awake in bed during the night.
+    # Not asked on the form, but it is what makes wake time ≠ bedtime + duration.
+    - {name: waso_minutes, persist: false,
+       dist: derived, expr: "round(8 + 24 * sigmoid(1.1 * z.sleep_problems))"}
+
+    - {name: wakeup_total, persist: false, dist: derived,
+       expr: "round((bedtime_total + sleep_latency_minutes + sleep_hours * 60 + waso_minutes) / 5) * 5"}
+    - {name: wakeup_hour,   dist: derived, expr: "floor((wakeup_total % 1440) / 60)"}
+    - {name: wakeup_minute, dist: derived, expr: "wakeup_total % 60"}
+
+    # PSQI item 6 — sleep medication. A free-text box on this form, so the value
+    # is worded with the same four frequency phrases the neighbouring radios use.
+    - name: sleep_medication
+      dist: conditional
+      cases:
+        - when: "z.sleep_problems > 1.2"
+          dist: categorical
+          choices: [["سه بار در هفته یا بیشتر", 0.32], ["دو بار در هفته", 0.24],
+                    ["یک بار در هفته", 0.20], ["هیچ", 0.24]]
+        - when: "z.sleep_problems > 0.4"
+          dist: categorical
+          choices: [["هیچ", 0.55], ["یک بار در هفته", 0.25],
+                    ["دو بار در هفته", 0.13], ["سه بار در هفته یا بیشتر", 0.07]]
+        - default: true
+          dist: categorical
+          choices: [["هیچ", 0.90], ["یک بار در هفته", 0.08], ["دو بار در هفته", 0.02]]
+
+    # PSQI item 7 — trouble staying awake while driving, eating or socializing.
+    # Also a free-text box here.
+    - name: daytime_sleepiness
+      dist: conditional
+      cases:
+        - when: "z.sleep_problems > 1.2"
+          dist: categorical
+          choices: [["سه بار در هفته یا بیشتر", 0.30], ["دو بار در هفته", 0.30],
+                    ["یک بار در هفته", 0.25], ["هیچ", 0.15]]
+        - when: "z.sleep_problems > 0.4"
+          dist: categorical
+          choices: [["هیچ", 0.40], ["یک بار در هفته", 0.34],
+                    ["دو بار در هفته", 0.18], ["سه بار در هفته یا بیشتر", 0.08]]
+        - default: true
+          dist: categorical
+          choices: [["هیچ", 0.80], ["یک بار در هفته", 0.15], ["دو بار در هفته", 0.05]]
+
+    # PSQI item 5-د «سایر دلایل (لطفا نوع مشکل را بنویسید)». A fixed literal for
+    # every respondent would be an obvious artefact in the exported data, so this
+    # is a short phrase drawn conditionally on the sleep trait.
+    - name: other_sleep_problem
+      dist: conditional
+      cases:
+        - when: "z.sleep_problems > 0.8"
+          dist: categorical
+          choices: [["فکر و خیال زیاد قبل از خواب", 0.32],
+                    ["استفاده از گوشی تا دیروقت", 0.30],
+                    ["دلشوره‌ی درس و کار", 0.22],
+                    ["سروصدای محیط و رفت‌وآمد اهل خانه", 0.16]]
+        - default: true
+          dist: categorical
+          choices: [["موردی نداشتم", 0.72],
+                    ["گاهی سروصدای محیط", 0.16],
+                    ["استفاده از گوشی تا دیروقت", 0.12]]
+
+# -----------------------------------------------------------------------------
+# 2. SCHEMA INTERPRETATION
+# -----------------------------------------------------------------------------
+# CODING DIRECTION — the one thing here that is silently wrong if you get it
+# wrong. `low_first` = option[0] is the LOW end (score = index + 1);
+# `high_first` = option[0] is the HIGH end (score = K - index).
+#
+# Every psychometric scale on this form is keyed so that a HIGH score means MORE
+# of the problem: worse sleep, more FoMO, more burnout. That is why the burnout
+# block — which runs «کاملا موافقم» first — is the only `high_first` one.
+scales:
+  # 24 digital-burnout items. option[0] is «کاملا موافقم», the HIGH end of
+  # agreement, and agreeing means MORE burnout → high_first. Getting this
+  # backwards would invert all three burnout constructs without erroring.
+  - name: burnout_agree5
+    match: {options_equal: ["کاملا موافقم", "موافقم", "نظری ندارم",
+                            "مخالفم", "کاملا مخالفم"]}
+    coding: high_first
+
+  # 18 FoMO items. option[0] «صدق نمی کند» is the LOW end → low_first.
+  - name: fomo_applies5
+    match: {options_equal: ["صدق نمی کند", "کمی صدق می کند", "به میزان متوسط صدق می کند",
+                            "زیاد صدق می کند", "به شدت صدق می کند"]}
+    coding: low_first
+
+  # PSQI item 5 arrives in THREE near-identical 4-point variants. `options_equal`
+  # is an exact set comparison and normalization collapses runs of whitespace but
+  # never deletes it, so «دو بار» and «دوبار» do not share a signature, and
+  # neither do «یک بار» and «یه بار». Declared separately rather than "fixed" —
+  # the schema records what is really on the page.
+  - name: psqi_freq4
+    match: {options_equal: ["هیچ", "یک بار در هفته", "دو بار در هفته",
+                            "سه بار در هفته یا بیشتر"]}
+    coding: low_first
+
+  # REVIEW / FORM DEFECT: «دوبار در هفته» (missing space) on four items.
+  - name: psqi_freq4_nospace
+    match: {options_equal: ["هیچ", "یک بار در هفته", "دوبار در هفته",
+                            "سه بار در هفته یا بیشتر"]}
+    coding: low_first
+
+  # REVIEW / FORM DEFECT: «یه بار در هفته» (colloquial spelling) on item 5-ت.
+  - name: psqi_freq4_colloquial
+    match: {options_equal: ["هیچ", "یه بار در هفته", "دو بار در هفته",
+                            "سه بار در هفته یا بیشتر"]}
+    coding: low_first
+
+  # PSQI item 9, the global rating. option[0] «خیلی خوب» is the GOOD end, i.e.
+  # the LOW end of the sleep-PROBLEMS trait → low_first, same direction as the
+  # disturbance items above.
+  - name: psqi_quality4
+    match: {options_equal: ["خیلی خوب", "خوب", "بد", "خیلی بد"]}
+    coding: low_first
+
+  # Demographic response formats. Declared so the coverage report accounts for
+  # them explicitly; all three are bound in `static_answers` and therefore never
+  # reach a construct or the reliability statistics.
+  - name: demo_age4
+    match: {options_equal: ["18 تا 22", "22 تا 28", "28 تا 32", "32 تا 38"]}
+    coding: low_first
+  - name: demo_gender2
+    match: {options_equal: ["دختر", "پسر"]}
+    coding: low_first
+  - name: demo_education4
+    match: {options_equal: ["کاردانی", "کارشناسی", "ارشد", "دکتری"]}
+    coding: low_first
+
+# -----------------------------------------------------------------------------
+# CONSTRUCTS
+# -----------------------------------------------------------------------------
+# Seven constructs over seven latent traits, 52 psychometric items in total.
+# The split is driven by two forces:
+#
+#   1. A construct is the LLM REQUEST UNIT — one call per construct per
+#      respondent. Handing the model all 24 burnout items at once invites both
+#      truncation and the self-consistency that drives Cronbach's alpha to
+#      implausible highs. Chunks here are 5–10 items.
+#   2. Items that belong to one published subscale stay together, so the alphas
+#      `make analyze` prints are the ones the instrument actually claims.
+#
+# All rules are explicit `question_id_in` lists and are mutually disjoint, so
+# evaluation order does not matter here.
+#
+# NOTHING on this form is reverse-keyed: every item is worded so that endorsing
+# it means MORE of the trait, and every scale is coded to match. `reverse_when`
+# is therefore omitted throughout — deliberately, not by oversight. Declaring it
+# as `{never: true}` would be equivalent for scoring, but it would also switch on
+# the per-item direction tags in the answer prompt, printing «[مستقیم]» beside
+# all 52 items for no information gain.
+constructs:
+  # === کیفیت ذهنی خواب (PSQI) ==================================================
+  # PSQI component 5 (nocturnal disturbances, 9 items) plus component 1 (the
+  # global self-rating). Kept as ONE construct: with the global item alone you
+  # would get a one-item "scale" and no reliability coefficient at all.
+  #
+  # REVIEW: PSQI is scored as seven weighted components, not as a flat sum. The
+  # alpha `make analyze` reports over these 10 items is a chunk-level internal
+  # consistency check, NOT the PSQI global score. Compute that from the exported
+  # answers with the standard algorithm if you need it.
+  - key: sleep_quality
+    label: "کیفیت خواب شبانه و مشکلات خواب در ماه گذشته"
+    traits: [sleep_problems]
+    match:
+      question_id_in:
+        - "52581748"   # الف) با گذشت ۳۰ دقیقه نمیتوانید بخوابید
+        - "52581830"   # ب) نیمه های شب یا صبح زود از خواب بیدار شدن
+        - "52581853"   # پ) وسط خواب شبانه مجبور شوید برای رفتن به توالت از رخت خواب جدا شوید
+        - "52581876"   # ت) عدم توانایی نفس کشیدن راحت در طی خواب
+        - "52581885"   # ث) در خواب با صدای بلند خروپف کردن
+        - "52583300"   # ج) احساس سرمای زیاد
+        - "52583338"   # چ) احساس گرمای شدید
+        - "52584631"   # ح) خواب های بد دیدن
+        - "52584772"   # خ) شکایت از درد داشتن در طی خواب
+        - "52585129"   # در کل کیفیت خواب خود را چگونه توصیف می کنید؟
+
+  # === ترس از جاماندن — هسته‌ی اجتماعی ==========================================
+  # The original FoMO scale's core: distress at being excluded from experiences
+  # other people are having.
+  - key: fomo_social_exclusion
+    label: "ترس از جاماندن از دورهمی‌ها و تجربه‌های دوستان"
+    traits: [fomo_social_exclusion]
+    match:
+      question_id_in:
+        - "52585153"   # وقتی فرصت ملاقات با دوستان را از دست می دهم عذاب میکشم
+        - "52585386"   # وقتی میفهمم دوستانم بدون من در حال خوش گذرانی هستند نگران میشوم
+        - "52585563"   # اگر ندانم دوستانم چه کار میکنند، احساس نگرانی میکنم
+        - "52585684"   # ناراحت میشوم وقتی عکس تعطیلات دوستانم را میبینم و دعوت نشدم
+        - "52594318"   # وقتی یک دورهمی برنامه ریزی شده را از دست می دهم، آزارم میدهد
+        - "52594404"   # وقتی خوشگذرانی دیگران را در شبکه های اجتماعی دنبال میکنم حسرت میخورم
+
+  # === پایش و اشتراک‌گذاری آنلاین ==============================================
+  # The behavioural pole: checking other people's feeds, answering notifications
+  # instantly, broadcasting your own moments. Distinct from the affective core
+  # above — this is what someone DOES, not what they feel.
+  #
+  # REVIEW: 52594742 («اخبار روز شبکه‌های اجتماعی برایم مهم است») is the weakest
+  # fit in this group; it could be read as ordinary news interest. Kept here
+  # because on this scale it is worded as keeping up with what is being talked
+  # about online.
+  - key: fomo_online_engagement
+    label: "دنبال‌کردن و به‌اشتراک‌گذاشتن مداوم در شبکه‌های اجتماعی"
+    traits: [fomo_online_engagement]
+    match:
+      question_id_in:
+        - "52594416"   # وقتی به تعطیلات میروم، همچنان کارهای دوستانم را تحت نظر دارم
+        - "52594426"   # وقتی چیزهای جدیدی میخرم، فورا عکس آن را به اشتراک میگذارم
+        - "52594461"   # همیشه وقتی دوستانم در تعطیلات هستند شبکه های اجتماعی آنها را بررسی میکنم
+        - "52594472"   # وقتی لحظات خوشی دارم، مهم است جزئیات را آنلاین به اشتراک بگذارم
+        - "52594724"   # به محض دریافت اعلان، بلافاصله پاسخ خواهم داد
+        - "52594742"   # داستان آخرین اخبار شبکه های اجتماعی برایم مهم است
+        - "52594995"   # اغلب اوقات صفحات شخصی و فعالیت های دیگران را ورق میزنم
+
+  # === مقایسه‌ی اجتماعی ========================================================
+  # Upward comparison and status anxiety: skills, progress, likes, meaning.
+  - key: fomo_social_comparison
+    label: "مقایسه‌ی خود با دیگران و ترس از عقب‌ماندن"
+    traits: [fomo_social_comparison]
+    match:
+      question_id_in:
+        - "52594772"   # وقتی احساس می کنم مهارت هایم به خوبی دیگران نیست، ناراحت می شوم
+        - "52594804"   # نگرانم دوستانم معنای ارزشمندتری از زندگی خود داشته باشند
+        - "52594896"   # عصبی می شوم وقتی پیشرفتم کندتر از همسالانم است
+        - "52594907"   # برای من مهم است که از دیگران عقب نمانم
+        - "52595068"   # وقتی دیگران «لایک» بیشتری میگیرند، مضطرب می شوم
+
+  # === فرسودگی دیجیتال — محرومیت و وابستگی =====================================
+  # The Digital Burnout Scale's deprivation subscale: distress when offline,
+  # compulsive checking, inability to put the device down.
+  - key: digital_deprivation
+    label: "وابستگی به فضای مجازی و بی‌قراری هنگام آفلاین‌بودن"
+    traits: [digital_deprivation]
+    match:
+      question_id_in:
+        - "52595489"   # نمی توانم بین دنیای واقعی و مجازی تعادل برقرار کنم
+        - "52596005"   # زمان زیادی را در دنیای مجازی با دستگاه های دیجیتال می گذرانم
+        - "52596034"   # کمتر صحبت می کنم و به اطراف نگاه می کنم
+        - "52596046"   # وقتی اینترنت ندارم یا آفلاین هستم، احساس ناراحتی می کنم
+        - "52596083"   # همیشه به پیام جدیدی که دریافت کرده ام فکر میکنم
+        - "52596108"   # وقتی دستگاه های دیجیتال همراهم نیست، احساس برهنه و بی پناه بودن میکنم
+        - "52596227"   # همیشه توئیت ها، فیسبوک، ایمیل ها و پیام هایم را چک می کنم
+        - "52596271"   # وقتی اینترنت ندارم یا آفلاین هستم، احساس ناتوانی می کنم
+        - "52596363"   # بزرگ‌ترین ترسم گم‌کردن یا فراموش‌کردن گوشی‌ام است
+
+  # === فرسودگی دیجیتال — فرسودگی هیجانی ========================================
+  # Stress, low mood, loneliness, feeling boxed in and worn out.
+  #
+  # REVIEW: 52595119 («ممکن است یک روز عقلم را از دست بدهم») is the most extreme
+  # item on the form. It is scored as emotional exhaustion rather than as a
+  # separate distress marker; watch its item-total correlation in `make analyze`.
+  - key: digital_emotional_exhaustion
+    label: "خستگی هیجانی، استرس و احساس تنهایی"
+    traits: [digital_emotional_exhaustion]
+    match:
+      question_id_in:
+        - "52595119"   # فکر می کنم ممکن است یک روز عقلم را از دست بدهم
+        - "52595291"   # احساس استرس و فشار میکنم
+        - "52595338"   # به تازگی فکر میکنم که علائم افسردگی را دارم
+        - "52595393"   # احساس تنهایی بر من غلبه کرده است
+        - "52595412"   # در مورد وضعیت خودم گیج و سردرگم هستم
+        - "52595440"   # احساس محدودیت و بسته بودن می کنم
+        - "52596461"   # به خاطر دنیای مجازی و دیجیتال احساس خستگی میکنم
+
+  # === فرسودگی دیجیتال — کهولت دیجیتال =========================================
+  # The "digital ageing" subscale: cognitive slippage, bodily complaints from
+  # screen use, emotional numbing, irritability, thinning relationships.
+  - key: digital_aging
+    label: "افت تمرکز، کرختی هیجانی و زودرنجی"
+    traits: [digital_aging]
+    match:
+      question_id_in:
+        - "52595087"   # تمرکزم کم شده است
+        - "52595207"   # گاهی احساس میکنم ذهنم تار و مبهم می شود
+        - "52595329"   # به خاطر تایپ مداوم و چک کردن پیام ها، دست یا بدنم درد می گیرد
+        - "52596475"   # تقریبا نسبت به اتفاقات و موقعیت های اطرافم هیچ احساسی ندارم
+        - "52596486"   # نسبت به افراد اطرافم بی تحمل و بی احساس شده ام
+        - "52596520"   # بی حوصله شده ام
+        - "52596527"   # زود عصبانی میشوم
+        - "52596530"   # فکر میکنم روابط و ارتباطاتم با دیگران ضعیف شده است
+
+# -----------------------------------------------------------------------------
+# 3. STATIC ANSWERS — answered from the persona record, never by the LLM
+# -----------------------------------------------------------------------------
+# Ten questions: three demographic radios and the seven PSQI free-text boxes.
+#
+# The three radios must render EXACTLY one of that group's option strings, so
+# they are sampled as categoricals over the literal strings rather than as
+# numbers formatted here.
+#
+# The four clock/duration boxes are formatted from the sampler's minute
+# arithmetic. `%02d:%02d` gives «23:30» / «07:05» — a 24-hour clock, which is
+# how these are written in Persian forms.
+static_answers:
+  - name: age_band
+    match: {question_id_in: ["52412211"]}   # سن :
+    value: "{{ persona.demographics.age_band }}"
+
+  - name: gender
+    match: {question_id_in: ["52412214"]}   # جنسیت :
+    value: "{{ persona.demographics.gender }}"
+
+  - name: education
+    match: {question_id_in: ["52412216"]}   # تحصیلات:
+    value: "{{ persona.demographics.education }}"
+
+  # PSQI 1 — usual bedtime.
+  - name: psqi_bedtime
+    match: {question_id_in: ["52412246"]}   # چه ساعت هایی میخوابید؟
+    value: "{{ '%02d:%02d'|format(persona.derived.bedtime_hour, persona.derived.bedtime_minute) }}"
+
+  # PSQI 3 — usual wake time. Computed as bedtime + latency + time asleep +
+  # night-time awakenings, so the four answers cannot contradict one another.
+  - name: psqi_wakeup
+    match: {question_id_in: ["52412250"]}   # صبح ها چه ساعتی از خواب بیدار می شوید؟
+    value: "{{ '%02d:%02d'|format(persona.derived.wakeup_hour, persona.derived.wakeup_minute) }}"
+
+  # PSQI 2 — sleep-onset latency.
+  - name: psqi_latency
+    match: {question_id_in: ["52412255"]}   # چقدر طول میکشد تا خوابتان ببرد؟
+    value: "{{ persona.derived.sleep_latency_minutes }} دقیقه"
+
+  # PSQI 4 — hours actually asleep. Rendered on the half hour: «7 ساعت»،
+  # «6 ساعت و نیم».
+  - name: psqi_sleep_duration
+    match: {question_id_in: ["52412258"]}   # میزان خواب واقعی شما در شب چند ساعت است؟
+    value: "{{ persona.derived.sleep_hours|int }} ساعت{% if persona.derived.sleep_hours % 1 %} و نیم{% endif %}"
+
+  # PSQI 5-د — «سایر دلایل». A sleep-disturbance item like the nine radios above
+  # it, but free text, so it carries no ordinal score and is kept out of the
+  # reliability statistics.
+  - name: psqi_other_reason
+    match: {question_id_in: ["52584798"]}   # د) سایر دلایل (لطفا نوع مشکل را بنویسید)
+    value: "{{ persona.derived.other_sleep_problem }}"
+    exclude_from_psychometrics: true
+
+  # PSQI 6 — sleep medication.
+  - name: psqi_medication
+    match: {question_id_in: ["52584914"]}   # چند بار مجبور به استفاده از دارو شده اید؟
+    value: "{{ persona.derived.sleep_medication }}"
+    exclude_from_psychometrics: true
+
+  # PSQI 7 — daytime sleepiness.
+  - name: psqi_daytime_sleepiness
+    match: {question_id_in: ["52585080"]}   # چند بار در بیدار ماندن مشکل داشته اید؟
+    value: "{{ persona.derived.daytime_sleepiness }}"
+    exclude_from_psychometrics: true
+
+# Nothing on this form is optional or decorative — every question is either a
+# construct item or a static binding.
+skip: []
+
+# -----------------------------------------------------------------------------
+# 4. ANSWERING POLICY
+# -----------------------------------------------------------------------------
+answering:
+  chunk_by: construct          # 7 constructs → 7 requests per respondent
+  shuffle_within_chunk: true
+  temperature: {min: 0.55, max: 0.85}
+
+  normalization:
+    unicode: NFKC
+    fold_arabic_to_persian: true
+    zwnj: strip
+    strip_trailing: ".,؛،۔"
+
+  fuzzy: {algorithm: ratio, min_score: 86}
+
+  completeness:
+    # 1.0, not the 0.95 default: this form is one question per page with every
+    # field required, so a set accepted with blanks here stalls in phase 4.
+    min_ratio: 1.0
+    denominator: answerable
+    max_retries: 2
+    retry_scope: failed_constructs_only
+
+  careless:
+    enabled: true
+    anchor_stickiness: 0.70
+    drift: [-1, 1]
+    # Keeps the ten static answers intact for an inattentive respondent, so a
+    # careless persona still submits a complete form.
+    apply_static_answers: true
+
+  reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
+
+response_style_nudges:
+  rules:
+    - {when: "acquiescence > 0.30",
+       text: "در گویه‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های موافق/بالاتر داری."}
+    - {when: "acquiescence < -0.30",
+       text: "در گویه‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های مخالف/پایین‌تر داری."}
+    - {when: "extreme_response > 0.30",
+       text: "وقتی گویه‌ای واقعاً با حال‌وروزت می‌خواند، راحت سرِ طیف را انتخاب می‌کنی (مثل «کاملا موافقم» یا «به شدت صدق می کند»)."}
+    - {when: "extreme_response < -0.30",
+       text: "معمولاً گزینه‌های ملایم و میانی را به دو سرِ طیف ترجیح می‌دهی."}
+  default: "سبک پاسخ‌دهی‌ات معمولی و متعادل است."
+
+# -----------------------------------------------------------------------------
+# 5. ANALYSIS
+# -----------------------------------------------------------------------------
+analysis:
+  reverse_keys_from: config           # never auto-flip on observed sign
+  warn_on_sign_disagreement: true
+  # Every psychometric scale here is 4- or 5-point; the only 2-option question
+  # on the form is the gender demographic, which is static-bound.
+  response_style_min_scale_points: 3
+  straightlining: {scope: within_construct, sd_threshold: 0.5}
+  sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
+  min_items_for_alpha: 3

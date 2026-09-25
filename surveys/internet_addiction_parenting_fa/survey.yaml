@@ -1,0 +1,547 @@
+# =============================================================================
+# PersonaBot survey spec — «اعتیاد به اینترنت و شیوه‌های فرزندپروری در نوجوانان»
+# Live Porsline form, Persian, 115 questions.
+#
+# Instrument, as read off the extracted schema:
+#   • Q1–Q5    demographics (grade, age, gender, city, daily internet hours)
+#   • 20 items Young's Internet Addiction Test (IAT), 5-point frequency
+#   • 76 items Schaefer-style parenting questionnaire (شیوه‌های فرزندپروری),
+#              5-point agreement — the warmth/hostility and control/autonomy axes
+#   • 13 items Buri-style Parental Authority Questionnaire (PAQ), 4-point
+#   • 1 item   optional e-mail address (free text) — skipped, see `skip:`
+#
+# STATUS: construct membership is a PROPOSAL derived by reading all 109
+# psychometric item texts. Judgement calls are marked `# REVIEW:`. The validator
+# can prove this file is COMPLETE; only you can decide whether it is CORRECT.
+#
+# Generated ids and option strings are copied verbatim from form_schema.json.
+# =============================================================================
+version: 2
+id: internet_addiction_parenting_fa
+locale: fa
+
+# Migrated from the 2.x fork `PersonaBot-new-yasamin` (its .env and Makefile).
+form:
+  provider: porsline
+  url: https://survey.porsline.ir/s/K4zJVAOV
+  max_pages: 400
+# -----------------------------------------------------------------------------
+# 1. POPULATION — adolescent boys, grades 7–12, Tehran and Shahrekord
+# -----------------------------------------------------------------------------
+population:
+  seed: null
+
+  # Three latent dimensions, one per research construct.
+  #
+  # Two common factors carry the hypotheses:
+  #   P = positive parenting climate (warmth AND structure load positively)
+  #   A = addiction proneness        (parenting dimensions load negatively)
+  #
+  # Implied correlations — `make validate` prints this matrix, read it:
+  #   H1  r(parental_affection,   internet_addiction) = -0.50   NEGATIVE ✓
+  #   H2  r(parental_supervision, internet_addiction) = -0.47   NEGATIVE ✓
+  #       r(parental_affection,   parental_supervision) = +0.54
+  #
+  # Magnitudes are deliberately moderate. Published adolescent samples put the
+  # parenting↔internet-addiction association in the -0.20…-0.45 band; -0.50 sits
+  # at the strong end of plausible, which is what you want from a simulation
+  # built to exercise the hypotheses rather than to reproduce one field study.
+  latent_model:
+    common_factors: [P, A]
+    dimensions:
+      parental_affection:
+        loadings: {P: 0.78, A: -0.18}      # ΣL² = 0.641
+        label: "محبت و پذیرش والدینی (گرمی، حمایت عاطفی، تأیید و پذیرفته‌شدن از سوی پدر و مادر)"
+      parental_supervision:
+        loadings: {P: 0.64, A: -0.24}      # ΣL² = 0.467
+        label: "نظارت و نظم‌دهی والدینی (قاعده‌گذاری، پیگیری رفتار، ثبات در تربیت)"
+      internet_addiction:
+        loadings: {P: -0.48, A: 0.68}      # ΣL² = 0.693
+        label: "اعتیاد به اینترنت (اشتغال ذهنی، ناتوانی در کنترل زمان، اختلال در تحصیل و خواب)"
+
+  bands:
+    cuts:   [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5]
+    labels: ["خیلی پایین", "پایین", "کمی پایین", "متوسط", "کمی بالا", "بالا", "خیلی بالا"]
+
+  response_style:
+    acquiescence:     {dist: normal, mu: 0.0, sigma: 0.40}
+    extreme_response: {dist: normal, mu: 0.0, sigma: 0.40}
+    careless:         {dist: bernoulli, p: 0.04}
+
+  # --- demographics, in dependency order --------------------------------------
+  # Every value below that is bound to a RADIO in `static_answers` is sampled as
+  # a categorical over the form's LITERAL option strings. Static answers are not
+  # fuzzy-matched — they are written into the answer file and then clicked on a
+  # live radio group, so anything but a character-for-character match fails in
+  # phase 4.
+  demographics:
+    # Target audience is پسران نوجوان — 100% male, so this is a constant, not a
+    # 50/50 draw that would occasionally emit «دختر».
+    - name: gender
+      dist: constant
+      value: "پسر"
+
+    # 50% Tehran / 50% Shahrekord. NOTE: this is 50/50 in EXPECTATION — each
+    # respondent is an independent draw, so a run of 40 personas will land near
+    # 20/20, not exactly on it. There is no quota mechanism in the sampler. If
+    # you need an exact split, generate the two halves as two runs with this
+    # weight set to [1, 0] and then [0, 1].
+    - name: city
+      dist: categorical
+      choices: [["تهران", 0.5], ["شهرکرد", 0.5]]
+
+    # Grades 7–12. Not equal: the mild decline across the upper grades reflects
+    # attrition and the smaller senior cohorts typical of Iranian schools.
+    - name: grade
+      dist: categorical
+      choices:
+        - ["هفتم", 0.18]
+        - ["هشتم", 0.18]
+        - ["نهم", 0.17]
+        - ["دهم", 0.16]
+        - ["یازدهم", 0.16]
+        - ["دوازدهم", 0.15]
+
+    # Numeric grade, so age can be drawn conditionally on it. Not persisted —
+    # it is scaffolding, and `grade` already carries the same fact in Persian.
+    - name: grade_level
+      persist: false
+      dist: conditional
+      cases:
+        - {when: "grade == 'هفتم'",  dist: constant, value: 7}
+        - {when: "grade == 'هشتم'",  dist: constant, value: 8}
+        - {when: "grade == 'نهم'",  dist: constant, value: 9}
+        - {when: "grade == 'دهم'",  dist: constant, value: 10}
+        - {when: "grade == 'یازدهم'",  dist: constant, value: 11}
+        - {default: true, dist: constant, value: 12}
+
+    # Age follows grade (modal age = grade + 6) with realistic off-by-one for
+    # late starters and repeaters. Every branch stays inside 13–18, which is both
+    # the requested frame and the only range the form's own age question offers.
+    - name: age
+      dist: conditional
+      cases:
+        - {when: "grade_level == 7",  dist: categorical, choices: [[13, 0.85], [14, 0.15]]}
+        - {when: "grade_level == 8",  dist: categorical, choices: [[13, 0.05], [14, 0.85], [15, 0.10]]}
+        - {when: "grade_level == 9",  dist: categorical, choices: [[14, 0.07], [15, 0.85], [16, 0.08]]}
+        - {when: "grade_level == 10", dist: categorical, choices: [[15, 0.07], [16, 0.85], [17, 0.08]]}
+        - {when: "grade_level == 11", dist: categorical, choices: [[16, 0.08], [17, 0.85], [18, 0.07]]}
+        - {default: true,             dist: categorical, choices: [[17, 0.12], [18, 0.88]]}
+
+    # The form's age options are written without a space («13سال»), so the
+    # numeric age above cannot be bound to the radio directly.
+    - name: age_option
+      dist: conditional
+      cases:
+        - {when: "age == 13", dist: constant, value: "13سال"}
+        - {when: "age == 14", dist: constant, value: "14سال"}
+        - {when: "age == 15", dist: constant, value: "15سال"}
+        - {when: "age == 16", dist: constant, value: "16سال"}
+        - {when: "age == 17", dist: constant, value: "17سال"}
+        - {default: true,     dist: constant, value: "18سال"}
+
+    # Daily hours online is a FACT about the respondent, not an opinion, so it is
+    # sampled from the addiction trait rather than left to the model — that keeps
+    # it coherent with the 20 IAT answers instead of contradicting them.
+    #
+    # REVIEW: the form's own bands are malformed — «3تا5ساعت» is followed by
+    # «بیش از7ساعت», so 5–7 hours has no bucket. Left exactly as extracted; an
+    # option string the browser cannot find is an unclickable radio.
+    - name: daily_internet_hours
+      dist: conditional
+      cases:
+        - when: "z.internet_addiction > 1.0"
+          dist: categorical
+          choices: [["بیش از7ساعت", 0.55], ["3تا5ساعت", 0.30], ["1تا3ساعت", 0.13], ["کمتراز1ساعت", 0.02]]
+        - when: "z.internet_addiction > 0.0"
+          dist: categorical
+          choices: [["بیش از7ساعت", 0.22], ["3تا5ساعت", 0.38], ["1تا3ساعت", 0.33], ["کمتراز1ساعت", 0.07]]
+        - when: "z.internet_addiction > -1.0"
+          dist: categorical
+          choices: [["بیش از7ساعت", 0.08], ["3تا5ساعت", 0.22], ["1تا3ساعت", 0.48], ["کمتراز1ساعت", 0.22]]
+        - default: true
+          dist: categorical
+          choices: [["بیش از7ساعت", 0.02], ["3تا5ساعت", 0.08], ["1تا3ساعت", 0.40], ["کمتراز1ساعت", 0.50]]
+
+  # No factual value on this form needs computing outside the frame above.
+  derived_fields: []
+
+# -----------------------------------------------------------------------------
+# 2. SCHEMA INTERPRETATION
+# -----------------------------------------------------------------------------
+# CODING DIRECTION — the one thing here that is silently wrong if you get it
+# wrong. `low_first` = option[0] is the LOW end (score = index + 1);
+# `high_first` = option[0] is the HIGH end (score = K - index).
+scales:
+  # 76 parenting items. option[0] is «خیلی موافقم» — the HIGH end of agreement —
+  # so this is high_first. Getting this backwards would invert every parenting
+  # score and quietly flip both hypotheses.
+  - name: agreement5_parenting
+    match: {options_equal: ["خیلی موافقم", "موافقم", "تا حدودی", "مخالفم", "خیلی مخالفم"]}
+    coding: high_first
+
+  # IAT frequency, option[0] «به ندرت» is the LOW end → low_first.
+  - name: iat_frequency5
+    match: {options_equal: ["به ندرت", "گاهی اوقات", "اغلب", "بیشتر اوقات", "همیشه"]}
+    coding: low_first
+
+  # REVIEW: 4 IAT items carry «بیشتراوقات» (no space) where the other 16 have
+  # «بیشتر اوقات». `options_equal` is an exact set comparison and normalization
+  # collapses runs of whitespace but never deletes it, so these do NOT share a
+  # signature. Declared separately rather than "fixed" — the schema records what
+  # is really on the page.
+  - name: iat_frequency5_variant
+    match: {options_equal: ["به ندرت", "گاهی اوقات", "اغلب", "بیشتراوقات", "همیشه"]}
+    coding: low_first
+
+  # The 13 PAQ items arrive in four near-identical 4-point variants
+  # («برخی اوقات»/«گاهی اوقات» and «تاحدودی»/«حدودا»).
+  # All four run «همیشه» → «هرگز», i.e. high end first.
+  - name: paq_frequency4_a
+    match: {options_equal: ["همیشه", "برخی اوقات", "تاحدودی", "هرگز"]}
+    coding: high_first
+  - name: paq_frequency4_b
+    match: {options_equal: ["همیشه", "گاهی اوقات", "تاحدودی", "هرگز"]}
+    coding: high_first
+  - name: paq_frequency4_c
+    match: {options_equal: ["همیشه", "برخی اوقات", "حدودا", "هرگز"]}
+    coding: high_first
+  - name: paq_frequency4_d
+    match: {options_equal: ["همیشه", "گاهی اوقات", "حدودا", "هرگز"]}
+    coding: high_first
+
+  # Demographic response formats. Declared so the coverage report accounts for
+  # them explicitly; all five are bound in `static_answers` and therefore never
+  # reach a construct or the reliability statistics.
+  - name: demo_grade6
+    match: {options_equal: ["هفتم", "هشتم", "نهم", "دهم", "یازدهم", "دوازدهم"]}
+    coding: low_first
+  - name: demo_age6
+    match: {options_equal: ["13سال", "14سال", "15سال", "16سال", "17سال", "18سال"]}
+    coding: low_first
+  - name: demo_gender2
+    match: {options_equal: ["دختر", "پسر"]}
+    coding: low_first
+  - name: demo_city2
+    match: {options_equal: ["تهران", "شهرکرد"]}
+    coding: low_first
+  - name: demo_hours4
+    match: {options_equal: ["کمتراز1ساعت", "1تا3ساعت", "3تا5ساعت", "بیش از7ساعت"]}
+    coding: low_first
+
+# -----------------------------------------------------------------------------
+# CONSTRUCTS
+# -----------------------------------------------------------------------------
+# Seven constructs over three latent traits. The split is driven by two forces:
+#
+#   1. A construct is the LLM REQUEST UNIT — one call per construct per
+#      respondent. 76 parenting items in one JSON object invites truncation and
+#      drives Cronbach's alpha to implausible highs. Chunks here are 8–20 items.
+#   2. Reverse-keyed items are grouped with their own pole, so the model is not
+#      asked to hold "high = more" and "high = less" in mind within one chunk.
+#
+# All rules are explicit `question_id_in` lists and are mutually disjoint, so
+# evaluation order does not matter here.
+constructs:
+  # === اعتیاد به اینترنت =======================================================
+  # Young's IAT, all 20 items, all direct: a higher frequency always means more
+  # addiction. Kept as ONE construct — splitting a unidimensional published scale
+  # would report two meaningless alphas instead of the one that matters.
+  - key: internet_addiction
+    label: "اعتیاد به اینترنت و الگوی استفاده از فضای مجازی"
+    traits: [internet_addiction]
+    match:
+      question_id_in:
+        - "50271689"   # چند وقت یکبار برای زمانی طولانی تر از آنچه که دوست داشتی، در اینترنت می مانی؟
+        - "50271799"   # چند وقت یکبار از انجام کارهای خانه صرف نظر می کنی تا زمان بیشتری را در اینترنت بمانی؟
+        - "50271891"   # چند وقت یکبار هیجانِ بودن در اینترنت را به گذراندن وقت خود با خانواده (یا هر دوست نزدیک…
+        - "50272627"   # چند وقت یکبار به دنبال ایجاد ارتباط جدیدی با کاربران اینترنتی هستی؟
+        - "50272718"   # چند وقت یکبار افراد خانواده ات از مدت زمانی که در اینترنت صرف می کنی،ابراز ناراحتی می ک…
+        - "50272862"   # چند وقت یکبار مقدار زمانی که در اینترنت صرف می کنی،موجب انجام ندادن وظایف یا انجام تکال…
+        - "50273118"   # چند وقت یکبار قبل از انجام هر کار ضروری فضای مجازی خود را چک می کنی؟
+        - "50273196"   # چند وقت یکبار پرداختن به اینترنت، موجب ایجاد مشکل در کارت می شود؟
+        - "50273441"   # چند وقت یکبار، وقتی اطرافیان از شما می پرسند در اینترنت چکار می کنی،حالت دفاعی یا پنهان…
+        - "50273494"   # چند وقت یکبار سعی می کنی خودت را از دست افکار آزارنده در زندگی، با مشغول کردن خود در ای…
+        - "50273532"   # چند وقت یکبار،دوباره وارد اینترنت شدن را زود تر از زمانی که قصد داشتی،شروع می کنی؟
+        - "50273557"   # چند وقت یکبار می ترسی که زندگیت بدون اینترنت ملال آور،پوچ و بدون شادی خواهد بود؟
+        - "50273635"   # هر چند وقت یکبار زمانی که در اینترنت هستی و کسی مزاحمت شود،ناراحت می شوی و به طور ناگها…
+        - "50273708"   # چند وقت یکبار خوابت را به خاطر اینکه شب تا دیر وقت در اینترنت هستی از دست می دهی؟
+        - "50273836"   # چند وقت یکبار وقتی که در اینترنت نیستی احساس می کنی که بد جوری فکرت در پی آن است و هوس …
+        - "50274059"   # هر چندوقت یک بار به خودت می گویی فقط^ چند دقیقه دیگر ^وقتی در حال رفتن به اینترنت هستی؟
+        - "50274085"   # هر چند وقت یکبار سعی می کنی مدت زمانی را که در اینترنت هستی را کوتاه کنی، اما نتوانستی؟
+        - "50274141"   # هر چند وقت یکبار سعی می کنی مدت زمان در اینترنت بودنت را از دیگران پنهان کنی؟
+        - "50274190"   # هر چند وقت یکبار صرف کردن وقت بیشتر در اینترنت را بر بیرون رفتن با دیگران ترجیح می دهی؟
+        - "50274220"   # هر چند وقت یکبار احساس می کنی که وقتی در اینترنت نیستی افسرده یا عصبی هستی، در حالی که …
+    reverse_when: {never: true}
+
+  # === محبت و پذیرش والدینی — قطب مثبت =========================================
+  # Warmth, praise, emotional availability, shared activity, being consulted.
+  - key: parental_affection_warmth
+    label: "محبت، پذیرش و حمایت عاطفی والدین"
+    traits: [parental_affection]
+    match:
+      question_id_in:
+        - "50277086"   # وقتی درسها و کارهای دیگرم را به اتمام میرسانم والدینم رضایت خاطر نشان میدهند
+        - "50277174"   # پدرومادرم برای من امکانات فراهم میکنند تا بتوانم به کارهای ذوقی و مورد علاقه ام بپردازم
+        - "50277385"   # وقتی ناراحتی خود را با پدرومادر در میان میگذارم آنها کاری میکنند که احساس آرامش کنم
+        - "50277407"   # وقتی غمگینم والدینم با من همدردی می کنند
+        - "50277428"   # گاهی فکر میکنم آنها که پدر و مادر ندارند چقدر تنها و بی پناه اند.
+        - "50277450"   # والدینم اغلب در هرموردی مرا تشویق میکنند
+        - "50277569"   # در گفتگوی خانوادگی اغلب از کارهای من به عنوان شیرین کاری و خاطره خوش تعریف میکنند
+        - "50277480"   # والدینم اغلب از کارهای خوب من حرف میزنند.
+        - "50277605"   # والدینم از حرف زدن با من راجع به چیزهای مختلف لذت میبرند
+        - "50277638"   # ازاینکه باهم بعضی از کارهای منزل را انجام دهیم خوششان می آید.
+        - "50278007"   # وقتی قرار باشد کاری بکنیم یا جایی برویم نظرمرا میپرسند.
+        - "50278104"   # همیشه بامن با یک لحن محبت آمیز و گرم حرف می زنند
+        - "50278211"   # اغلب با قیافه بشاش بامن برخورد میکنند.
+        - "50278232"   # اغلب چیزهایی که مرا خوشحال می کند برایم میخرند
+        - "50278276"   # والدینم مرا خیلی دوست دارند
+        - "50278297"   # با دوستان من خیلی بامحبت رفتار می کنند
+        - "50278376"   # اغلب سعی میکنند نظرات و عقاید مرا بشناسند
+        - "50278399"   # من با آنها راجع به مسائل مختلف بحث میکنیم
+        - "50278601"   # من و والدینم حدود انتظارات یکدیگر را دقیقا می دانیم
+    reverse_when: {never: true}
+
+  # === محبت و پذیرش والدینی — قطب منفی =========================================
+  # Rejection, hostility, ridicule, neglect and love-withdrawal. EVERY item here
+  # is reverse-keyed: endorsing it means LESS parental affection. That is why
+  # they sit in their own chunk rather than mixed in above.
+  #
+  # REVIEW: 50277224 (physical punishment) and 50277259 (withdrawal of affection)
+  # are punishment techniques and could equally be read as harsh discipline. They
+  # are scored here as hostility/rejection, following Schaefer's warmth axis.
+  - key: parental_affection_rejection
+    label: "طرد، سرزنش و بی‌اعتنایی والدین"
+    traits: [parental_affection]
+    match:
+      question_id_in:
+        - "50277224"   # وقتی از دستم ناراحت میشوند مرا کتک میزنند
+        - "50277259"   # اگر حرفشان را گوش نکنم محبت خود را ازمن دریغ می کنند
+        - "50278647"   # آنها بعضی اوقات میگویند که احمق و نفهم هستم
+        - "50278661"   # اگرباکسی اختلاف پیداکنم حتما فکر میکنند که من مقصرهستم
+        - "50278744"   # تابه حال یکبار هم نشده که ازمن تعریف کنند
+        - "50278818"   # اغلب به من سرکوفت دیگران را میزنند
+        - "50278854"   # وقتی دردسترس نباشم که کمکشان کنم خیلی زود عصبانی میشوند
+        - "50278871"   # وقتی در منزل یا اطراف آنها سروصدا ایجاد کنم عصبانی می شوند .
+        - "50278894"   # پدر ومادرم منتظرند یک اشتباه بکنم تا سرم داد بزنند
+        - "50279029"   # طوری با من رفتار می کنند که انگار مزاحم آنها هستم
+        - "50279043"   # اغلب خوشحال میشوند که دقایقی هم که شده از شر من راحت شوند
+        - "50279055"   # همیشه از زندگی شکایات میکنند که چرا من نصیب انها شده ام
+        - "50279067"   # آنها حتی از دوستان من خوششان نمی آید
+        - "50279082"   # چیزهایی که لازم دارم اغلب یادشان میرود بخرند
+        - "50279149"   # اهمیتی به وضع لباس من نمیدهند و علاقه ای ندارند لباس خوبی بپوشم
+        - "50279160"   # بامن زیاد حرف نمیزنند
+        - "50279179"   # در هیچ کاری مرا شرکت نمیدهند
+        - "50279187"   # گاهی فراموش میکنند فرزند چندم هستم و چند سال سن دارم
+    reverse_when:
+      question_id_in:
+        - "50277224"   # وقتی از دستم ناراحت میشوند مرا کتک میزنند
+        - "50277259"   # اگر حرفشان را گوش نکنم محبت خود را ازمن دریغ می کنند
+        - "50278647"   # آنها بعضی اوقات میگویند که احمق و نفهم هستم
+        - "50278661"   # اگرباکسی اختلاف پیداکنم حتما فکر میکنند که من مقصرهستم
+        - "50278744"   # تابه حال یکبار هم نشده که ازمن تعریف کنند
+        - "50278818"   # اغلب به من سرکوفت دیگران را میزنند
+        - "50278854"   # وقتی دردسترس نباشم که کمکشان کنم خیلی زود عصبانی میشوند
+        - "50278871"   # وقتی در منزل یا اطراف آنها سروصدا ایجاد کنم عصبانی می شوند .
+        - "50278894"   # پدر ومادرم منتظرند یک اشتباه بکنم تا سرم داد بزنند
+        - "50279029"   # طوری با من رفتار می کنند که انگار مزاحم آنها هستم
+        - "50279043"   # اغلب خوشحال میشوند که دقایقی هم که شده از شر من راحت شوند
+        - "50279055"   # همیشه از زندگی شکایات میکنند که چرا من نصیب انها شده ام
+        - "50279067"   # آنها حتی از دوستان من خوششان نمی آید
+        - "50279082"   # چیزهایی که لازم دارم اغلب یادشان میرود بخرند
+        - "50279149"   # اهمیتی به وضع لباس من نمیدهند و علاقه ای ندارند لباس خوبی بپوشم
+        - "50279160"   # بامن زیاد حرف نمیزنند
+        - "50279179"   # در هیچ کاری مرا شرکت نمیدهند
+        - "50279187"   # گاهی فراموش میکنند فرزند چندم هستم و چند سال سن دارم
+
+  # === نظارت و نظم‌دهی — قواعد و پیگیری ========================================
+  # Rule-setting, monitoring, expectations, control over friends and choices.
+  - key: parental_supervision_rules
+    label: "قاعده‌گذاری، پیگیری و کنترل والدینی"
+    traits: [parental_supervision]
+    match:
+      question_id_in:
+        - "50276406"   # اگر به موقع سرغذا خوردن حاضر نشوم پدرومادرم با من دعوا می کنند
+        - "50276581"   # اگر بدون انجام کارهایی که از من خواسته اند از منزل خارج شوم والدین ناراحت میشوند.
+        - "50276666"   # والدین ازمن میخواهند هرچیزی دربیرون اتفاق افتاده برایشان شرح دهم
+        - "50276714"   # از دیگران راجع به کارهای بیرون از منزل می پرسند
+        - "50276726"   # دوستان مرا در حقیقت پدر و مادر انتخاب می کنند
+        - "50276798"   # پدر و مادرم انتظار ندارند من عصبانی شوم
+        - "50276827"   # آنها دوست ندارند با کسی دعوا کنم
+        - "50276852"   # اگر با خواهر و برادرم اختلافی پیدا کنم به جای دعواکردن باید پیش والدینم بروم
+        - "50276861"   # وقتی نصیحت آنها را گوش ندهم رنجیده خاطر می گردند
+        - "50276872"   # وقتی حرفشان را گوش نکنم احساس می کنند من ناسپاس هستم
+        - "50276889"   # .همیشه به من میگویند که چکار کنم و چکار نباید بکنم
+        - "50276905"   # پدر و مادرم دوست دارند تمام کارهایم را کنترل کنند
+        - "50276931"   # من وخواهر و برادرهایم در هرکاری باید اول با پدر و مادر مشورت کنیم
+        - "50276949"   # والدینم در طرز رفتار من با سایر اعضای خانواده خیلی دقیق هستن
+        - "50276967"   # .در انتخاب رشته تحصیلی والدینم اصرار دارند رشته بخصوصی را انتخاب کنم
+        - "50277012"   # پدر و مادرم فکر میکنند اگر بچه ها را به حال خودشان بگذارند بد راه می شوند.
+        - "50277140"   # در منزل ما همه باید وسایل را سرجای خود بگذارند
+        - "50277237"   # وقتی بخواهند کاری را انجام دهم مجبورم فورا اطاعت کنم
+        - "50278614"   # والدینم اغلب مقررات منزل را توضیح میدهند
+    reverse_when: {never: true}
+
+  # === نظارت و نظم‌دهی — ثبات و اجرای پیامد ====================================
+  # Whether rules are predictable and actually enforced, and whether the parents
+  # agree with each other.
+  - key: parental_supervision_consistency
+    label: "ثبات و پیگیریِ قاطع قواعد در خانواده"
+    traits: [parental_supervision]
+    match:
+      question_id_in:
+        - "50276986"   # من در همه موارد به سادگی میتوانم پیش بینی کنم که چه رفتاری مورد خشم و کدام رفتار مورد ت…
+        - "50277002"   # اگر کاری باعث شود مرا تنبیه یا تشویق کنند خواهر و برادرم نیز به همان علت می توانند تنبی…
+        - "50277042"   # والدینم اگر تهدیدی بکنند به آن عمل می کندد
+        - "50277054"   # بین پدر و مادرم از نظر تربیت بچه ها اختلاف نظر چندانی وجود ندارد
+        - "50277072"   # اگر یکی از والدینم با من دعوا کنند دیگری دخالتی در جلوگیری آن نمیکند.
+        - "50277190"   # وقتی به حرف والدینم گوش نمیدهم آنها به من میفهمانند که از من راضی نیستند
+        - "50277205"   # وقتی دستورات آنها را اجرا نکنم مرا تهدید به تنبیه های مختلف می کنند
+        - "50277273"   # وقتی دستورشان را انجام ندهم سعی میکنند چیزی را که دوست ندارم به من ندهند
+    reverse_when: {never: true}
+
+  # === نظارت و نظم‌دهی — قطب سهل‌گیری ==========================================
+  # Unrestricted freedom and rules that are announced but never enforced. EVERY
+  # item is reverse-keyed: endorsing it means LESS supervision.
+  - key: parental_supervision_permissiveness
+    label: "آزادی عمل و سهل‌گیری والدین"
+    traits: [parental_supervision]
+    match:
+      question_id_in:
+        - "50276247"   # من اجازه دارم هروقت دلم خواست از منزل بیرون بروم
+        - "50276289"   # من میتوانم هرکجا دلم خواست بروم بدون اینکه اجازه بگیرم
+        - "50276447"   # من هرنوع لباسی که بپوشم آنها مخالفت نمی کنند
+        - "50276485"   # والدینم در انتخاب دوستانم دخالتی نمی کنند
+        - "50276471"   # .من اجازه دارم هروقت خواستم دوستانم را به منزل ببرم
+        - "50276517"   # من خیلی راحت میتوانم با عقاید والدینم مخالفت کنم
+        - "50276569"   # والدینم اگر مرا عصبانی کنند جوابشان را می دهم
+        - "50276596"   # والدینم به سادگی کارهای بد مرا میبخشند
+        - "50276615"   # .اغلب آنها میگویند اگر فلان کار را نکنی چنین می کنند ولی بعد یادشان میرود
+        - "50276631"   # .اغلب آنها راجع به لباس پوشیدن نصیحتهایی میکنند ولی اگر گوش نکنم کاری نمی کنند.
+        - "50276650"   # وقتی درسم را نخوانده باشم باز هم میتوانم با دوستانم بیرون بروم و والدین ایراد نمیگیرند
+        - "50276686"   # والدین بارها گفته اند با چه کسانی دوست شوم ولی اگر گوش نکنم ناراحت نمیشوند.
+    reverse_when:
+      question_id_in:
+        - "50276247"   # من اجازه دارم هروقت دلم خواست از منزل بیرون بروم
+        - "50276289"   # من میتوانم هرکجا دلم خواست بروم بدون اینکه اجازه بگیرم
+        - "50276447"   # من هرنوع لباسی که بپوشم آنها مخالفت نمی کنند
+        - "50276485"   # والدینم در انتخاب دوستانم دخالتی نمی کنند
+        - "50276471"   # .من اجازه دارم هروقت خواستم دوستانم را به منزل ببرم
+        - "50276517"   # من خیلی راحت میتوانم با عقاید والدینم مخالفت کنم
+        - "50276569"   # والدینم اگر مرا عصبانی کنند جوابشان را می دهم
+        - "50276596"   # والدینم به سادگی کارهای بد مرا میبخشند
+        - "50276615"   # .اغلب آنها میگویند اگر فلان کار را نکنی چنین می کنند ولی بعد یادشان میرود
+        - "50276631"   # .اغلب آنها راجع به لباس پوشیدن نصیحتهایی میکنند ولی اگر گوش نکنم کاری نمی کنند.
+        - "50276650"   # وقتی درسم را نخوانده باشم باز هم میتوانم با دوستانم بیرون بروم و والدین ایراد نمیگیرند
+        - "50276686"   # والدین بارها گفته اند با چه کسانی دوست شوم ولی اگر گوش نکنم ناراحت نمیشوند.
+
+  # === پرسشنامه اقتدار والدینی (PAQ) ===========================================
+  # The 13-item 4-point block. Mixed direction: the four permissive items are
+  # reverse-keyed onto the same supervision trait.
+  - key: parental_authority_paq
+    label: "اقتدار و راهبری والدین در انجام امور"
+    traits: [parental_supervision]
+    match:
+      question_id_in:
+        - "50279727"   # اطمینان حاصل می کنند که من نسبت به کارها و امور محوله کاملا آگاهی و شناخت دارم.
+        - "50279854"   # هنگامی که از خانه خارج می شوم، حتما به من یادآوري می کنند که دقیقا راس ساعت به خانه برگ…
+        - "50279918"   # شیوه رفتارم را به من دیکته می کنند.
+        - "50280670"   # به تدوین و رعایت قوانین متعددي در رابطه با من اعتقاد دارند.
+        - "50280726"   # ازادي عمل قابل توجهی براي من قائل اند
+        - "50280803"   # وظایف و مسئولیت هایم را به من گوشزد می کنند
+        - "50280863"   # بدون اینکه سوالی از من بپرسند، این اجازه را به من می دهند تا هر جایی مایل بودم بروم.
+        - "50280900"   # به صراحت به این امر معتقد اند که من می بایستی طبق گفته هاي انها عمل کنم.
+        - "50280930"   # این اجازه را به من می دهند تا هر زمانی که مایل بودم، خانه را ترك کنم.
+        - "50281019"   # به شدت تمایل دارند تا من را در مسیر انجام امور محوله راهنمایی و ارشاد کنند.
+        - "50281086"   # وظایف و امور خاصی را به من واگذار می کنند و تا زمانی که آن کارها را به انجام نرسانم، اج…
+        - "50281182"   # این اجازه را به من می دهند تا طبق علاقه ام رفتار کنم.
+        - "50281206"   # می کوشندکارهاي من را کنترل و راهبري کنند
+    reverse_when:
+      question_id_in:
+        - "50280726"   # ازادي عمل قابل توجهی براي من قائل اند
+        - "50280863"   # بدون اینکه سوالی از من بپرسند، این اجازه را به من می دهند تا هر جایی مایل بودم بروم.
+        - "50280930"   # این اجازه را به من می دهند تا هر زمانی که مایل بودم، خانه را ترك کنم.
+        - "50281182"   # این اجازه را به من می دهند تا طبق علاقه ام رفتار کنم.
+
+# -----------------------------------------------------------------------------
+# 3. STATIC ANSWERS — answered from the persona record, never by the LLM
+# -----------------------------------------------------------------------------
+# Each value must render to EXACTLY one of that question's option strings. Every
+# one of these is a RADIO, so all five are sampled as categoricals over the
+# literal strings above rather than as numbers to be formatted here.
+static_answers:
+  - name: grade
+    match: {question_id_in: ["50270726"]}   # پایه تحصیلی شماچیست؟
+    value: "{{ persona.demographics.grade }}"
+  - name: age
+    match: {question_id_in: ["50270688"]}   # سن شماچقدر است؟
+    value: "{{ persona.demographics.age_option }}"
+  - name: gender
+    match: {question_id_in: ["50270618"]}   # جنسیت شماچیست؟
+    value: "{{ persona.demographics.gender }}"
+  - name: city
+    match: {question_id_in: ["50270785"]}   # شهر محل سکونت خود را انتخاب کنید:
+    value: "{{ persona.demographics.city }}"
+  - name: daily_internet_hours
+    match: {question_id_in: ["50270936"]}   # به طور روزانه چند ساعت از اینترنت استفاده می کنید؟
+    value: "{{ persona.demographics.daily_internet_hours }}"
+
+# The only free-text question on the form, and explicitly «(اختیاری)». Skipping
+# it drops it from generation AND from the completeness denominator, so the
+# min_ratio: 1.0 gate below is measured over the 114 required questions.
+# Do NOT bind a fabricated e-mail address here.
+skip:
+  - question_id_in: ["50293066"]   # در صورتی که تمایل دارید از نتایج این پژوهش مطلع شوید، می‌توانید آدرس ایمیل خود ر
+
+# -----------------------------------------------------------------------------
+# 4. ANSWERING POLICY
+# -----------------------------------------------------------------------------
+answering:
+  chunk_by: construct
+  shuffle_within_chunk: true
+  temperature: {min: 0.55, max: 0.85}
+
+  normalization:
+    unicode: NFKC
+    fold_arabic_to_persian: true      # ي→ی ، ك→ک — the PAQ items use Arabic yeh
+    zwnj: strip
+    strip_trailing: ".,؛،۔"
+
+  fuzzy: {algorithm: ratio, min_score: 86}
+
+  completeness:
+    # 1.0, not the 0.95 default: every remaining question is required, and a set
+    # accepted with blanks here stalls in phase 4 on an empty radio group.
+    min_ratio: 1.0
+    denominator: answerable
+    max_retries: 2
+    retry_scope: failed_constructs_only
+
+  careless:
+    enabled: true
+    anchor_stickiness: 0.70
+    drift: [-1, 1]
+    apply_static_answers: true
+
+  reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
+
+response_style_nudges:
+  rules:
+    - {when: "acquiescence > 0.30",      text: "در گویه‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های موافق/بالاتر داری."}
+    - {when: "acquiescence < -0.30",     text: "در گویه‌های مرزی که مطمئن نیستی، گرایش خفیفی به سمت گزینه‌های مخالف/پایین‌تر داری."}
+    - {when: "extreme_response > 0.30",  text: "وقتی گزینه‌ای واقعاً با حال‌وروزت می‌خواند، راحت از گزینه‌ی انتهای طیف (مثل «همیشه» یا «خیلی موافقم») استفاده می‌کنی."}
+    - {when: "extreme_response < -0.30", text: "معمولاً گزینه‌های ملایم و میانی را به گزینه‌های انتهای طیف ترجیح می‌دهی."}
+  default: "سبک پاسخ‌دهی‌ات معمولی و متعادل است."
+
+# -----------------------------------------------------------------------------
+# 5. ANALYSIS
+# -----------------------------------------------------------------------------
+analysis:
+  reverse_keys_from: config           # never auto-flip on observed sign
+  warn_on_sign_disagreement: true
+  # Every psychometric scale here is 4- or 5-point, so nothing is excluded; the
+  # two 2-option questions on the form are demographics and are static-bound.
+  response_style_min_scale_points: 3
+  straightlining: {scope: within_construct, sd_threshold: 0.5}
+  sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
+  min_items_for_alpha: 3

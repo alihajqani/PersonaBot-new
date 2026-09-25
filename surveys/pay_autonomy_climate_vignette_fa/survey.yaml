@@ -1,0 +1,470 @@
+# =============================================================================
+# PersonaBot survey spec —
+#   Vignette experiment: performance-contingent pay × job autonomy ×
+#   organisational climate → work motivation, effort and expected performance.
+#
+# Live Porsline form: https://survey.porsline.ir/s/Yiz8N63e
+# Persian. A master's thesis questionnaire.
+#
+# DESIGN (read off the scenarios document, «سناریوها.docx»):
+#   The form opens on a framing statement («فرض کنید در یک سازمان مشغول به کار
+#   هستید…»), then shows ONE of 12 scenario statements, drawn at random by the
+#   form per session. Every respondent then answers the same items.
+#
+#     pay       emphasized  1–4   half the pay is contingent AND the manager keeps
+#                                 stressing the bonus
+#               plain       5–8   half the pay is contingent, never stressed
+#               none        9–12  pay is not mentioned at all
+#     autonomy  high / low        alternating in pairs
+#     climate   controlling / supportive
+#
+#   A 3 × 2 × 2 between-subjects design. `scenarios:` below holds the texts
+#   verbatim. Phase 2 spreads personas evenly over the 12 cells, phase 3 hands
+#   each persona its scenario text, and phase 4 only spends an answer set on a
+#   browser session whose form drew the same scenario.
+#
+# Instrument, as read off the extracted schema (all items share one 5-point
+# agreement scale, «خیلی موافقم» first):
+#   • 4 + 3 + 3  manipulation checks — pay emphasis, autonomy, controlling climate
+#   • 3          work effort intention
+#   • 3          expected performance (quality, quantity, timeliness)
+#   • 18         Multidimensional Work Motivation Scale (Gagné et al., 2015):
+#                amotivation, extrinsic-social, extrinsic-material, introjected,
+#                identified, intrinsic — 3 items each, in the published order
+#   • 6          demographics: age, province, gender, field of study, work
+#                experience, and a closing comment box. ALL are required.
+#
+# Question ids and option strings are copied verbatim from form_schema.json.
+# =============================================================================
+version: 2
+id: pay_autonomy_climate_vignette_fa
+locale: fa
+
+# Migrated from the 2.x fork `PersonaBot-new-behnaz` (its .env and Makefile).
+form:
+  provider: porsline
+  url: https://survey.porsline.ir/s/Yiz8N63e
+  max_pages: 400
+# -----------------------------------------------------------------------------
+# 1. POPULATION — Iranian adults with a university background, reached online
+# -----------------------------------------------------------------------------
+population:
+  seed: null
+
+  # Latent traits are DISPOSITIONS — what a respondent brings to any job. The
+  # scenario is the situation, and it reaches the model as text in phase 3. The
+  # experimental effects therefore come from how each disposition reads each
+  # vignette, which is what the design is meant to measure. Nothing here encodes
+  # a hypothesised effect of a scenario.
+  #
+  #   M = general work engagement      E = sensitivity to external contingencies
+  #
+  # Implied correlations — `make validate` prints this matrix, READ IT:
+  #   r(autonomous, controlled)      = +0.33  MWMS identified/intrinsic vs
+  #                                           introjected/extrinsic: modest, positive
+  #   r(autonomous, amotivation)     = -0.44
+  #   r(controlled, amotivation)     = -0.11  external regulation is close to
+  #                                           orthogonal to amotivation
+  #   r(conscientiousness, autonomous) = +0.43
+  #   r(conscientiousness, amotivation) = -0.31
+  #   r(attention, *)                ≈ +0.1…+0.2
+  latent_model:
+    common_factors: [M, E]
+    dimensions:
+      autonomous_motivation:
+        loadings: {M: 0.75, E: 0.10}          # ΣL² = 0.573
+        label: "انگیزه‌ی درونی و ارزشی برای کار (لذت بردن از کار و مهم دانستن آن)"
+      controlled_motivation:
+        loadings: {M: 0.35, E: 0.65}          # ΣL² = 0.545
+        label: "حساسیت به پاداش، تأیید دیگران و احساس تعهد درونی‌شده (شرم یا عذاب وجدان)"
+      amotivation:
+        loadings: {M: -0.60, E: 0.15}         # ΣL² = 0.383
+        label: "بی‌انگیزگی و بی‌معنا دانستن کار"
+      work_conscientiousness:
+        loadings: {M: 0.55, E: 0.15}          # ΣL² = 0.325
+        label: "وظیفه‌شناسی و سخت‌کوشی در کار"
+      vignette_attention:
+        loadings: {M: 0.25, E: 0.0}           # ΣL² = 0.063
+        label: "دقت در خواندن و به خاطر سپردن جزئیات سناریو"
+
+  bands:
+    cuts:   [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5]
+    labels: ["خیلی پایین", "پایین", "کمی پایین", "متوسط", "کمی بالا", "بالا", "خیلی بالا"]
+
+  response_style:
+    acquiescence:     {dist: normal, mu: 0.0, sigma: 0.40}
+    extreme_response: {dist: normal, mu: 0.0, sigma: 0.40}
+    careless:         {dist: bernoulli, p: 0.04}
+
+  # --- demographics, in dependency order --------------------------------------
+  # Values bound to a RADIO are the form's literal option strings. Values bound
+  # to a TEXT box are written the way people type into one: «تهران», not
+  # «استان تهران»; «کامپیوتر» as often as «مهندسی کامپیوتر».
+  demographics:
+    - name: gender
+      dist: categorical
+      choices: [["خانم", 0.56], ["آقا", 0.44]]   # online convenience samples in
+                                                # Iran skew female
+
+    - name: age
+      dist: normal
+      mu: 30
+      sigma: 7
+      round: int
+      clip: [20, 55]
+      on_out_of_range: resample
+
+    # Not asked by the form; shapes the prose and the field of study.
+    - name: education_level
+      dist: conditional
+      cases:
+        - when: "age < 24"
+          dist: categorical
+          choices: [["کارشناسی", 0.80], ["کارشناسی ارشد", 0.15], ["کاردانی", 0.05]]
+        - default: true
+          dist: categorical
+          choices:
+            - ["کارشناسی", 0.42]
+            - ["کارشناسی ارشد", 0.43]
+            - ["دکتری", 0.09]
+            - ["کاردانی", 0.06]
+
+    - name: field_of_study
+      dist: categorical
+      choices:
+        - ["مدیریت بازرگانی", 0.09]
+        - ["مدیریت", 0.05]
+        - ["مدیریت دولتی", 0.05]
+        - ["مدیریت منابع انسانی", 0.03]
+        - ["مدیریت صنعتی", 0.03]
+        - ["حسابداری", 0.07]
+        - ["اقتصاد", 0.03]
+        - ["مهندسی کامپیوتر", 0.05]
+        - ["کامپیوتر", 0.03]
+        - ["مهندسی صنایع", 0.05]
+        - ["مهندسی برق", 0.03]
+        - ["عمران", 0.03]
+        - ["مهندسی مکانیک", 0.03]
+        - ["معماری", 0.02]
+        - ["روانشناسی", 0.06]
+        - ["علوم تربیتی", 0.03]
+        - ["حقوق", 0.04]
+        - ["پرستاری", 0.03]
+        - ["زبان انگلیسی", 0.03]
+        - ["شیمی", 0.02]
+        - ["زیست شناسی", 0.02]
+        - ["علوم ارتباطات", 0.02]
+        - ["جامعه شناسی", 0.02]
+        - ["ادبیات فارسی", 0.02]
+        - ["تربیت بدنی", 0.02]
+        - ["گرافیک", 0.02]
+        - ["مامایی", 0.01]
+        - ["ریاضی", 0.02]
+        - ["فیزیک", 0.01]
+        - ["کشاورزی", 0.02]
+        - ["داروسازی", 0.01]
+        - ["IT", 0.01]
+
+    - name: province
+      dist: categorical
+      choices:
+        - ["تهران", 0.28]
+        - ["البرز", 0.05]
+        - ["اصفهان", 0.07]
+        - ["خراسان رضوی", 0.07]
+        - ["فارس", 0.05]
+        - ["آذربایجان شرقی", 0.04]
+        - ["خوزستان", 0.04]
+        - ["مازندران", 0.04]
+        - ["گیلان", 0.03]
+        - ["آذربایجان غربی", 0.03]
+        - ["کرمان", 0.03]
+        - ["قم", 0.02]
+        - ["قزوین", 0.02]
+        - ["کرمانشاه", 0.02]
+        - ["یزد", 0.02]
+        - ["همدان", 0.02]
+        - ["مرکزی", 0.02]
+        - ["گلستان", 0.02]
+        - ["هرمزگان", 0.02]
+        - ["لرستان", 0.015]
+        - ["سیستان و بلوچستان", 0.015]
+        - ["اردبیل", 0.01]
+        - ["کردستان", 0.01]
+        - ["زنجان", 0.01]
+        - ["سمنان", 0.01]
+        - ["بوشهر", 0.01]
+        - ["چهارمحال و بختیاری", 0.01]
+        - ["خراسان شمالی", 0.005]
+        - ["خراسان جنوبی", 0.005]
+        - ["کهگیلویه و بویراحمد", 0.005]
+        - ["ایلام", 0.005]
+
+    # Older respondents have almost all worked; conscientious ones a little more.
+    - name: work_experience
+      dist: bernoulli
+      p: "clamp(0.30 + 0.045 * (age - 20) + 0.04 * z.work_conscientiousness, 0.25, 0.97)"
+      labels: {"true": "بله", "false": "خیر"}
+
+    # Not asked by the form; gives the prose a concrete working life.
+    - name: current_status
+      dist: conditional
+      cases:
+        - when: "work_experience == 'بله'"
+          dist: categorical
+          choices:
+            - ["کارمند تمام‌وقت در بخش خصوصی", 0.34]
+            - ["کارمند دولت یا شرکت دولتی", 0.24]
+            - ["شاغل پاره‌وقت یا پروژه‌ای", 0.12]
+            - ["کسب‌وکار شخصی یا آزادکار", 0.12]
+            - ["دانشجو با سابقه‌ی کار", 0.10]
+            - ["در حال حاضر بیکار و در جست‌وجوی کار", 0.08]
+        - default: true
+          dist: categorical
+          choices:
+            - ["دانشجو", 0.70]
+            - ["فارغ‌التحصیل در جست‌وجوی کار", 0.22]
+            - ["خانه‌دار", 0.08]
+
+    # The form requires this box. Most people type a token reply.
+    - name: closing_comment
+      dist: categorical
+      choices:
+        - ["ندارم", 0.24]
+        - ["نظری ندارم", 0.17]
+        - ["موفق باشید", 0.16]
+        - ["-", 0.09]
+        - ["خیر", 0.06]
+        - ["موفق و پیروز باشید", 0.06]
+        - ["ممنون", 0.04]
+        - ["سپاس", 0.03]
+        - ["نه", 0.03]
+        - ["سناریو کمی طولانی بود", 0.02]
+        - ["پرسشنامه خوبی بود، موفق باشید", 0.03]
+        - ["سوالات واضح بود", 0.02]
+        - ["برای پایان نامه تون آرزوی موفقیت دارم", 0.02]
+        - ["خسته نباشید", 0.03]
+
+  derived_fields: []
+
+# -----------------------------------------------------------------------------
+# 2. SCENARIOS — verbatim from «سناریوها.docx». Keys are the numbers the form
+#    prints in front of each scenario; that number is how phase 4 recognises
+#    which one the form drew.
+# -----------------------------------------------------------------------------
+scenarios:
+  - key: "1"
+    factors: {pay: emphasized, autonomy: high, climate: controlling}
+    text: "در سازمان شما ساختار پرداخت به‌گونه‌ای است که نیمی از دریافتی شما ثابت است و نیمی دیگر مستقیماً به عملکردتان در پروژه وابسته است. مدیر در طول انجام کار بارها بر پاداش مالی قابل توجه تأکید می‌کند و اشاره می‌کند که هرچه عملکرد شما بهتر باشد، پاداش مالی بیشتری دریافت خواهید کرد و نتیجه این پروژه به‌طور مستقیم بر پاداش مالی دریافتی شما اثر می‌گذارد. این موضوع به‌صورت مداوم در محیط کار یادآوری می‌شود.شما استقلال کاری بالایی در نحوه انجام کار دارید. می‌توانید درباره روش اجرای پروژه، ترتیب مراحل و زمان‌بندی فعالیت‌ها خودتان تصمیم بگیرید و برای هر مرحله نیاز به هماهنگی مستمر با سرپرست ندارید.محیط سازمان مبتنی بر کنترل و نظارت جدی است. تصمیم‌ها معمولاً به‌صورت یک‌طرفه اتخاذ می‌شوند، انتظار می‌رود دستورالعمل‌ها بدون بحث و گفتگو اجرا شوند و توضیح چندانی درباره دلایل تصمیم‌ها ارائه نمی‌شود. در صورت بروز مشکل، تمرکز مدیران بیشتر بر اصلاح سریع رفتار و تبعیت از دستورات است تا اینکه با تبادل نظر با کارکنان مشکل برطرف شود."
+
+  - key: "2"
+    factors: {pay: emphasized, autonomy: high, climate: supportive}
+    text: "در سازمان شما ساختار پرداخت به‌گونه‌ای است که نیمی از دریافتی شما ثابت است و نیمی دیگر مستقیماً به عملکردتان در همین پروژه وابسته است. مدیر در طول انجام کار بارها بر پاداش مالی قابل توجه تأکید می‌کند و اشاره می‌کند که هرچه عملکرد شما بهتر باشد، پاداش مالی بیشتری دریافت خواهید کرد و نتیجه این پروژه به‌طور مستقیم بر پاداش مالی دریافتی شما اثر می‌گذارد. این موضوع به‌صورت مداوم در محیط کار یادآوری می‌شود. شما استقلال کاری بالایی در نحوه انجام کار دارید. می‌توانید درباره روش اجرای پروژه، ترتیب مراحل و زمان‌بندی فعالیت‌ها خودتان تصمیم بگیرید و برای هر مرحله نیاز به هماهنگی مستمر با سرپرست ندارید.فضای سازمانی حمایتگر است. مدیران به دیدگاه‌ها و پیشنهادهای کارکنان توجه می‌کنند، دلایل تصمیم‌ها را توضیح می‌دهند و در صورت بروز چالش، به‌جای اعمال فشار، از کارکنان درخواست می‌کنند که نظراتشان را بیان کنند تا بر اساس این تبادل نظر راه‌حل مناسب پیدا شود."
+
+  - key: "3"
+    factors: {pay: emphasized, autonomy: low, climate: controlling}
+    text: "در سازمان شما ساختار پرداخت به‌گونه‌ای است که نیمی از دریافتی شما ثابت است و نیمی دیگر مستقیماً به عملکردتان در همین پروژه وابسته است.مدیر در طول انجام کار بارها بر پاداش مالی قابل توجه تأکید می‌کند و اشاره می‌کند که هرچه عملکرد شما بهتر باشد، پاداش مالی بیشتری دریافت خواهید کرد و نتیجه این پروژه به‌طور مستقیم بر پاداش مالی دریافتی شما اثر می‌گذارد. این موضوع به‌صورت مداوم در محیط کار یادآوری می‌شود.شما استقلال کاری پایینی در نحوه انجام کار دارید. مراحل انجام کار، روش اجرا و زمان‌بندی‌ها از پیش تعیین شده‌اند و برای هر تغییر یا تصمیم خارج از چارچوب باید با سرپرست هماهنگ کنید. انتظار می‌رود کار دقیقاً مطابق دستورالعمل‌ها انجام شود.محیط سازمان مبتنی بر کنترل و نظارت جدی است. تصمیم‌ها معمولاً به‌صورت یک‌طرفه اتخاذ می‌شوند، انتظار می‌رود دستورالعمل‌ها بدون بحث و گفتگو اجرا شوند و توضیح چندانی درباره دلایل تصمیم‌ها ارائه نمی‌شود. در صورت بروز مشکل، تمرکز مدیران بیشتر بر اصلاح سریع رفتار و تبعیت از دستورات است تا اینکه با تبادل نظر با کارکنان مشکل برطرف شود."
+
+  - key: "4"
+    factors: {pay: emphasized, autonomy: low, climate: supportive}
+    text: "در سازمان شما ساختار پرداخت به‌گونه‌ای است که نیمی از دریافتی شما ثابت است و نیمی دیگر مستقیماً به عملکردتان در همین پروژه وابسته است. مدیر در طول انجام کار بارها بر پاداش مالی قابل توجه تأکید می‌کند و اشاره می‌کند که هرچه عملکرد شما بهتر باشد، پاداش مالی بیشتری دریافت خواهید کرد و نتیجه این پروژه به‌طور مستقیم بر پاداش مالی دریافتی شما اثر می‌گذارد. این موضوع به‌صورت مداوم در محیط کار یادآوری می‌شود.شما استقلال کاری پایینی در نحوه انجام کار دارید. مراحل انجام کار، روش اجرا و زمان‌بندی‌ها از پیش تعیین شده‌اند و برای هر تغییر یا تصمیم خارج از چارچوب باید با سرپرست هماهنگ کنید. انتظار می‌رود کار دقیقاً مطابق دستورالعمل‌ها انجام شود.فضای سازمانی حمایتگر است. مدیران به دیدگاه‌ها و پیشنهادهای کارکنان توجه می‌کنند، دلایل تصمیم‌ها را توضیح می‌دهند و در صورت بروز چالش، به‌جای اعمال فشار، از کارکنان درخواست می‌کنند که نظراتشان را بیان کنند تا بر اساس این تبادل نظر راه‌حل مناسب پیدا شود."
+
+  - key: "5"
+    factors: {pay: plain, autonomy: high, climate: controlling}
+    text: "در سازمان شما ساختار پرداخت به‌گونه‌ای است که نیمی از دریافتی شما ثابت است و نیمی دیگر مستقیماً به عملکردتان در همین پروژه وابسته است. شما استقلال کاری بالایی در نحوه انجام کار دارید. می‌توانید درباره روش اجرای پروژه، ترتیب مراحل و زمان‌بندی فعالیت‌ها خودتان تصمیم بگیرید و برای هر مرحله نیاز به هماهنگی مستمر با سرپرست ندارید.محیط سازمان مبتنی بر کنترل و نظارت جدی است. تصمیم‌ها معمولاً به‌صورت یک‌طرفه اتخاذ می‌شوند، انتظار می‌رود دستورالعمل‌ها بدون بحث و گفتگو اجرا شوند و توضیح چندانی درباره دلایل تصمیم‌ها ارائه نمی‌شود. در صورت بروز مشکل، تمرکز مدیران بیشتر بر اصلاح سریع رفتار و تبعیت از دستورات است تا اینکه با تبادل نظر با کارکنان مشکل برطرف شود."
+
+  - key: "6"
+    factors: {pay: plain, autonomy: high, climate: supportive}
+    text: "در سازمان شما ساختار پرداخت به‌گونه‌ای است که نیمی از دریافتی شما ثابت است و نیمی دیگر مستقیماً به عملکردتان در همین پروژه وابسته است.شما استقلال کاری بالایی در نحوه انجام کار دارید. می‌توانید درباره روش اجرای پروژه، ترتیب مراحل و زمان‌بندی فعالیت‌ها خودتان تصمیم بگیرید و برای هر مرحله نیاز به هماهنگی مستمر با سرپرست ندارید.فضای سازمانی حمایتگر است. مدیران به دیدگاه‌ها و پیشنهادهای کارکنان توجه می‌کنند، دلایل تصمیم‌ها را توضیح می‌دهند و در صورت بروز چالش، به‌جای اعمال فشار، از کارکنان درخواست می‌کنند که نظراتشان را بیان کنند تا بر اساس این تبادل نظر راه‌حل مناسب پیدا شود."
+
+  - key: "7"
+    factors: {pay: plain, autonomy: low, climate: controlling}
+    text: "در سازمان شما ساختار پرداخت به‌گونه‌ای است که نیمی از دریافتی شما ثابت است و نیمی دیگر مستقیماً به عملکردتان در همین پروژه وابسته است.شما استقلال کاری پایینی در نحوه انجام کار دارید. مراحل انجام کار، روش اجرا و زمان‌بندی‌ها از پیش تعیین شده‌اند و برای هر تغییر یا تصمیم خارج از چارچوب باید با سرپرست هماهنگ کنید. انتظار می‌رود کار دقیقاً مطابق دستورالعمل‌ها انجام شود.محیط سازمان مبتنی بر کنترل و نظارت جدی است. تصمیم‌ها معمولاً به‌صورت یک‌طرفه اتخاذ می‌شوند، انتظار می‌رود دستورالعمل‌ها بدون بحث و گفتگو اجرا شوند و توضیح چندانی درباره دلایل تصمیم‌ها ارائه نمی‌شود. در صورت بروز مشکل، تمرکز مدیران بیشتر بر اصلاح سریع رفتار و تبعیت از دستورات است تا اینکه با تبادل نظر با کارکنان مشکل برطرف شود."
+
+  - key: "8"
+    factors: {pay: plain, autonomy: low, climate: supportive}
+    text: "در سازمان شما ساختار پرداخت به‌گونه‌ای است که نیمی از دریافتی شما ثابت است و نیمی دیگر مستقیماً به عملکردتان در همین پروژه وابسته است.شما استقلال کاری پایینی در نحوه انجام کار دارید. مراحل انجام کار، روش اجرا و زمان‌بندی‌ها از پیش تعیین شده‌اند و برای هر تغییر یا تصمیم خارج از چارچوب باید با سرپرست هماهنگ کنید. انتظار می‌رود کار دقیقاً مطابق دستورالعمل‌ها انجام شود.فضای سازمانی حمایتگر است. مدیران به دیدگاه‌ها و پیشنهادهای کارکنان توجه می‌کنند، دلایل تصمیم‌ها را توضیح می‌دهند و در صورت بروز چالش، به‌جای اعمال فشار، از کارکنان درخواست می‌کنند که نظراتشان را بیان کنند تا بر اساس این تبادل نظر راه‌حل مناسب پیدا شود"
+
+  - key: "9"
+    factors: {pay: none, autonomy: high, climate: controlling}
+    text: "در این سازمان شما استقلال کاری بالایی در نحوه انجام کار دارید. می‌توانید درباره روش اجرای پروژه، ترتیب مراحل و زمان‌بندی فعالیت‌ها خودتان تصمیم بگیرید و برای هر مرحله نیاز به هماهنگی مستمر با سرپرست ندارید.محیط سازمان مبتنی بر کنترل و نظارت جدی است. تصمیم‌ها معمولاً به‌صورت یک‌طرفه اتخاذ می‌شوند، انتظار می‌رود دستورالعمل‌ها بدون بحث و گفتگو اجرا شوند و توضیح چندانی درباره دلایل تصمیم‌ها ارائه نمی‌شود. در صورت بروز مشکل، تمرکز مدیران بیشتر بر اصلاح سریع رفتار و تبعیت از دستورات است تا اینکه با تبادل نظر با کارکنان مشکل برطرف شود."
+
+  - key: "10"
+    factors: {pay: none, autonomy: high, climate: supportive}
+    text: "در این سازمان شما استقلال کاری بالایی در نحوه انجام کار دارید. می‌توانید درباره روش اجرای پروژه، ترتیب مراحل و زمان‌بندی فعالیت‌ها خودتان تصمیم بگیرید و برای هر مرحله نیاز به هماهنگی مستمر با سرپرست ندارید.فضای سازمانی حمایتگر است. مدیران به دیدگاه‌ها و پیشنهادهای کارکنان توجه می‌کنند، دلایل تصمیم‌ها را توضیح می‌دهند و در صورت بروز چالش، به‌جای اعمال فشار، از کارکنان درخواست می‌کنند که نظراتشان را بیان کنند تا بر اساس این تبادل نظر راه‌حل مناسب پیدا شود."
+
+  - key: "11"
+    factors: {pay: none, autonomy: low, climate: controlling}
+    text: "در این سازمان شما استقلال کاری پایینی در نحوه انجام کار دارید. مراحل انجام کار، روش اجرا و زمان‌بندی‌ها از پیش تعیین شده‌اند و برای هر تغییر یا تصمیم خارج از چارچوب باید با سرپرست هماهنگ کنید. انتظار می‌رود کار دقیقاً مطابق دستورالعمل‌ها انجام شود.محیط سازمان مبتنی بر کنترل و نظارت جدی است. تصمیم‌ها معمولاً به‌صورت یک‌طرفه اتخاذ می‌شوند، انتظار می‌رود دستورالعمل‌ها بدون بحث و گفتگو اجرا شوند و توضیح چندانی درباره دلایل تصمیم‌ها ارائه نمی‌شود. در صورت بروز مشکل، تمرکز مدیران بیشتر بر اصلاح سریع رفتار و تبعیت از دستورات است تا اینکه با تبادل نظر با کارکنان مشکل برطرف شود."
+
+  - key: "12"
+    factors: {pay: none, autonomy: low, climate: supportive}
+    text: "در این سازمان شما استقلال کاری پایینی در نحوه انجام کار دارید. مراحل انجام کار، روش اجرا و زمان‌بندی‌ها از پیش تعیین شده‌اند و برای هر تغییر یا تصمیم خارج از چارچوب باید با سرپرست هماهنگ کنید. انتظار می‌رود کار دقیقاً مطابق دستورالعمل‌ها انجام شود.فضای سازمانی حمایتگر است. مدیران به دیدگاه‌ها و پیشنهادهای کارکنان توجه می‌کنند، دلایل تصمیم‌ها را توضیح می‌دهند و در صورت بروز چالش، به‌جای اعمال فشار، از کارکنان درخواست می‌کنند که نظراتشان را بیان کنند تا بر اساس این تبادل نظر راه‌حل مناسب پیدا شود."
+
+# -----------------------------------------------------------------------------
+# 3. SCHEMA INTERPRETATION
+# -----------------------------------------------------------------------------
+scales:
+  - name: agreement5
+    match:
+      options_equal: ["خیلی موافقم", "موافقم", "تا حدودی", "مخالفم", "خیلی مخالفم"]
+    coding: high_first              # option [0] «خیلی موافقم» is the high end
+
+  - name: gender2
+    match: {options_equal: ["آقا", "خانم"]}
+    coding: low_first
+
+  - name: yes_no
+    match: {options_equal: ["بله", "خیر"]}
+    coding: high_first
+
+# One construct per subscale. Each is a separate model request, items shuffled.
+constructs:
+  # --- manipulation checks: answered from the scenario, not from disposition ---
+  - key: check_pay_emphasis
+    label: "برداشت از تأکید سازمان بر پاداش مالی"
+    traits: [vignette_attention]
+    match: {question_id_in: ["45898989", "45899032", "45899747", "45899803"]}
+    # «در مورد پرداخت و پاداش مالی توضیحی ارائه نشد.» — agreeing means LESS
+    # emphasis on pay.
+    reverse_when: {question_id_in: ["45899803"]}
+
+  - key: check_autonomy
+    label: "برداشت از میزان استقلال کاری"
+    traits: [vignette_attention]
+    match: {question_id_in: ["45899830", "45899847", "45899889"]}
+    reverse_when: {never: true}
+
+  - key: check_controlling_climate
+    label: "برداشت از کنترل‌گر بودن محیط سازمان"
+    traits: [vignette_attention]
+    match: {question_id_in: ["45899983", "45900007", "45899947"]}
+    # «محیط سازمان حمایتگر است.» is the opposite pole of control.
+    reverse_when: {question_id_in: ["45899947"]}
+
+  # --- outcomes ---
+  - key: work_effort
+    label: "آمادگی برای تلاش بیشتر در این موقعیت"
+    traits: [work_conscientiousness, autonomous_motivation]
+    match: {question_id_in: ["45900034", "45900106", "45900133"]}
+    reverse_when: {never: true}
+
+  - key: expected_performance
+    label: "عملکرد مورد انتظار در این موقعیت"
+    traits: [work_conscientiousness]
+    match: {question_id_in: ["45900169", "45900192", "45900226"]}
+    reverse_when: {never: true}
+
+  # --- MWMS ---
+  - key: mwms_amotivation
+    label: "بی‌انگیزگی در این شغل"
+    traits: [amotivation]
+    match: {question_id_in: ["45900382", "45900428", "45900454"]}
+    reverse_when: {never: true}
+
+  - key: mwms_extrinsic_social
+    label: "انگیزه‌ی بیرونی اجتماعی (تأیید و احترام دیگران)"
+    traits: [controlled_motivation]
+    match: {question_id_in: ["45900493", "45900557", "45900578"]}
+    reverse_when: {never: true}
+
+  - key: mwms_extrinsic_material
+    label: "انگیزه‌ی بیرونی مادی (پاداش مالی و امنیت شغلی)"
+    traits: [controlled_motivation]
+    match: {question_id_in: ["45900675", "45900704", "45900736"]}
+    reverse_when: {never: true}
+
+  - key: mwms_introjected
+    label: "انگیزه‌ی درون‌فکنی‌شده (اثبات خود، پرهیز از شرم)"
+    traits: [controlled_motivation]
+    match: {question_id_in: ["45900760", "45900831", "45900870"]}
+    reverse_when: {never: true}
+
+  - key: mwms_identified
+    label: "انگیزه‌ی همانندسازی‌شده (همسویی با ارزش‌های شخصی)"
+    traits: [autonomous_motivation]
+    match: {question_id_in: ["45901003", "45900935", "45901333"]}
+    reverse_when: {never: true}
+
+  - key: mwms_intrinsic
+    label: "انگیزه‌ی درونی (لذت و علاقه به خود کار)"
+    traits: [autonomous_motivation]
+    match: {question_id_in: ["45901353", "45901472", "45901569"]}
+    reverse_when: {never: true}
+
+static_answers:
+  - name: age
+    match: {question_id_in: ["45901932"]}   # لطفا سن خود را وارد کنید.
+    value: "{{ persona.demographics.age }}"
+
+  - name: province
+    match: {question_id_in: ["45901809"]}   # ساکن کدام استان هستید؟
+    value: "{{ persona.demographics.province }}"
+
+  - name: gender
+    match: {question_id_in: ["45902010"]}   # جنسیت خود را مشخص کنید.
+    value: "{{ persona.demographics.gender }}"
+
+  - name: field_of_study
+    match: {question_id_in: ["45902103"]}   # رشته تحصیلی خود را وارد کنید.
+    value: "{{ persona.demographics.field_of_study }}"
+
+  - name: work_experience
+    match: {question_id_in: ["45909584"]}   # آیا تجربه شاغل بودن دارید؟
+    value: "{{ persona.demographics.work_experience }}"
+
+  - name: closing_comment
+    match: {question_id_in: ["45902175"]}   # … هر نظر یا نکته ای … بنویسید. (required)
+    value: "{{ persona.demographics.closing_comment }}"
+    exclude_from_psychometrics: true
+
+skip: []
+
+# -----------------------------------------------------------------------------
+# 4. ANSWERING POLICY
+# -----------------------------------------------------------------------------
+answering:
+  chunk_by: construct
+  shuffle_within_chunk: true
+  temperature: {min: 0.55, max: 0.85}
+
+  normalization:
+    unicode: NFKC
+    fold_arabic_to_persian: true
+    zwnj: strip
+    strip_trailing: ".,؛،۔"
+
+  fuzzy: {algorithm: ratio, min_score: 86}
+
+  completeness:
+    min_ratio: 1.0                  # every question on the form is required
+    denominator: answerable
+    max_retries: 2
+    retry_scope: failed_constructs_only
+
+  careless:
+    enabled: true
+    anchor_stickiness: 0.70
+    drift: [-1, 1]
+    apply_static_answers: false
+
+  reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
+
+response_style_nudges:
+  rules:
+    - {when: "acquiescence > 0.30",      text: "در گویه‌هایی که مطمئن نیستی، کمی به سمت «موافقم» گرایش داری."}
+    - {when: "acquiescence < -0.30",     text: "در گویه‌هایی که مطمئن نیستی، کمی به سمت «مخالفم» گرایش داری."}
+    - {when: "extreme_response > 0.30",  text: "وقتی نظرت روشن است، راحت «خیلی موافقم» یا «خیلی مخالفم» را انتخاب می‌کنی."}
+    - {when: "extreme_response < -0.30", text: "معمولاً گزینه‌های میانی مثل «موافقم»، «تا حدودی» یا «مخالفم» را به دو سر طیف ترجیح می‌دهی."}
+  default: "سبک پاسخ‌دهی‌ات معمولی و متعادل است."
+
+# -----------------------------------------------------------------------------
+# 5. ANALYSIS
+# -----------------------------------------------------------------------------
+analysis:
+  reverse_keys_from: config
+  warn_on_sign_disagreement: true
+  response_style_min_scale_points: 3
+  straightlining: {scope: within_construct, sd_threshold: 0.5}
+  sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
+  min_items_for_alpha: 3
