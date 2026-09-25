@@ -1,0 +1,303 @@
+# =============================================================================
+# PersonaBot survey template — `personabot new-survey <id>` copies this folder.
+#
+# This file — plus, only if you need them, template overrides in ./prompts/ —
+# is ALL you change to run a new questionnaire. No Python, no repo copy, and
+# nothing in .env except, once, your API keys.
+#
+# Workflow for a new survey (see docs/HOWTO_NEW_SURVEY.md):
+#   1. make new-survey NAME=<id>            # copies this folder
+#   2. set form.provider and form.url below
+#   3. make schema   SURVEY=<id>             # writes ./form_schema.json
+#   4. make inspect  SURVEY=<id> ARGS="--full --ids"
+#   5. edit population / scales / constructs / static_answers / prompt
+#   6. make validate SURVEY=<id>             # must report full coverage
+#   7. make run-all  SURVEY=<id> PHASES=2,3 NUM_PERSONAS=3   # smoke test
+#   8. make analyze  SURVEY=<id>             # read it before submitting
+#
+# Everything below is generic: two constructs, a two-factor model, a neutral
+# population. For complete worked examples, read any folder under surveys/.
+# =============================================================================
+version: 2
+id: my_survey
+locale: fa                        # picks prompts/base/fa unless prompt.base says otherwise
+title: "عنوان پرسش‌نامه"
+
+# -----------------------------------------------------------------------------
+# 0. FORM — where the questionnaire lives. Survey data, not deployment data:
+#    this URL wins over BASE_FORM_URL in .env.
+# -----------------------------------------------------------------------------
+form:
+  provider: porsline              # porsline | porsline_v2 | porsa | google_forms | avalform | digisurvey
+  url: null                       # https://survey.porsline.ir/s/XXXXXXXX
+  # Porsline shows one question per page: this must exceed the QUESTION count.
+  max_pages: 400
+
+# -----------------------------------------------------------------------------
+# PROMPT — the survey-specific wording the base prompt pack reads. Most forms
+# need nothing more than this block; override templates in ./prompts/ only when
+# it is not enough (see docs/HOWTO_NEW_SURVEY.md, "Prompts").
+# -----------------------------------------------------------------------------
+prompt:
+  # Completes «… در نقش ___ پاسخ می‌دهی».
+  role: "یک فرد مشخص"
+  # Who the population is and what the study is about, for the persona writer.
+  study_context: >-
+    پاسخ‌دهندگان این مطالعه بزرگسالان ایرانی هستند. پرسش‌نامه درباره‌ی …
+    است. این‌ها را به شکل تجربه‌ی زیسته‌ی روزمره بنویس.
+  # `details` sections the persona writer must produce (2-3 sentences each).
+  # Omit to use the base pack's generic four.
+  persona_sections:
+    daily_life: "زندگی روزمره: خانه، کار یا تحصیل، و آدم‌های دور و برش."
+    inner_world: "حال‌وهوای درونی‌اش و اینکه صفت‌های بالا در زندگی‌اش چطور دیده می‌شوند."
+  # Extra fidelity rules for the persona writer (bullets).
+  persona_rules: []
+  # Extra answering rules, appended after the base pack's ten.
+  answer_rules: []
+  # Framing the form shows before a scenario's text (between-subjects designs).
+  scenario_preamble: ""
+
+# -----------------------------------------------------------------------------
+# 1. POPULATION — who your synthetic respondents are.
+# -----------------------------------------------------------------------------
+population:
+  seed: null                      # set an integer to make a run reproducible
+
+  # A factor model. Latent traits are drawn as
+  #     theta = L·f + u·e ,  f ~ N(0, I) ,  u = sqrt(1 - sum(L^2))
+  # so every trait has unit variance and the implied covariance is valid by
+  # construction. CONSTRAINT: squared loadings must sum to < 1 per dimension.
+  # `validate-config` prints the implied correlation matrix — read it, it is the
+  # cheapest sanity check you have on the psychometrics.
+  latent_model:
+    common_factors: [G, S]        # any number of factors, any names
+    dimensions:
+      trait_one:
+        loadings: {G: 0.70, S: -0.20}
+        label: "Trait one (describe it as the respondent would experience it)"
+      trait_two:
+        loadings: {G: 0.55, S: 0.40}
+        label: "Trait two"
+
+  # z-scores become words. Only words ever reach the model — handing it numbers
+  # invites it to reverse-engineer a target instead of answering in character.
+  bands:
+    cuts:   [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5]
+    labels: ["خیلی پایین", "پایین", "کمی پایین", "متوسط",
+             "کمی بالا", "بالا", "خیلی بالا"]
+
+  # Method variance: without it, answers become a deterministic function of the
+  # trait, which is the main reason naive LLM survey data shows inflated alpha.
+  response_style:
+    acquiescence:     {dist: normal, mu: 0.0, sigma: 0.40}
+    extreme_response: {dist: normal, mu: 0.0, sigma: 0.40}
+    careless:         {dist: bernoulli, p: 0.04}
+
+  # Drawn in declaration order. A variable may reference any earlier variable by
+  # name, and any trait z-score as `z.<dimension>`.
+  #
+  # Available distributions:
+  #   constant     value
+  #   uniform_int  low, high
+  #   categorical  choices: [[label, weight], ...]        (weights normalized)
+  #   normal       mu, sigma, [round: int], [clip: [lo, hi]],
+  #                [on_out_of_range: resample|clip]
+  #   derived      expr
+  #   bernoulli    p, [labels: {"true": ..., "false": ...}]
+  #   conditional  cases: [{when: expr, <dist>}, ..., {default: true, <dist>}]
+  #
+  # Expressions are sandboxed: arithmetic, comparisons, and
+  # min max abs round int float clamp sigmoid exp log sqrt floor ceil
+  # randint uniform gauss. No imports, no attribute access, no eval.
+  demographics:
+    - name: age
+      dist: uniform_int
+      low: 18
+      high: 75
+
+    - name: gender
+      dist: categorical
+      choices: [["female", 0.5], ["male", 0.5]]
+
+    - name: education_level
+      dist: categorical
+      choices: [["secondary", 0.4], ["undergraduate", 0.4], ["postgraduate", 0.2]]
+
+    # An intermediate value: used by later expressions, kept out of the record.
+    - name: years_of_experience_raw
+      dist: normal
+      mu: 12
+      sigma: 6
+      round: int
+      clip: [0, "max(0, age - 18)"]     # bounds may be expressions
+      on_out_of_range: resample          # `clip` piles mass onto the boundary
+      persist: false
+
+    - {name: years_of_experience, dist: derived, expr: "max(0, years_of_experience_raw)"}
+
+    # Trait-informed. `z.<dimension>` is the sampled z-score.
+    - name: reports_difficulty
+      dist: bernoulli
+      p: "clamp(0.15 + 0.20 * sigmoid(-z.trait_one), 0.05, 0.60)"
+      labels: {"true": "yes", "false": "no"}
+
+  # Facts the model must NOT invent. Bind these to questions in `static_answers`
+  # so arithmetic stays deterministic instead of being left to the LLM.
+  derived_fields:
+    - {name: household_size, dist: uniform_int, low: 1, high: 6}
+
+# -----------------------------------------------------------------------------
+# 2. SCHEMA INTERPRETATION — how questions map onto the model.
+# -----------------------------------------------------------------------------
+# MATCHER DSL (used by scales, constructs, static_answers, skip, reverse_when):
+#
+#   leaves      question_id, question_id_in, type, text_matches (regex),
+#               text_contains_any, text_contains_all, options_equal,
+#               options_include_any, options_include_all, options_regex,
+#               option_count ({min, max}), scale, always, never
+#   combinators all, any, not
+#
+# Text is normalized on both sides before comparison, so a spec written with one
+# Unicode variant still matches a schema extracted with another.
+
+# A scale is a RESPONSE FORMAT plus the direction its options run in.
+# `coding` drives ordinal scoring:
+#   low_first  -> index 0 is the low end  (score = index + 1)
+#   high_first -> index 0 is the high end (score = K - index)
+# Declare this per scale: two scales in one instrument can share option strings
+# with opposite meanings.
+scales:
+  - name: agreement5
+    match:
+      options_equal: ["کاملاً مخالفم", "مخالفم", "نظری ندارم",
+                      "موافقم", "کاملاً موافقم"]
+    coding: low_first
+
+  - name: frequency5
+    match:
+      options_equal: ["هرگز", "به ندرت", "گاهی", "اغلب", "همیشه"]
+    coding: low_first
+
+# Constructs are evaluated IN ORDER, first match wins — so list narrower rules
+# first. That ordering is also how you split one scale into two poles.
+#
+# There is deliberately NO catch-all rule. A question matching nothing is a
+# coverage ERROR, not a silent fallback. That check is the single most valuable
+# guard in this file: without it, a stale rule collapses the whole instrument
+# into one bucket and the pipeline still reports success.
+constructs:
+  - key: construct_one
+    label: "Construct one"
+    traits: [trait_one]
+    match: {scale: agreement5}
+    # Items whose high end means a LOW level of the trait — negatively worded
+    # items, complaints, symptoms. Tagged for the model, and used by the
+    # analysis harness as the single source of truth for reverse keying.
+    # Uncomment and list the ids once you know which items are reversed.
+    # An empty list is rejected, because it is nearly always a typo; use
+    # `{never: true}` if you want to state explicitly that none are reversed.
+    #
+    # reverse_when:
+    #   question_id_in: ["12345", "12346"]
+
+  - key: construct_two
+    label: "Construct two"
+    traits: [trait_two]
+    match: {scale: frequency5}
+
+# Answered from the persona record, never by the LLM. Ordered, first match wins.
+# A question bound here is excluded from every construct chunk, so nothing is
+# answered twice. Values are Jinja2 over `persona`.
+static_answers:
+  - name: age
+    match: {all: [{type: TEXT_INPUT}, {text_matches: "سن"}]}
+    value: "{{ persona.demographics.age }}"
+
+  - name: household
+    match: {all: [{type: TEXT_INPUT}, {text_matches: "تعداد اعضای خانوار"}]}
+    value: "{{ persona.derived.household_size }}"
+
+  # Instruction blocks some extractors report as fillable fields.
+  # `exclude_from_psychometrics` keeps them out of reliability statistics.
+  # - name: instructions
+  #   match: {question_id_in: ["12345"]}
+  #   value: "read"
+  #   exclude_from_psychometrics: true
+
+# Questions to exclude from generation AND from the completeness denominator.
+skip: []
+
+# -----------------------------------------------------------------------------
+# 3. ANSWERING POLICY
+# -----------------------------------------------------------------------------
+answering:
+  # One request per construct rather than one for the whole questionnaire.
+  # This is the deliberate guard against the self-consistency that inflates
+  # Cronbach's alpha. Setting chunk_by: none will produce implausible reliability.
+  chunk_by: construct
+  shuffle_within_chunk: true
+
+  temperature: {min: 0.55, max: 0.85}
+
+  # Applied to both sides before matching an answer to an option.
+  normalization:
+    unicode: NFKC
+    fold_arabic_to_persian: true    # harmless for non-Arabic-script surveys
+    zwnj: strip
+    strip_trailing: ".,;:"
+
+  # An answer scoring below `min_score` against every option is DISCARDED, not
+  # guessed. Raise it to be stricter; lower it if the model paraphrases.
+  fuzzy: {algorithm: ratio, min_score: 86}
+
+  completeness:
+    # Fraction of answerable questions required to accept a persona. Measured
+    # against the LIVE schema, not a constant.
+    #
+    # NOTE: if your form marks every question required, set this to 1.0 — a set
+    # at 0.95 will be accepted here and then stall in phase 4 on a blank field.
+    min_ratio: 0.95
+    denominator: answerable
+    max_retries: 2
+    retry_scope: failed_constructs_only
+
+  # Inattentive respondents are simulated in code; models cannot fake inattention.
+  careless:
+    enabled: true
+    anchor_stickiness: 0.70
+    drift: [-1, 1]
+    apply_static_answers: true
+
+  reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
+
+# Sampled response-style parameters become prompt language. `when` is evaluated
+# against the response_style block above.
+response_style_nudges:
+  rules:
+    - {when: "acquiescence > 0.30",
+       text: "در گویه‌های مرزی کمی به سمت موافقت و گزینه‌های بالاتر متمایل می‌شوی."}
+    - {when: "acquiescence < -0.30",
+       text: "در گویه‌های مرزی کمی محتاط‌تری و به گزینه‌های پایین‌تر متمایل می‌شوی."}
+    - {when: "extreme_response > 0.30",
+       text: "هرجا گزینه‌ای واقعاً با حال‌وروزت می‌خواند، راحت سرِ طیف را انتخاب می‌کنی."}
+    - {when: "extreme_response < -0.30",
+       text: "معمولاً گزینه‌های میانی را به دو سرِ طیف ترجیح می‌دهی."}
+  default: "سبک پاسخ‌دهی تو عادی و متعادل است."
+
+# -----------------------------------------------------------------------------
+# 4. ANALYSIS
+# -----------------------------------------------------------------------------
+analysis:
+  # 'config' is strongly recommended. Deriving reverse keys from the observed
+  # correlation sign capitalizes on chance and inflates alpha — which is exactly
+  # the artifact this pipeline is built to detect.
+  reverse_keys_from: config
+  warn_on_sign_disagreement: true
+
+  # Two-option items always look like extreme responses, which inflates the
+  # style indices. Exclude anything shorter than this.
+  response_style_min_scale_points: 3
+
+  straightlining: {scope: within_construct, sd_threshold: 0.5}
+  sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
+  min_items_for_alpha: 3

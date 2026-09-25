@@ -1,0 +1,34 @@
+Answer the items in the "{{ construct.label }}" section as your persona.
+
+**Items:**
+{% for item in questions %}
+--- item {{ loop.index }} ---
+id: {{ item.id }}
+text: "{{ item.text }}"
+{% if item.options %}
+type: multiple choice — copy your answer exactly from this list:
+{% for option in item.options %}
+  • "{{ option }}"
+{% endfor %}
+{% if item.direction %}
+direction: {{ item.direction }}
+{% endif %}
+{% else %}
+type: free text — write a short string only.
+{% endif %}
+{% endfor %}
+
+**Output format:**
+1. A SINGLE valid JSON object, with no text outside it.
+2. First key `_reasoning`: one or two first-person sentences on how you are
+   approaching this section.
+3. Remaining keys are the item ids above, each mapped to your chosen answer.
+4. Answer ALL {{ questions | length }} items in this section.
+
+Example shape:
+{
+  "_reasoning": "...",
+{% for item in questions[:2] %}
+  "{{ item.id }}": "{{ item.options[0] if item.options else '...' }}"{{ "," if not loop.last }}
+{% endfor %}
+}

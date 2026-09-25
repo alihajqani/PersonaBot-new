@@ -1,0 +1,33 @@
+به گویه‌های بخش «{{ construct.label }}» در نقش خودت پاسخ بده.
+
+**گویه‌ها:**
+{% for item in questions %}
+--- گویه {{ loop.index }} ---
+شناسه: {{ item.id }}
+متن: "{{ item.text }}"
+{% if item.options %}
+نوع: چندگزینه‌ای — پاسخ را عیناً از این فهرست بردار:
+{% for option in item.options %}
+  • "{{ option }}"
+{% endfor %}
+{% if item.direction %}
+جهت: {{ item.direction }}
+{% endif %}
+{% else %}
+نوع: متنی — فقط یک رشته‌ی کوتاه بنویس.
+{% endif %}
+{% endfor %}
+
+**قالب خروجی:**
+1. فقط و فقط یک شیء JSON معتبر، بدون هیچ متنی بیرون آن.
+2. کلید اول `_reasoning`: یک تا دو جمله‌ی فارسی، اول‌شخص، درباره‌ی اینکه با چه حالی به این بخش نگاه می‌کنی.
+3. بقیه‌ی کلیدها شناسه‌ی گویه‌ها هستند و مقدارشان گزینه‌ی انتخابی تو.
+4. به **همه‌ی** {{ questions | length }} گویه‌ی این بخش پاسخ بده.
+
+نمونه‌ی شکل خروجی:
+{
+  "_reasoning": "...",
+{% for item in questions[:2] %}
+  "{{ item.id }}": "{{ item.options[0] if item.options else '...' }}"{{ "," if not loop.last }}
+{% endfor %}
+}
