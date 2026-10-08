@@ -83,6 +83,18 @@ Format: **symptom** → cause → what the code does now (where).
 - Controls invisible → a stylesheet failed on a slow link → scripted clicks,
   then verify `aria-checked`.
 
+## Avalform (`providers/avalform`)
+
+- **Schema extraction posted a junk response** → `advance` clicked «ارسال»
+  before checking for the last page → read the page position first; never
+  post the last page while extracting (intermediate pages are held
+  server-side and record nothing).
+- **The model saw «1، 2، 3»** → options were taken from `value` codes → options
+  are labels; the submitter maps a label back to its code.
+- **Matrices collapsed / checkbox groups split** → a matrix row is its own
+  radio group `element_N`; a checkbox group is `element_N_1…k` → one question
+  per row; one `CHECKBOX` question per group, answered `"A | B"`.
+
 ## Browser and Tor (`infrastructure/browser`, `providers/base`)
 
 - Every context failed with Tor on → Chromium refuses SOCKS5 authentication →

@@ -6,6 +6,22 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- **Avalform extraction submitted the form.** The extractor clicked the last
+  page's «ارسال» before checking whether it was the last page, posting a
+  placeholder response into the survey owner's data. The page position is now
+  read first (hidden `page_number`, «صفحه N از M» in the title) and the last
+  page is never submitted during extraction.
+- **Avalform options were numeric codes.** Selects and radios were recorded by
+  their `value` ("1", "2", …), so the model saw codes instead of choices and the
+  submitter selected by a label that did not exist. Options are now the visible
+  labels, mapped back to their values when submitting.
+- **Avalform matrices and checkbox groups** are now parsed: each matrix row is a
+  question with the header's columns as options; a checkbox group is one
+  `CHECKBOX` question answered as `"option A | option B"`. A page the server
+  refuses reports MachForm's own error messages.
+
 ## [3.1.0] — 2026-10-08
 
 Several clients at once, each isolated. Design:
