@@ -6,7 +6,32 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.1.0] — 2026-10-08
+
+Several clients at once, each isolated. Design:
+`docs/specs/2026-10-08-client-worktrees-design.md`.
+
+### Added
+
+- **Client worktrees.** `personabot client new|list|sync|deliver` and
+  `make client`, `make clients`, `make sync`, `make deliver`. Each client
+  questionnaire gets a git worktree under `clients/<client>/<survey>/` on branch
+  `survey/<survey>`, with its own `output/`, `.venv` and `.env` (survey preset,
+  form URLs dropped, optional key subset via `KEYS=1-7`).
+- `deliver` auto-commits survey files, refuses other uncommitted changes,
+  rebases onto `main`, runs `validate-config` and the tests in the worktree's
+  venv, archives `output/<survey>/` to `clients/_archive/`, tags
+  `delivered/<client>/<survey>/<date>`, fast-forwards and pushes `main`, and
+  removes the worktree and branch.
+- `client list` reports drift from `main`, uncommitted files, keys, queue
+  counts, a missing venv, and API keys shared between clients.
+- `CLIENTS_DIR` setting.
+- README section 8, "Working on several clients at once".
+
 ### Changed
+
+- The migrated-surveys test checks that the 14 original surveys are present
+  rather than an exact count, so delivered client surveys can join `main`.
 
 - The README is now the complete usage guide: installation, every `.env`
   setting, survey selection, running the pipeline, the command and make-target

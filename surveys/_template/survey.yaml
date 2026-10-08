@@ -5,7 +5,7 @@
 # is ALL you change to run a new questionnaire. No Python, no repo copy, and
 # nothing in .env except, once, your API keys.
 #
-# Workflow for a new survey (README.md, section 7; every key: section 8):
+# Workflow for a new survey (README.md, section 7; every key: section 9):
 #   1. make new-survey NAME=<id>            # copies this folder
 #   2. set form.provider and form.url below
 #   3. make schema   SURVEY=<id>             # writes ./form_schema.json
@@ -36,7 +36,7 @@ form:
 # -----------------------------------------------------------------------------
 # PROMPT — the survey-specific wording the base prompt pack reads. Most forms
 # need nothing more than this block; override templates in ./prompts/ only when
-# it is not enough (README.md, section 9 "Prompts").
+# it is not enough (README.md, section 10 "Prompts").
 # -----------------------------------------------------------------------------
 prompt:
   # Completes «… در نقش ___ پاسخ می‌دهی».

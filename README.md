@@ -23,16 +23,17 @@ code never changes between forms.
 5. [Running the pipeline](#5-running-the-pipeline)
 6. [Command reference](#6-command-reference)
 7. [Adding a new questionnaire](#7-adding-a-new-questionnaire)
-8. [`survey.yaml` reference](#8-surveyyaml-reference)
-9. [Prompts](#9-prompts)
-10. [Providers](#10-providers)
-11. [LLM keys, quotas and proxies](#11-llm-keys-quotas-and-proxies)
-12. [Tor](#12-tor)
-13. [Outputs and file formats](#13-outputs-and-file-formats)
-14. [Checking quality before submitting](#14-checking-quality-before-submitting)
-15. [Troubleshooting](#15-troubleshooting)
-16. [Development](#16-development)
-17. [Responsible use](#17-responsible-use)
+8. [Working on several clients at once](#8-working-on-several-clients-at-once)
+9. [`survey.yaml` reference](#9-surveyyaml-reference)
+10. [Prompts](#10-prompts)
+11. [Providers](#11-providers)
+12. [LLM keys, quotas and proxies](#12-llm-keys-quotas-and-proxies)
+13. [Tor](#13-tor)
+14. [Outputs and file formats](#14-outputs-and-file-formats)
+15. [Checking quality before submitting](#15-checking-quality-before-submitting)
+16. [Troubleshooting](#16-troubleshooting)
+17. [Development](#17-development)
+18. [Responsible use](#18-responsible-use)
 
 ---
 
@@ -91,6 +92,7 @@ comments.
 | `SURVEY_CONFIG` | — | Explicit path to a survey YAML; wins over `SURVEY` |
 | `SURVEYS_DIR` | `surveys` | Where survey folders live |
 | `PROMPTS_DIR` | `prompts` | Where the base prompt packs live |
+| `CLIENTS_DIR` | `../clients` | Where client worktrees live ([§8](#8-working-on-several-clients-at-once)) |
 
 **LLM**
 
@@ -100,7 +102,7 @@ comments.
 | `GEMINI_API_KEY_1`, `_2`, … | — | Any number of keys; gaps in the numbering are fine |
 | `GEMINI_MODEL_NAME` | `gemini-2.5-pro` | Model for both phases |
 | `GEMINI_PROXY` | — | `http://…`, `https://…` or `socks5://…`; applies to Gemini calls only |
-| `GEMINI_INPUT_TOKENS_PER_MINUTE` | `0` | Per-key input-token budget for pacing; `0` = no pacing ([§11](#11-llm-keys-quotas-and-proxies)) |
+| `GEMINI_INPUT_TOKENS_PER_MINUTE` | `0` | Per-key input-token budget for pacing; `0` = no pacing ([§12](#12-llm-keys-quotas-and-proxies)) |
 | `LLM_TIMEOUT_SECONDS` | `180` | Per request |
 | `LLM_MAX_RETRIES` | `3` | Retries for transient errors (quota errors rotate keys instead) |
 | `AI_CALL_DELAY_SECONDS` | `0` | Extra pause after each request |
@@ -131,7 +133,7 @@ comments.
 | `READY_TIMEOUT_SECONDS` | `45` | Budget for the provider's readiness check, per attempt |
 | `BROWSER_MAX_ATTEMPTS` | `3` | Route retries per unit of work (capped at 2 without Tor) |
 
-**Tor** — see [§12](#12-tor): `USE_TOR`, `TOR_SOCKS_HOST`, `TOR_SOCKS_PORT`,
+**Tor** — see [§13](#13-tor): `USE_TOR`, `TOR_SOCKS_HOST`, `TOR_SOCKS_PORT`,
 `TOR_SOCKS_EXTRA_PORTS`, `TOR_CONTROL_PORT`, `TOR_CONTROL_PASSWORD`,
 `TOR_CIRCUIT_COOLDOWN_SECONDS`.
 
@@ -200,7 +202,7 @@ make loop PHASES=3,4 RUN_COUNT=10 DELAY_SECONDS=120
   failed phase 4 stay in `answers/`.
 * **`make loop`** stops at the first failing run.
 
-After a run, `make status` shows where everything is ([§13](#13-outputs-and-file-formats)).
+After a run, `make status` shows where everything is ([§14](#14-outputs-and-file-formats)).
 
 ## 6. Command reference
 
@@ -221,6 +223,10 @@ personabot [--survey ID | --config FILE] [--log-level LEVEL] [--version] <comman
 | `providers` | no | Lists form providers |
 | `surveys` | no | Lists surveys with provider and URL |
 | `new-survey ID [--from ID]` | no | Creates `surveys/ID/` from the template or from another survey |
+| `client new CLIENT SURVEY [--from ID] [--keys SPEC] [--no-install]` | no | Creates an isolated client worktree ([§8](#8-working-on-several-clients-at-once)) |
+| `client list` | no | Lists client worktrees |
+| `client sync [CLIENT SURVEY]` | no | Rebases a client branch onto `main` |
+| `client deliver [CLIENT SURVEY] [--no-push] [--keep] [--skip-checks] [--no-archive]` | no | Tags, merges into `main`, pushes, archives output, removes the worktree |
 
 Exit codes: `0` success · `1` a phase or check failed · `2` configuration error
 · `130` interrupted.
@@ -232,6 +238,8 @@ Exit codes: `0` success · `1` a phase or check failed · `2` configuration erro
 | `make install`, `make test`, `make clean` | setup, test suite, remove caches (never touches `output/`) |
 | `make surveys`, `make providers` | `surveys`, `providers` |
 | `make new-survey NAME=x [FROM=y]` | `new-survey x [--from y]` |
+| `make client CLIENT=c SURVEY=s [FROM=…] [KEYS=1-7]` | `client new c s …` |
+| `make clients`, `make sync`, `make deliver [NO_PUSH=1 KEEP=1 SKIP_CHECKS=1 NO_ARCHIVE=1]` | `client list`, `client sync`, `client deliver` (CLIENT/SURVEY optional inside a worktree) |
 | `make check-keys [LIVE=1]` | `check-keys [--live]` |
 | `make validate`, `make inspect [ARGS="--full --ids"]` | `validate-config`, `inspect-schema` |
 | `make status`, `make analyze`, `make transcripts`, `make recover` | same-named commands |
@@ -265,7 +273,7 @@ In `surveys/job_stress_fa/survey.yaml`:
 
 ```yaml
 form:
-  provider: porsline            # see §10 for which provider to use
+  provider: porsline            # see §11 for which provider to use
   url: https://survey.porsline.ir/s/XXXXXXXX
   max_pages: 400                # Porsline: above the QUESTION count
 ```
@@ -296,7 +304,7 @@ with `--ids`, the question ids of each signature for `question_id_in`.
 
 ### Step 5 — write the instrument
 
-Fill `survey.yaml` top to bottom ([§8](#8-surveyyaml-reference) documents every
+Fill `survey.yaml` top to bottom ([§9](#9-surveyyaml-reference) documents every
 key; the template is commented, and the 14 folders under `surveys/` are worked
 examples):
 
@@ -307,7 +315,7 @@ examples):
 4. `static_answers` — questions answered from the persona record.
 5. `skip`, `scenarios`, `transcripts` if the form needs them.
 6. `answering.completeness.min_ratio` — `1.0` if every question is required.
-7. `prompt` — the survey-specific wording ([§9](#9-prompts)).
+7. `prompt` — the survey-specific wording ([§10](#10-prompts)).
 
 ### Step 6 — validate
 
@@ -331,7 +339,7 @@ make analyze SURVEY=job_stress_fa
 ```
 
 Read a few files in `output/job_stress_fa/personas/` and `answers/`. See
-[§14](#14-checking-quality-before-submitting) for what the analysis should look
+[§15](#15-checking-quality-before-submitting) for what the analysis should look
 like.
 
 ### Step 8 — generate and submit
@@ -342,7 +350,91 @@ make submit  SURVEY=job_stress_fa LIMIT=1      # one first; watch it with HEADLE
 make submit  SURVEY=job_stress_fa
 ```
 
-## 8. `survey.yaml` reference
+## 8. Working on several clients at once
+
+Each client questionnaire gets its own **git worktree**: a full working copy
+on its own branch, sharing this one repository. Clients never see each other's
+survey, output, `.env` or code changes until delivery, and fixes made on `main`
+reach every client with one command.
+
+```
+PBRfactor/
+  PersonaBot/                    main — general code changes only
+  clients/acme/job_stress_fa/    worktree on branch survey/job_stress_fa
+  clients/beta/burnout_fa/       worktree on branch survey/burnout_fa
+  clients/_archive/<client>/     output archives written at delivery
+```
+
+### The whole lifecycle
+
+```bash
+# in PersonaBot/ (main)
+make client CLIENT=acme SURVEY=job_stress_fa              # FROM=<survey> to clone one, KEYS=1-7
+cd ../clients/acme/job_stress_fa
+
+# inside the worktree: SURVEY is preset, so no SURVEY= needed
+nano surveys/job_stress_fa/survey.yaml                    # form.provider, form.url
+make schema && make inspect ARGS="--full --ids"
+make validate
+make run-all NUM_PERSONAS=100
+make sync                                                 # pick up fixes from main, any time
+make deliver                                              # when the client is done
+```
+
+`make client` creates the worktree and branch from `main` (fast-forwarding
+`main` from GitHub first when it can), writes the worktree's `.env` from the
+base `.env` with `SURVEY` preset and form URLs removed, scaffolds and commits
+`surveys/<id>/` (or continues it if that survey is already on `main` — a
+returning client), and installs the worktree's own `.venv`. The venv must be
+per worktree: an editable install runs exactly one checkout's code.
+
+`make deliver` runs, stopping at the first problem with nothing half-done:
+
+1. commits leftover changes under `surveys/<id>/` for you — but refuses if
+   anything **outside** the survey folder is uncommitted (general code needs its
+   own commit);
+2. rebases the branch onto the current `main`;
+3. runs `validate-config` and the full test suite in the worktree's venv;
+4. archives `output/<id>/` to `clients/_archive/<client>/<id>-<time>.tar.gz`;
+5. tags the delivered commit `delivered/<client>/<id>/<date>` (`-2`, … for a
+   second delivery that day);
+6. fast-forwards `main` in `PersonaBot/` and pushes `main` and the tag;
+7. removes the worktree and its branch.
+
+Options: `NO_PUSH=1`, `KEEP=1` (keep the worktree), `SKIP_CHECKS=1`,
+`NO_ARCHIVE=1`. From `PersonaBot/` use `make deliver CLIENT=acme SURVEY=job_stress_fa`.
+The tag means you can always rebuild exactly what a client got:
+`git switch --detach delivered/acme/job_stress_fa/2026-10-20`.
+
+### General fixes while clients are open
+
+Make them in `PersonaBot/` on `main` (or a short `fix/…` branch merged into
+`main`), commit them as `fix(…)`/`feat(…)`, then run `make sync` in each client
+worktree. Avoid fixing shared code only inside a client worktree — that is how
+the fifteen 2.x copies drifted apart. (A general fix committed there still
+reaches `main`, but only at that client's delivery.)
+
+### Shared resources
+
+* **API keys.** Each running process paces only its own key pool, so two
+  clients generating at the same time on the same keys hit quota sooner. Give
+  them disjoint subsets: `make client … KEYS=1-7` and `KEYS=8-15` (numbers refer
+  to the base `.env`; they are renumbered in the client's `.env`).
+  `make clients` warns about overlaps.
+* **Tor.** Shared as is. Two clients may use the same exit IPs; within one
+  client, concurrent submissions already get distinct SocksPorts.
+
+### Seeing everything
+
+```bash
+make clients        # from PersonaBot/ or any client worktree
+```
+
+shows each client worktree with commits ahead of / behind `main`, uncommitted
+files, its number of keys, pending and submitted answer sets, and whether its
+venv exists. `CLIENTS_DIR` in `.env` moves the `clients/` folder elsewhere.
+
+## 9. `survey.yaml` reference
 
 A complete, commented example is `surveys/_template/survey.yaml`.
 
@@ -573,9 +665,9 @@ analysis:
 
 ### `prompt`
 
-See [§9](#9-prompts).
+See [§10](#10-prompts).
 
-## 9. Prompts
+## 10. Prompts
 
 Templates are resolved along a search path, most specific first:
 
@@ -647,7 +739,7 @@ The persona response must be a JSON array of `{"id", "details": {…}}`; the
 answer response a JSON object `{"_reasoning": "…", "<question id>": "<answer>", …}`.
 Keep those output instructions if you replace the user templates.
 
-## 10. Providers
+## 11. Providers
 
 | The form… | `form.provider` | Notes |
 |---|---|---|
@@ -668,7 +760,7 @@ classes own pagination budgets, retries, receipts, queues and Tor; a provider
 implements `parse_page`/`advance` (extraction) and `fill_page`/`advance`/`detect_success`
 (submission), optionally `prepare`, `fill_placeholders` and `detect_scenario`.
 
-## 11. LLM keys, quotas and proxies
+## 12. LLM keys, quotas and proxies
 
 * **Key pool.** Add `GEMINI_API_KEY_1 … _N`. Each key serves one request at a
   time; keys are handed out least-recently-used, so the whole pool is used.
@@ -691,7 +783,7 @@ implements `parse_page`/`advance` (extraction) and `fill_page`/`advance`/`detect
   `VLLM_MODEL_NAME` works with any OpenAI-compatible server (vLLM, Ollama, LM
   Studio). The endpoint must support JSON responses.
 
-## 12. Tor
+## 13. Tor
 
 Optional; routes each browser context through Tor so submissions do not all
 come from one address.
@@ -728,7 +820,7 @@ of rotation for the cooldown and the item is retried on another one (up to
 retried in place, so nothing is submitted twice. Where plain Tor is blocked,
 configure a pluggable transport (e.g. snowflake) in `torrc`.
 
-## 13. Outputs and file formats
+## 14. Outputs and file formats
 
 ```
 surveys/<id>/form_schema.json        schema snapshot (phase 1)
@@ -765,7 +857,7 @@ submitted.
 valid, partial (below the completeness ratio) and corrupt files, claimed items,
 and the number of failed submissions.
 
-## 14. Checking quality before submitting
+## 15. Checking quality before submitting
 
 `make analyze` reports, per construct: Cronbach's alpha, mean inter-item
 correlation, scale mean and SD, and items whose item-total correlation
@@ -779,7 +871,7 @@ Warning signs of LLM self-consistency (flagged automatically): alpha above
 `chunk_by: construct` and `shuffle_within_chunk: true`. A sign disagreement
 usually means a missing `reverse_when` or a wrong scale `coding`.
 
-## 15. Troubleshooting
+## 16. Troubleshooting
 
 | Symptom | Cause and fix |
 |---|---|
@@ -800,7 +892,7 @@ usually means a missing `reverse_when` or a wrong scale `coding`.
 
 Set `LOG_LEVEL=DEBUG` or `HEADLESS_MODE=False` to see more.
 
-## 16. Development
+## 17. Development
 
 ```bash
 make test                                # the whole suite
@@ -819,7 +911,7 @@ make test                                # the whole suite
   project follows semantic versioning with annotated `vX.Y.Z` tags.
 * When a live form teaches something new, add it to `docs/KNOWLEDGE.md`.
 
-## 17. Responsible use
+## 18. Responsible use
 
 Personas are synthetic. The prompts describe the work as a disclosed
 AI-persona ("silicon sampling") study, and `analyze` exists to show where
