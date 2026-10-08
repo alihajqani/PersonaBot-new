@@ -1,303 +1,428 @@
 # =============================================================================
-# PersonaBot survey template — `personabot new-survey <id>` copies this folder.
+# Client: Fatemeh Hasani — «پرسشنامه سواد دیجیتال والدین»
+# Live form: https://form.avalform.com/view.php?id=82534946 (Avalform, 5 pages)
+# Population: primary caregivers of children under 7 (Iran).
 #
-# This file — plus, only if you need them, template overrides in ./prompts/ —
-# is ALL you change to run a new questionnaire. No Python, no repo copy, and
-# nothing in .env except, once, your API keys.
-#
-# Workflow for a new survey (README.md, section 7; every key: section 9):
-#   1. make new-survey NAME=<id>            # copies this folder
-#   2. set form.provider and form.url below
-#   3. make schema   SURVEY=<id>             # writes ./form_schema.json
-#   4. make inspect  SURVEY=<id> ARGS="--full --ids"
-#   5. edit population / scales / constructs / static_answers / prompt
-#   6. make validate SURVEY=<id>             # must report full coverage
-#   7. make run-all  SURVEY=<id> PHASES=2,3 NUM_PERSONAS=3   # smoke test
-#   8. make analyze  SURVEY=<id>             # read it before submitting
-#
-# Everything below is generic: two constructs, a two-factor model, a neutral
-# population. For complete worked examples, read any folder under surveys/.
+# Instrument, as read off the extracted schema (72 questions):
+#   p1  9 demographics + 1 optional "other job" text            -> static_answers
+#   p2  information sources (checkbox group), optional "other"
+#       text, child's health                                     -> static_answers
+#   p3  23 items, 5-point frequency — parental digital literacy:
+#       information, content/tools, parenting & child health,
+#       communication, safety & ethics (no element_37 on the form)
+#   p4  25 items, 6-point agreement — DigComp-style digital competence:
+#       information, communication, content creation, safety, problem solving
+#   p5  11 items, 5-point agreement — technology barriers (70,71,72,74)
+#       and technology opportunities (73,75-80)
+# Option strings are copied verbatim from form_schema.json (e.g. «اعلب»).
 # =============================================================================
 version: 2
 id: parent_digital_literacy_fa
-locale: fa                        # picks prompts/base/fa unless prompt.base says otherwise
-title: "عنوان پرسش‌نامه"
+locale: fa
+title: "پرسشنامه سواد دیجیتال والدین"
 
-# -----------------------------------------------------------------------------
-# 0. FORM — where the questionnaire lives. Survey data, not deployment data:
-#    this URL wins over BASE_FORM_URL in .env.
-# -----------------------------------------------------------------------------
 form:
-  provider: porsline              # porsline | porsline_v2 | porsa | google_forms | avalform | digisurvey
-  url: null                       # https://survey.porsline.ir/s/XXXXXXXX
-  # Porsline shows one question per page: this must exceed the QUESTION count.
-  max_pages: 400
+  provider: avalform
+  url: https://form.avalform.com/view.php?id=82534946
+  max_pages: 10                   # 5 server-side pages
 
-# -----------------------------------------------------------------------------
-# PROMPT — the survey-specific wording the base prompt pack reads. Most forms
-# need nothing more than this block; override templates in ./prompts/ only when
-# it is not enough (README.md, section 10 "Prompts").
-# -----------------------------------------------------------------------------
 prompt:
-  # Completes «… در نقش ___ پاسخ می‌دهی».
-  role: "یک فرد مشخص"
-  # Who the population is and what the study is about, for the persona writer.
+  role: "یک مراقب اصلیِ کودکِ زیر هفت سال در ایران (پدر، مادر یا پدربزرگ و مادربزرگی که بیشترِ مراقبت کودک با اوست)"
   study_context: >-
-    پاسخ‌دهندگان این مطالعه بزرگسالان ایرانی هستند. پرسش‌نامه درباره‌ی …
-    است. این‌ها را به شکل تجربه‌ی زیسته‌ی روزمره بنویس.
-  # `details` sections the persona writer must produce (2-3 sentences each).
-  # Omit to use the base pack's generic four.
+    پاسخ‌دهندگان این مطالعه مراقبان اصلی کودکان زیر هفت سال در ایران هستند —
+    بیشترشان مادرند و بقیه پدر، مادربزرگ، پدربزرگ یا یکی دیگر از نزدیکان. پرسش‌نامه
+    درباره‌ی سواد دیجیتال آن‌هاست: جستجو و سنجیدن اطلاعات در اینترنت، کار با ابزارها
+    و ساختن محتوای دیجیتال، استفاده از منابع دیجیتال برای تربیت و سلامت کودک، ارتباط
+    و همکاری در فضای مجازی، ایمنی و حریم خصوصی، حل مشکلات فنی، و نگاهشان به فناوری.
+    این‌ها را به شکل تجربه‌ی زیسته‌ی روزمره‌ی یک پدر یا مادر یا مادربزرگ ایرانی بنویس.
   persona_sections:
-    daily_life: "زندگی روزمره: خانه، کار یا تحصیل، و آدم‌های دور و برش."
-    inner_world: "حال‌وهوای درونی‌اش و اینکه صفت‌های بالا در زندگی‌اش چطور دیده می‌شوند."
-  # Extra fidelity rules for the persona writer (bullets).
-  persona_rules: []
-  # Extra answering rules, appended after the base pack's ten.
-  answer_rules: []
-  # Framing the form shows before a scenario's text (between-subjects designs).
-  scenario_preamble: ""
+    daily_life_and_child: "زندگی روزمره، کودک و سهم او در مراقبت از کودک؛ کار، خانه و آدم‌های دور و برش."
+    phone_and_internet: "گوشی، اینترنت و شبکه‌های اجتماعی در زندگی‌اش: با چه چیزهایی راحت است و چه چیزهایی برایش سخت است."
+    child_health_information: "برای سلامت و تربیت کودک از کجا اطلاعات می‌گیرد و چقدر به اطلاعات اینترنتی اعتماد می‌کند."
+    attitude_to_technology: "نگاهش به فناوری؛ کنجکاوی یا نگرانی، و اینکه چقدر برای یادگرفتن چیزهای تازه وقت و انگیزه دارد."
+  persona_rules:
+    - "پدربزرگ‌ها و مادربزرگ‌ها را با سن و تجربه‌ی واقعی‌شان بنویس؛ مهارت دیجیتالشان را بیش از سطحِ داده‌شده نشان نده."
+    - "اگر کودک تک‌فرزند نیست، از خواهر یا برادرش هم یاد کن؛ اگر تک‌فرزند است، از فرزند دیگری ننویس."
+    - "ابزارهای رایج ایرانی را در جای مناسب بیاور: واتساپ، تلگرام، اینستاگرام، روبیکا، ایتا، شاد، سایت‌های پزشکی و نوبت‌دهی."
+  answer_rules:
+    - "«می‌توانم …» یعنی توانایی واقعی خودت، نه اینکه آن کار درست یا مهم است."
+    - "نوشتن دستور برنامه‌نویسی و ساختن محتوای دیجیتال برای بیشتر والدین دشوار است؛ فقط اگر سطح مهارت فنی‌ات بالاست با آن‌ها موافقت کن."
+    - "در بخش آخر چند گویه درباره‌ی سختی و موانع فناوری‌اند (مثل «آشنایی کمی با فناوری دارم»)؛ موافقت با آن‌ها یعنی کار با فناوری برایت سخت است."
 
-# -----------------------------------------------------------------------------
-# 1. POPULATION — who your synthetic respondents are.
 # -----------------------------------------------------------------------------
 population:
-  seed: null                      # set an integer to make a run reproducible
+  seed: null
 
-  # A factor model. Latent traits are drawn as
-  #     theta = L·f + u·e ,  f ~ N(0, I) ,  u = sqrt(1 - sum(L^2))
-  # so every trait has unit variance and the implied covariance is valid by
-  # construction. CONSTRAINT: squared loadings must sum to < 1 per dimension.
-  # `validate-config` prints the implied correlation matrix — read it, it is the
-  # cheapest sanity check you have on the psychometrics.
+  # G = general digital capability, P = using digital media for parenting and
+  # health, S = safety/ethics consciousness. ΣL² < 1 for every dimension.
   latent_model:
-    common_factors: [G, S]        # any number of factors, any names
+    common_factors: [G, P, S]
     dimensions:
-      trait_one:
-        loadings: {G: 0.70, S: -0.20}
-        label: "Trait one (describe it as the respondent would experience it)"
-      trait_two:
-        loadings: {G: 0.55, S: 0.40}
-        label: "Trait two"
+      information_literacy:
+        loadings: {G: 0.75, P: 0.15}
+        label: "توانایی جستجو، فهم و سنجیدن اطلاعات در اینترنت"
+      content_tech_skill:
+        loadings: {G: 0.72}
+        label: "مهارت کار با ابزارها و نرم‌افزارها و ساختن محتوای دیجیتال"
+      digital_parenting:
+        loadings: {G: 0.50, P: 0.60}
+        label: "استفاده از منابع دیجیتال برای تربیت و سلامت کودک"
+      online_communication:
+        loadings: {G: 0.60, P: 0.30}
+        label: "ارتباط، همکاری و حضور اجتماعی در فضای مجازی"
+      online_safety:
+        loadings: {G: 0.55, S: 0.50}
+        label: "آگاهی از ایمنی، حریم خصوصی و اخلاق در فضای دیجیتال"
+      problem_solving:
+        loadings: {G: 0.72, S: 0.10}
+        label: "حل مشکلات فنی و یادگرفتن مهارت‌های دیجیتال تازه"
+      tech_attitude:
+        loadings: {G: 0.45, P: 0.30}
+        label: "نگاه مثبت و انگیزه نسبت به فناوری"
+      tech_difficulty:
+        loadings: {G: -0.65, P: -0.10}
+        label: "احساس سختی و نیاز به کمک در کار با فناوری"
 
-  # z-scores become words. Only words ever reach the model — handing it numbers
-  # invites it to reverse-engineer a target instead of answering in character.
   bands:
     cuts:   [-1.5, -0.9, -0.35, 0.35, 0.9, 1.5]
-    labels: ["خیلی پایین", "پایین", "کمی پایین", "متوسط",
-             "کمی بالا", "بالا", "خیلی بالا"]
+    labels: ["خیلی پایین", "پایین", "کمی پایین", "متوسط", "کمی بالا", "بالا", "خیلی بالا"]
 
-  # Method variance: without it, answers become a deterministic function of the
-  # trait, which is the main reason naive LLM survey data shows inflated alpha.
   response_style:
-    acquiescence:     {dist: normal, mu: 0.0, sigma: 0.40}
+    acquiescence:     {dist: normal, mu: 0.05, sigma: 0.40}
     extreme_response: {dist: normal, mu: 0.0, sigma: 0.40}
-    careless:         {dist: bernoulli, p: 0.04}
+    careless:         {dist: bernoulli, p: 0.03}
 
-  # Drawn in declaration order. A variable may reference any earlier variable by
-  # name, and any trait z-score as `z.<dimension>`.
-  #
-  # Available distributions:
-  #   constant     value
-  #   uniform_int  low, high
-  #   categorical  choices: [[label, weight], ...]        (weights normalized)
-  #   normal       mu, sigma, [round: int], [clip: [lo, hi]],
-  #                [on_out_of_range: resample|clip]
-  #   derived      expr
-  #   bernoulli    p, [labels: {"true": ..., "false": ...}]
-  #   conditional  cases: [{when: expr, <dist>}, ..., {default: true, <dist>}]
-  #
-  # Expressions are sandboxed: arithmetic, comparisons, and
-  # min max abs round int float clamp sigmoid exp log sqrt floor ceil
-  # randint uniform gauss. No imports, no attribute access, no eval.
   demographics:
-    - name: age
-      dist: uniform_int
-      low: 18
-      high: 75
+    # Grandparents are more likely among the least tech-skilled caregivers.
+    - name: role
+      dist: conditional
+      cases:
+        - when: "z.content_tech_skill < -0.8"
+          dist: categorical
+          choices:
+            - ["مادر", 0.62]
+            - ["پدر", 0.12]
+            - ["مادربزرگ", 0.19]
+            - ["پدربزرگ", 0.04]
+            - ["سایر", 0.03]
+        - default: true
+          dist: categorical
+          choices:
+            - ["مادر", 0.81]
+            - ["پدر", 0.135]
+            - ["مادربزرگ", 0.03]
+            - ["پدربزرگ", 0.005]
+            - ["سایر", 0.02]
 
-    - name: gender
+    - name: caregiver_age
+      dist: conditional
+      cases:
+        - {when: "role == 'مادر'", dist: normal, mu: 32, sigma: 5.5, round: int, clip: [19, 46]}
+        - {when: "role == 'پدر'", dist: normal, mu: 36, sigma: 6, round: int, clip: [22, 55]}
+        - {when: "role == 'مادربزرگ'", dist: normal, mu: 56, sigma: 6, round: int, clip: [44, 72]}
+        - {when: "role == 'پدربزرگ'", dist: normal, mu: 60, sigma: 6, round: int, clip: [48, 76]}
+        - {default: true, dist: normal, mu: 30, sigma: 9, round: int, clip: [18, 60]}
+
+    - {name: child_age_months, dist: uniform_int, low: 3, high: 83}
+    - {name: child_age_years, dist: derived, expr: "floor(child_age_months / 12)"}
+    - name: child_gender
       dist: categorical
-      choices: [["female", 0.5], ["male", 0.5]]
-
-    - name: education_level
-      dist: categorical
-      choices: [["secondary", 0.4], ["undergraduate", 0.4], ["postgraduate", 0.2]]
-
-    # An intermediate value: used by later expressions, kept out of the record.
-    - name: years_of_experience_raw
-      dist: normal
-      mu: 12
-      sigma: 6
-      round: int
-      clip: [0, "max(0, age - 18)"]     # bounds may be expressions
-      on_out_of_range: resample          # `clip` piles mass onto the boundary
-      persist: false
-
-    - {name: years_of_experience, dist: derived, expr: "max(0, years_of_experience_raw)"}
-
-    # Trait-informed. `z.<dimension>` is the sampled z-score.
-    - name: reports_difficulty
+      choices: [["دختر", 0.49], ["پسر", 0.51]]
+    - name: only_child
       dist: bernoulli
-      p: "clamp(0.15 + 0.20 * sigmoid(-z.trait_one), 0.05, 0.60)"
-      labels: {"true": "yes", "false": "no"}
+      p: "0.55 if child_age_years <= 2 else 0.40"
+      labels: {"true": "بله", "false": "خیر"}
 
-  # Facts the model must NOT invent. Bind these to questions in `static_answers`
-  # so arithmetic stays deterministic instead of being left to the LLM.
+    - name: education
+      dist: conditional
+      cases:
+        - when: "role == 'مادربزرگ' or role == 'پدربزرگ'"
+          dist: categorical
+          choices:
+            - ["سیکل", 0.42]
+            - ["دیپلم", 0.36]
+            - ["کاردانی", 0.08]
+            - ["کارشناسی", 0.11]
+            - ["کارشناسی ارشد", 0.03]
+        - when: "z.information_literacy > 0.6"
+          dist: categorical
+          choices:
+            - ["سیکل", 0.02]
+            - ["دیپلم", 0.14]
+            - ["کاردانی", 0.09]
+            - ["کارشناسی", 0.45]
+            - ["کارشناسی ارشد", 0.24]
+            - ["دکتری", 0.06]
+        - when: "z.information_literacy < -0.6"
+          dist: categorical
+          choices:
+            - ["سیکل", 0.18]
+            - ["دیپلم", 0.42]
+            - ["کاردانی", 0.12]
+            - ["کارشناسی", 0.23]
+            - ["کارشناسی ارشد", 0.05]
+        - default: true
+          dist: categorical
+          choices:
+            - ["سیکل", 0.06]
+            - ["دیپلم", 0.28]
+            - ["کاردانی", 0.12]
+            - ["کارشناسی", 0.4]
+            - ["کارشناسی ارشد", 0.12]
+            - ["دکتری", 0.02]
+
+    - name: job
+      dist: conditional
+      cases:
+        - when: "role == 'مادر'"
+          dist: categorical
+          choices:
+            - ["خانه دار", 0.5]
+            - ["کارمند دولت", 0.14]
+            - ["کارمند بخش خصوصی", 0.14]
+            - ["آزاد", 0.07]
+            - ["کارگر/ کارمند خدماتی", 0.04]
+            - ["بیکار", 0.03]
+            - ["سایر", 0.08]
+        - when: "role == 'پدر'"
+          dist: categorical
+          choices:
+            - ["کارمند دولت", 0.22]
+            - ["کارمند بخش خصوصی", 0.28]
+            - ["آزاد", 0.3]
+            - ["کارگر/ کارمند خدماتی", 0.14]
+            - ["بیکار", 0.03]
+            - ["سایر", 0.03]
+        - when: "role == 'مادربزرگ'"
+          dist: categorical
+          choices:
+            - ["خانه دار", 0.65]
+            - ["بازنشسته", 0.3]
+            - ["سایر", 0.05]
+        - when: "role == 'پدربزرگ'"
+          dist: categorical
+          choices:
+            - ["بازنشسته", 0.7]
+            - ["آزاد", 0.25]
+            - ["سایر", 0.05]
+        - default: true
+          dist: categorical
+          choices:
+            - ["خانه دار", 0.3]
+            - ["کارمند بخش خصوصی", 0.2]
+            - ["آزاد", 0.1]
+            - ["بیکار", 0.1]
+            - ["سایر", 0.3]
+
+    - name: residence
+      dist: conditional
+      cases:
+        - when: "z.information_literacy < -0.5"
+          dist: categorical
+          choices: [["شهری", 0.75], ["روستایی", 0.25]]
+        - default: true
+          dist: categorical
+          choices: [["شهری", 0.90], ["روستایی", 0.10]]
+
+    - name: income
+      dist: conditional
+      cases:
+        - when: "education == 'کارشناسی ارشد' or education == 'دکتری'"
+          dist: categorical
+          choices:
+            - ["کمتر از 15 میلیون", 0.1]
+            - ["15 تا 25 میلیون", 0.25]
+            - ["25 تا 50 میلیون", 0.4]
+            - ["بیشتر از 50 میلیون", 0.25]
+        - when: "education == 'کارشناسی' or education == 'کاردانی'"
+          dist: categorical
+          choices:
+            - ["کمتر از 15 میلیون", 0.2]
+            - ["15 تا 25 میلیون", 0.37]
+            - ["25 تا 50 میلیون", 0.33]
+            - ["بیشتر از 50 میلیون", 0.1]
+        - default: true
+          dist: categorical
+          choices:
+            - ["کمتر از 15 میلیون", 0.4]
+            - ["15 تا 25 میلیون", 0.38]
+            - ["25 تا 50 میلیون", 0.18]
+            - ["بیشتر از 50 میلیون", 0.04]
+
+    - name: child_health
+      dist: categorical
+      choices:
+        - ["بسیار خوب", 0.38]
+        - ["خوب", 0.44]
+        - ["متوسط", 0.15]
+        - ["ضعیف", 0.03]
+
   derived_fields:
-    - {name: household_size, dist: uniform_int, low: 1, high: 6}
+    - name: other_job_text
+      dist: conditional
+      cases:
+        - when: "job == 'سایر'"
+          dist: categorical
+          choices:
+            - ["دانشجو", 0.45]
+            - ["حق‌التدریس", 0.15]
+            - ["کشاورز", 0.1]
+            - ["آرایشگر", 0.15]
+            - ["خیاط", 0.15]
+        - {default: true, dist: constant, value: ""}
+
+    # Information sources (checkbox group). Each is a label or "", joined in
+    # the static answer; the internet is likelier for digitally engaged parents.
+    - name: src_internet
+      dist: bernoulli
+      p: "clamp(0.62 + 0.18 * z.digital_parenting, 0.15, 0.97)"
+      labels: {"true": "اینترنت و فناوری‌های دیجیتال (وب‌سایت‌ها، شبکه‌های اجتماعی، پیام‌رسان‌ها و ...)", "false": ""}
+    - name: src_doctor
+      dist: bernoulli
+      p: 0.72
+      labels: {"true": "پزشک یا سایر کارکنان نظام سلامت", "false": ""}
+    - name: src_family
+      dist: bernoulli
+      p: "clamp(0.50 - 0.10 * z.information_literacy, 0.15, 0.85)"
+      labels: {"true": "خانواده و دوستان", "false": ""}
+    - name: src_classes
+      dist: bernoulli
+      p: "clamp(0.12 + 0.06 * z.digital_parenting, 0.02, 0.40)"
+      labels: {"true": "کلاس‌ها یا دوره‌های آموزشی", "false": ""}
+    - name: src_books
+      dist: bernoulli
+      p: "clamp(0.18 + 0.06 * z.information_literacy, 0.03, 0.45)"
+      labels: {"true": "کتاب‌ها، مجلات و سایر رسانه‌های چاپی", "false": ""}
+    - name: src_other
+      dist: bernoulli
+      p: 0.03
+      labels: {"true": "سایر", "false": ""}
+    - name: other_source_text
+      dist: conditional
+      cases:
+        - when: "src_other != ''"
+          dist: categorical
+          choices: [["مشاوره با ماما و مراقب سلامت مرکز بهداشت", 0.5], ["گروه‌های والدین در مهدکودک", 0.5]]
+        - {default: true, dist: constant, value: ""}
 
 # -----------------------------------------------------------------------------
-# 2. SCHEMA INTERPRETATION — how questions map onto the model.
-# -----------------------------------------------------------------------------
-# MATCHER DSL (used by scales, constructs, static_answers, skip, reverse_when):
-#
-#   leaves      question_id, question_id_in, type, text_matches (regex),
-#               text_contains_any, text_contains_all, options_equal,
-#               options_include_any, options_include_all, options_regex,
-#               option_count ({min, max}), scale, always, never
-#   combinators all, any, not
-#
-# Text is normalized on both sides before comparison, so a spec written with one
-# Unicode variant still matches a schema extracted with another.
-
-# A scale is a RESPONSE FORMAT plus the direction its options run in.
-# `coding` drives ordinal scoring:
-#   low_first  -> index 0 is the low end  (score = index + 1)
-#   high_first -> index 0 is the high end (score = K - index)
-# Declare this per scale: two scales in one instrument can share option strings
-# with opposite meanings.
 scales:
-  - name: agreement5
-    match:
-      options_equal: ["کاملاً مخالفم", "مخالفم", "نظری ندارم",
-                      "موافقم", "کاملاً موافقم"]
-    coding: low_first
-
   - name: frequency5
-    match:
-      options_equal: ["هرگز", "به ندرت", "گاهی", "اغلب", "همیشه"]
+    match: {options_equal: ["هرگز", "به ندرت", "گاهی", "اعلب", "تقریبا همیشه"]}
+    coding: low_first
+  - name: agreement6
+    match: {options_equal: ["کاملا مخالفم", "مخالفم", "تا حدودی مخالفم", "تا حدودی موافقم", "موافقم", "کاملا موافقم"]}
+    coding: low_first
+  - name: agreement5
+    match: {options_equal: ["کاملا مخالفم", "مخالفم", "نه موافقم نه مخالفم", "موافقم", "کاملا موافقم"]}
     coding: low_first
 
-# Constructs are evaluated IN ORDER, first match wins — so list narrower rules
-# first. That ordering is also how you split one scale into two poles.
-#
-# There is deliberately NO catch-all rule. A question matching nothing is a
-# coverage ERROR, not a silent fallback. That check is the single most valuable
-# guard in this file: without it, a stale rule collapses the whole instrument
-# into one bucket and the pipeline still reports success.
 constructs:
-  - key: construct_one
-    label: "Construct one"
-    traits: [trait_one]
-    match: {scale: agreement5}
-    # Items whose high end means a LOW level of the trait — negatively worded
-    # items, complaints, symptoms. Tagged for the model, and used by the
-    # analysis harness as the single source of truth for reverse keying.
-    # Uncomment and list the ids once you know which items are reversed.
-    # An empty list is rejected, because it is nearly always a typo; use
-    # `{never: true}` if you want to state explicitly that none are reversed.
-    #
-    # reverse_when:
-    #   question_id_in: ["12345", "12346"]
+  # --- page 3: parental digital literacy (frequency) ---
+  - key: pdl_information
+    label: "پیدا کردن، فهمیدن و نگه‌داشتن اطلاعات در اینترنت"
+    traits: [information_literacy]
+    match: {question_id_in: ["element_20", "element_21", "element_22", "element_23", "element_24"]}
+  - key: pdl_content
+    label: "کار با ابزارهای دیجیتال و ساختن محتوا"
+    traits: [content_tech_skill]
+    match: {question_id_in: ["element_25", "element_26", "element_27"]}
+  - key: pdl_parenting
+    label: "استفاده از منابع دیجیتال برای تربیت و سلامت کودک"
+    traits: [digital_parenting]
+    match: {question_id_in: ["element_28", "element_29", "element_30", "element_31", "element_32"]}
+  - key: pdl_communication
+    label: "ارتباط و مشارکت با دیگران در اینترنت"
+    traits: [online_communication]
+    match: {question_id_in: ["element_33", "element_34", "element_35", "element_36", "element_38"]}
+  - key: pdl_safety_ethics
+    label: "حریم خصوصی، ایمنی و رفتار مسئولانه در اینترنت"
+    traits: [online_safety]
+    match: {question_id_in: ["element_39", "element_40", "element_41", "element_42", "element_43"]}
 
-  - key: construct_two
-    label: "Construct two"
-    traits: [trait_two]
-    match: {scale: frequency5}
+  # --- page 4: digital competence (6-point agreement) ---
+  - key: dc_information
+    label: "جستجو، تشخیص درستی و سازمان‌دادن اطلاعات دیجیتال"
+    traits: [information_literacy]
+    match: {question_id_in: ["element_44", "element_45", "element_46"]}
+  - key: dc_communication
+    label: "تعامل، همکاری و حضور اجتماعی در محیط‌های دیجیتال"
+    traits: [online_communication]
+    match: {question_id_in: ["element_47", "element_48", "element_49", "element_50", "element_51", "element_52", "element_53", "element_54"]}
+  - key: dc_content
+    label: "ساختن و تغییر محتوای دیجیتال و آشنایی با جنبه‌های حقوقی و برنامه‌نویسی"
+    traits: [content_tech_skill]
+    match: {question_id_in: ["element_55", "element_56", "element_57", "element_58"]}
+  - key: dc_safety
+    label: "محافظت از دستگاه، اطلاعات شخصی و سلامت در محیط دیجیتال"
+    traits: [online_safety]
+    match: {question_id_in: ["element_59", "element_60", "element_61", "element_62", "element_63"]}
+  - key: dc_problem_solving
+    label: "حل مشکلات فنی و بهبود مهارت‌های دیجیتال"
+    traits: [problem_solving]
+    match: {question_id_in: ["element_64", "element_65", "element_66", "element_67", "element_68"]}
 
-# Answered from the persona record, never by the LLM. Ordered, first match wins.
-# A question bound here is excluded from every construct chunk, so nothing is
-# answered twice. Values are Jinja2 over `persona`.
+  # --- page 5: technology (5-point agreement) ---
+  - key: tech_barriers
+    label: "سختی‌ها و موانع کار با فناوری"
+    traits: [tech_difficulty]
+    match: {question_id_in: ["element_70", "element_71", "element_72", "element_74"]}
+  - key: tech_opportunities
+    label: "فرصت‌ها و انگیزه‌ای که فناوری ایجاد می‌کند"
+    traits: [tech_attitude]
+    match: {question_id_in: ["element_73", "element_75", "element_76", "element_77", "element_78", "element_79", "element_80"]}
+
 static_answers:
-  - name: age
-    match: {all: [{type: TEXT_INPUT}, {text_matches: "سن"}]}
-    value: "{{ persona.demographics.age }}"
+  - {name: role, match: {question_id: "element_4"}, value: "{{ persona.demographics.role }}", exclude_from_psychometrics: true}
+  - name: child_age
+    match: {question_id: "element_5"}
+    value: "{% set y = persona.demographics.child_age_years %}{{ y if y >= 1 else persona.demographics.child_age_months ~ ' ماه' }}"
+    exclude_from_psychometrics: true
+  - {name: child_gender, match: {question_id: "element_6"}, value: "{{ persona.demographics.child_gender }}", exclude_from_psychometrics: true}
+  - {name: caregiver_age, match: {question_id: "element_7"}, value: "{{ persona.demographics.caregiver_age }}", exclude_from_psychometrics: true}
+  - {name: education, match: {question_id: "element_8"}, value: "{{ persona.demographics.education }}", exclude_from_psychometrics: true}
+  - {name: job, match: {question_id: "element_9"}, value: "{{ persona.demographics.job }}", exclude_from_psychometrics: true}
+  - {name: other_job, match: {question_id: "element_10"}, value: "{{ persona.derived.other_job_text }}", exclude_from_psychometrics: true}
+  - {name: residence, match: {question_id: "element_11"}, value: "{{ persona.demographics.residence }}", exclude_from_psychometrics: true}
+  - {name: income, match: {question_id: "element_12"}, value: "{{ persona.demographics.income }}", exclude_from_psychometrics: true}
+  - {name: only_child, match: {question_id: "element_13"}, value: "{{ persona.demographics.only_child }}", exclude_from_psychometrics: true}
+  - name: information_sources
+    match: {question_id: "element_16"}
+    # Checkbox group: options joined with " | ". Never empty — a doctor at least.
+    value: "{% set d = persona.derived %}{% set s = [d.src_internet, d.src_doctor, d.src_family, d.src_classes, d.src_books, d.src_other] | select | list %}{{ (s or ['پزشک یا سایر کارکنان نظام سلامت']) | join(' | ') }}"
+    exclude_from_psychometrics: true
+  - {name: other_source, match: {question_id: "element_17"}, value: "{{ persona.derived.other_source_text }}", exclude_from_psychometrics: true}
+  - {name: child_health, match: {question_id: "element_18"}, value: "{{ persona.demographics.child_health }}", exclude_from_psychometrics: true}
 
-  - name: household
-    match: {all: [{type: TEXT_INPUT}, {text_matches: "تعداد اعضای خانوار"}]}
-    value: "{{ persona.derived.household_size }}"
-
-  # Instruction blocks some extractors report as fillable fields.
-  # `exclude_from_psychometrics` keeps them out of reliability statistics.
-  # - name: instructions
-  #   match: {question_id_in: ["12345"]}
-  #   value: "read"
-  #   exclude_from_psychometrics: true
-
-# Questions to exclude from generation AND from the completeness denominator.
 skip: []
 
 # -----------------------------------------------------------------------------
-# 3. ANSWERING POLICY
-# -----------------------------------------------------------------------------
 answering:
-  # One request per construct rather than one for the whole questionnaire.
-  # This is the deliberate guard against the self-consistency that inflates
-  # Cronbach's alpha. Setting chunk_by: none will produce implausible reliability.
   chunk_by: construct
   shuffle_within_chunk: true
-
   temperature: {min: 0.55, max: 0.85}
-
-  # Applied to both sides before matching an answer to an option.
-  normalization:
-    unicode: NFKC
-    fold_arabic_to_persian: true    # harmless for non-Arabic-script surveys
-    zwnj: strip
-    strip_trailing: ".,;:"
-
-  # An answer scoring below `min_score` against every option is DISCARDED, not
-  # guessed. Raise it to be stricter; lower it if the model paraphrases.
   fuzzy: {algorithm: ratio, min_score: 86}
-
   completeness:
-    # Fraction of answerable questions required to accept a persona. Measured
-    # against the LIVE schema, not a constant.
-    #
-    # NOTE: if your form marks every question required, set this to 1.0 — a set
-    # at 0.95 will be accepted here and then stall in phase 4 on a blank field.
-    min_ratio: 0.95
+    # Every matrix row and select on this form is required.
+    min_ratio: 1.0
     denominator: answerable
     max_retries: 2
     retry_scope: failed_constructs_only
-
-  # Inattentive respondents are simulated in code; models cannot fake inattention.
-  careless:
-    enabled: true
-    anchor_stickiness: 0.70
-    drift: [-1, 1]
-    apply_static_answers: true
-
+  careless: {enabled: true, anchor_stickiness: 0.70, drift: [-1, 1], apply_static_answers: true}
   reverse_tags: {direct: "[مستقیم]", reverse: "[معکوس]"}
 
-# Sampled response-style parameters become prompt language. `when` is evaluated
-# against the response_style block above.
 response_style_nudges:
   rules:
-    - {when: "acquiescence > 0.30",
-       text: "در گویه‌های مرزی کمی به سمت موافقت و گزینه‌های بالاتر متمایل می‌شوی."}
-    - {when: "acquiescence < -0.30",
-       text: "در گویه‌های مرزی کمی محتاط‌تری و به گزینه‌های پایین‌تر متمایل می‌شوی."}
-    - {when: "extreme_response > 0.30",
-       text: "هرجا گزینه‌ای واقعاً با حال‌وروزت می‌خواند، راحت سرِ طیف را انتخاب می‌کنی."}
-    - {when: "extreme_response < -0.30",
-       text: "معمولاً گزینه‌های میانی را به دو سرِ طیف ترجیح می‌دهی."}
+    - {when: "acquiescence > 0.30", text: "در گویه‌های مرزی کمی به سمت موافقت و گزینه‌های بالاتر متمایل می‌شوی."}
+    - {when: "acquiescence < -0.30", text: "در گویه‌های مرزی کمی محتاط‌تری و به گزینه‌های پایین‌تر متمایل می‌شوی."}
+    - {when: "extreme_response > 0.30", text: "هرجا گزینه‌ای واقعاً با حال‌وروزت می‌خواند، راحت سرِ طیف را انتخاب می‌کنی."}
+    - {when: "extreme_response < -0.30", text: "معمولاً گزینه‌های میانی را به دو سرِ طیف ترجیح می‌دهی."}
   default: "سبک پاسخ‌دهی تو عادی و متعادل است."
 
-# -----------------------------------------------------------------------------
-# 4. ANALYSIS
-# -----------------------------------------------------------------------------
 analysis:
-  # 'config' is strongly recommended. Deriving reverse keys from the observed
-  # correlation sign capitalizes on chance and inflates alpha — which is exactly
-  # the artifact this pipeline is built to detect.
   reverse_keys_from: config
   warn_on_sign_disagreement: true
-
-  # Two-option items always look like extreme responses, which inflates the
-  # style indices. Exclude anything shorter than this.
   response_style_min_scale_points: 3
-
   straightlining: {scope: within_construct, sd_threshold: 0.5}
   sanity: {alpha_max: 0.95, mean_inter_item_r_max: 0.6}
   min_items_for_alpha: 3
