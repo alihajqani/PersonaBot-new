@@ -34,6 +34,7 @@ import itertools
 import threading
 import time
 from dataclasses import dataclass
+from pathlib import Path
 
 from personabot.errors import CircuitError, TorError
 from personabot.logging_setup import get_logger, log_highlight
@@ -235,3 +236,58 @@ def _first_line(exc: BaseException) -> str:
     """Playwright errors carry a multi-line call log; the first line is the
     part worth putting in a message."""
     return (str(exc).strip().splitlines() or [""])[0]
+
+
+class ExitIpLedger:
+    """Exit IPs a survey has already submitted from — one JSON line each.
+
+    Port rotation alone does not keep one survey's IPs unique: every process
+    starts its rotation at the first SocksPort, Tor may hand two ports the same
+    exit, and a port keeps its circuit until it ages out. Two runs a minute
+    apart were seen leaving from the same address. The ledger is the record
+    that makes "never twice from one IP" checkable across runs.
+
+    An IP is *reserved* when a session is opened on it (so two concurrent
+    sessions cannot share it) and *recorded* — persisted — once a submission
+    through it succeeds. A reservation is never released within a run: an
+    attempt that failed after the form was opened may still have posted.
+    """
+
+    def __init__(self, path: Path) -> None:
+        import json
+
+        self.path = path
+        self._used: set[str] = set()
+        self._reserved: set[str] = set()
+        if path.is_file():
+            for line in path.read_text(encoding="utf-8").splitlines():
+                try:
+                    ip = json.loads(line).get("ip")
+                except ValueError:
+                    continue
+                if ip:
+                    self._used.add(ip)
+
+    def __contains__(self, ip: str) -> bool:
+        return ip in self._used or ip in self._reserved
+
+    def __len__(self) -> int:
+        return len(self._used)
+
+    def reserve(self, ip: str) -> bool:
+        """Claim ``ip`` for one session. False if it was already used or taken."""
+        if ip in self:
+            return False
+        self._reserved.add(ip)
+        return True
+
+    def record(self, ip: str, *, label: str) -> None:
+        import json
+        from datetime import datetime, timezone
+
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        entry = {"ip": ip, "label": label, "at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
+        with self.path.open("a", encoding="utf-8") as handle:
+            handle.write(json.dumps(entry) + "\n")
+        self._used.add(ip)
+        self._reserved.discard(ip)

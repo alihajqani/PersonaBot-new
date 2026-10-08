@@ -36,6 +36,7 @@ from __future__ import annotations
 
 import asyncio
 import re
+import weakref
 from abc import ABC, abstractmethod
 from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any, Awaitable, Callable, Sequence, TypeVar
@@ -51,7 +52,7 @@ from personabot.errors import (
     TorError,
 )
 from personabot.infrastructure.browser.factory import BrowserFactory, Circuit
-from personabot.infrastructure.browser.tor import TorManager, verify_circuit
+from personabot.infrastructure.browser.tor import ExitIpLedger, TorManager, verify_circuit
 from personabot.infrastructure.storage.json_store import read_json_or_none
 from personabot.infrastructure.storage.workqueue import WorkQueue
 from personabot.logging_setup import get_logger
@@ -270,6 +271,18 @@ class FormSubmitter(ABC):
         self.browser = browser
         self.schema = schema
         self.scenarios = tuple(scenarios)
+        # Exit IP of the session each page belongs to, recorded on success.
+        self._exit_ips: weakref.WeakKeyDictionary[Any, str] = weakref.WeakKeyDictionary()
+        self._ip_ledger: ExitIpLedger | None = None
+
+    def _ledger(self) -> ExitIpLedger:
+        """This survey's used exit IPs, loaded on first use."""
+        if self._ip_ledger is None:
+            self._ip_ledger = ExitIpLedger(self.workspace.output_dir / "exit_ips.jsonl")
+            if len(self._ip_ledger):
+                log.info("%d exit IP(s) already used for this survey will be avoided.",
+                         len(self._ip_ledger))
+        return self._ip_ledger
 
     @property
     def tor(self) -> TorManager:
@@ -343,10 +356,19 @@ class FormSubmitter(ABC):
         Anything else is saved as a receipt and raised as a SubmissionError.
         """
         url = self.workspace.require_form_url()
+        exit_ip: str | None = None
         if self.tor.enabled:
-            await verify_circuit(circuit.context, label=label)
+            exit_ip = await verify_circuit(circuit.context, label=label)
+            # Checked before the form is even loaded, so a repeat is a route
+            # problem like any other: burn this circuit, retry on another.
+            if self.settings.unique_exit_ips and not self._ledger().reserve(exit_ip):
+                raise CircuitError(
+                    f"exit IP {exit_ip} has already been used for this survey"
+                )
 
         page = await circuit.context.new_page()
+        if exit_ip:
+            self._exit_ips[page] = exit_ip
         page.set_default_timeout(self.settings.ready_timeout_seconds * 1000)
         try:
             await open_form(
@@ -390,6 +412,9 @@ class FormSubmitter(ABC):
                 )
 
             log.info("%s: submitted (%d field(s) filled).", label, filled_total)
+            exit_ip = self._exit_ips.pop(page, None)
+            if exit_ip and self.settings.unique_exit_ips:
+                self._ledger().record(exit_ip, label=label)
 
         except (SubmissionError, CircuitError) as exc:
             await self._write_receipt(page, label)

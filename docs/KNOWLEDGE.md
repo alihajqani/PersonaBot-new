@@ -101,6 +101,10 @@ Format: **symptom** → cause → what the code does now (where).
   isolate circuits per SocksPort (`TOR_SOCKS_EXTRA_PORTS`), not per credential.
 - One bad circuit lost the work item → `CircuitError` (only before anything is
   POSTed) + `on_circuit` retry on another route; failed ports cool down.
+- **Two runs a minute apart used the same exit IP** → each process starts
+  its port rotation at the first SocksPort, and a port keeps its circuit until
+  it ages out → per-survey ledger `exit_ips.jsonl`; a repeated IP is a
+  `CircuitError` raised before the form loads.
 - Dead circuits discovered late → preflight IP echo (20 s) before the form.
 - Slow direct link → block images/fonts/media; one retry of a hung navigation
   even without Tor.

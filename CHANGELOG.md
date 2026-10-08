@@ -6,6 +6,17 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- **Unique exit IPs per survey** (`UNIQUE_EXIT_IPS`, on by default with Tor).
+  Every successful submission records its exit IP in
+  `output/<survey>/exit_ips.jsonl`; a circuit whose IP is already there — from
+  this run, an earlier run, or a concurrent session — is burned before the form
+  is loaded and the submission retried on another circuit. Port rotation alone
+  restarted with every process, and two runs a minute apart left from the same
+  address.
+- Avalform logs the confirmation text after each submission.
+
 ### Fixed
 
 - A key parked after a transient error (500/503, dropped connection) was

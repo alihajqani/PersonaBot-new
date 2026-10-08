@@ -186,6 +186,14 @@ class Settings(BaseSettings):
     )
     tor_control_port: int = Field(default=9051, gt=0, lt=65536)
     tor_control_password: SecretStr = SecretStr("")
+    unique_exit_ips: bool = Field(
+        default=True,
+        description=(
+            "Never submit one survey twice from the same Tor exit IP. Each "
+            "survey keeps a ledger (output/<id>/exit_ips.jsonl); a circuit whose "
+            "IP is already in it is burned and another one is tried."
+        ),
+    )
     tor_circuit_cooldown_seconds: float = Field(
         default=60.0, ge=0,
         description=(

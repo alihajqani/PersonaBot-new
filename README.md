@@ -135,7 +135,7 @@ comments.
 
 **Tor** — see [§13](#13-tor): `USE_TOR`, `TOR_SOCKS_HOST`, `TOR_SOCKS_PORT`,
 `TOR_SOCKS_EXTRA_PORTS`, `TOR_CONTROL_PORT`, `TOR_CONTROL_PASSWORD`,
-`TOR_CIRCUIT_COOLDOWN_SECONDS`.
+`TOR_CIRCUIT_COOLDOWN_SECONDS`, `UNIQUE_EXIT_IPS`.
 
 **Output**: `OUTPUT_DIR` (default `output`, the root — each survey writes
 `output/<id>/`) and `LOG_LEVEL` (`DEBUG`, `INFO`, `WARNING`, `ERROR`).
@@ -815,7 +815,10 @@ CONCURRENT_SUBMISSIONS=4               # at most the number of ports
 ```
 
 Before each submission the circuit is checked (an IP echo within 20 s) and the
-exit IP logged. A circuit that fails before anything is submitted is taken out
+exit IP logged. With `UNIQUE_EXIT_IPS=True` (the default) a survey never submits
+twice from one exit IP: successful submissions are recorded in
+`output/<id>/exit_ips.jsonl`, and a circuit whose IP is already there — from any
+run — is discarded before the form is opened. A circuit that fails before anything is submitted is taken out
 of rotation for the cooldown and the item is retried on another one (up to
 `BROWSER_MAX_ATTEMPTS`). Failures after the form has started are never
 retried in place, so nothing is submitted twice. Where plain Tor is blocked,

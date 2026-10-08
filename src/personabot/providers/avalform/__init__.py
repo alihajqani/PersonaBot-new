@@ -336,11 +336,14 @@ class AvalformSubmitter(FormSubmitter):
         from playwright.async_api import Error as PlaywrightError
 
         try:
-            if await page.locator(_SUCCESS).count():
-                return True
+            confirmed = bool(await page.locator(_SUCCESS).count())
             html = await page.content()
         except PlaywrightError:
             return False
-        info = page_info(html)
-        still_form = "submit_primary" in html
-        return not still_form and not info.errors
+        if not confirmed:
+            confirmed = "submit_primary" not in html and not page_info(html).errors
+        if confirmed:
+            # What the form said, so a run's log shows each confirmation.
+            text = " ".join(BeautifulSoup(html, "html.parser").get_text(" ", strip=True).split())
+            log.info("Avalform confirmation: %s", text[:160])
+        return confirmed
