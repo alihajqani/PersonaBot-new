@@ -28,8 +28,19 @@ def _surveys() -> list[str]:
     return available_surveys(make_settings(SURVEYS))
 
 
-def test_all_fourteen_migrated_surveys_are_present():
-    assert len(_surveys()) == 14
+MIGRATED_FROM_2X = {
+    "emotional_suppression_somatic_fa", "internet_addiction_parenting_fa",
+    "marital_adjustment_sexual_karaj_fa", "marital_conflict_couples_fa",
+    "marital_relationship_battery_fa", "parental_conflict_attachment_delinquency_fa",
+    "pay_autonomy_climate_vignette_fa", "psychopathology_battery_fa", "sexual_intimacy_fa",
+    "sleep_fomo_digital_burnout_fa", "student_stress_internet_erq_fa",
+    "teacher_innovation_km_ai_fa", "tehran_urban_network_fa", "worry_metacognition_gad_fa",
+}
+
+
+def test_the_fourteen_migrated_surveys_are_still_present():
+    """Delivered client surveys join these; none of the originals may vanish."""
+    assert MIGRATED_FROM_2X <= set(_surveys())
 
 
 @pytest.fixture(params=_surveys())

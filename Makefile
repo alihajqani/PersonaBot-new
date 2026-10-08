@@ -21,6 +21,8 @@ SEED          ?=
 START_INDEX   ?=
 LIVE          ?=
 NAME          ?=
+CLIENT        ?=
+KEYS          ?=
 FROM          ?=
 ARGS          ?=
 
@@ -30,11 +32,17 @@ SEED_ARG   := $(if $(SEED),--seed $(SEED),)
 START_ARG  := $(if $(START_INDEX),--start-index $(START_INDEX),)
 LIVE_ARG   := $(if $(LIVE),--live,)
 FROM_ARG   := $(if $(FROM),--from $(FROM),)
+KEYS_ARG   := $(if $(KEYS),--keys $(KEYS),)
+# Inside a client worktree CLIENT/SURVEY may be omitted: they are read off the path.
+TARGET_ARG := $(if $(and $(CLIENT),$(SURVEY)),$(CLIENT) $(SURVEY),)
+DELIVER_FLAGS := $(if $(NO_PUSH),--no-push,) $(if $(KEEP),--keep,) \
+                 $(if $(SKIP_CHECKS),--skip-checks,) $(if $(NO_ARCHIVE),--no-archive,)
 
 .PHONY: help venv install check-venv test clean \
         surveys new-survey providers check-keys \
         validate inspect status analyze recover transcripts \
-        schema persona answer submit run-all loop
+        schema persona answer submit run-all loop \
+        client clients sync deliver
 
 help:
 	@echo "PersonaBot — one checkout, one folder per questionnaire"
@@ -46,6 +54,13 @@ help:
 	@echo "  make surveys        List surveys under surveys/"
 	@echo "  make new-survey     NAME=<id> [FROM=<existing id>] — start a new form"
 	@echo "  make providers      List registered form providers"
+	@echo ""
+	@echo "  Clients (one isolated worktree each, see README §8):"
+	@echo "  make client         CLIENT=<name> SURVEY=<id> [FROM=<id>] [KEYS=1-7]"
+	@echo "  make clients        List client worktrees, their keys and drift from main"
+	@echo "  make sync           Rebase this client's branch onto main"
+	@echo "  make deliver        Tag, merge into main, push, archive output, remove"
+	@echo "                      [NO_PUSH=1 KEEP=1 SKIP_CHECKS=1 NO_ARCHIVE=1]"
 	@echo ""
 	@echo "  make schema         Phase 1 — extract the form schema into surveys/<id>/"
 	@echo "  make inspect        Summarize the schema, draft a scales: block"
@@ -157,3 +172,18 @@ loop: check-venv
 			--num-personas $(NUM_PERSONAS) $(LIMIT_ARG) $(SEED_ARG) || exit $$?; \
 		if [ $$i -lt $(RUN_COUNT) ]; then sleep $(DELAY_SECONDS); fi; \
 	done
+
+# --- clients: one worktree per client questionnaire ---
+
+client: check-venv
+	@test -n "$(CLIENT)" -a -n "$(SURVEY)" || (echo "usage: make client CLIENT=<name> SURVEY=<id> [FROM=<id>] [KEYS=1-7]" && exit 2)
+	$(PERSONABOT) client new $(CLIENT) $(SURVEY) $(FROM_ARG) $(KEYS_ARG)
+
+clients: check-venv
+	$(PERSONABOT) client list
+
+sync: check-venv
+	$(PERSONABOT) client sync $(TARGET_ARG)
+
+deliver: check-venv
+	$(PERSONABOT) client deliver $(TARGET_ARG) $(DELIVER_FLAGS)

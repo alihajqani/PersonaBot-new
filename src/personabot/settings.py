@@ -62,6 +62,8 @@ class Settings(BaseSettings):
     )
     surveys_dir: Path = Path("surveys")
     prompts_dir: Path = Path("prompts")
+    # Where per-client worktrees live; default: `clients/` beside this checkout.
+    clients_dir: Path | None = None
 
     # ===== LLM BACKEND =====
     ai_provider: Literal["gemini", "vllm"] = "gemini"
@@ -217,7 +219,7 @@ class Settings(BaseSettings):
     def _blank_is_none(cls, v: object) -> object:
         return v or None
 
-    @field_validator("survey_config", mode="before")
+    @field_validator("survey_config", "clients_dir", mode="before")
     @classmethod
     def _blank_path_is_none(cls, v: object) -> object:
         return v or None

@@ -35,7 +35,7 @@ log = get_logger("personabot.cli")  # not __name__: `python -m` makes it __main_
 PHASE_NAMES = {1: "schema", 2: "personas", 3: "answers", 4: "submit"}
 
 # Commands that never touch a survey.
-_SURVEYLESS = frozenset({"providers", "surveys", "check-keys", "new-survey"})
+_SURVEYLESS = frozenset({"providers", "surveys", "check-keys", "new-survey", "client"})
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -113,6 +113,34 @@ def build_parser() -> argparse.ArgumentParser:
         "--from", dest="source", default=None,
         help="Copy an existing survey instead of the template (its schema is not copied).",
     )
+
+    client = sub.add_parser(
+        "client", help="Per-client worktrees: isolated checkouts on their own branch."
+    )
+    actions = client.add_subparsers(dest="action", required=True)
+    c_new = actions.add_parser("new", help="Create clients/<client>/<survey>/ from main.")
+    c_new.add_argument("client")
+    c_new.add_argument("survey")
+    c_new.add_argument("--from", dest="source", default=None,
+                       help="Start the survey from an existing one.")
+    c_new.add_argument("--keys", default=None,
+                       help="Gemini keys of the base .env to give this client, e.g. 1-7,9 "
+                            "(default: all).")
+    c_new.add_argument("--no-install", action="store_true",
+                       help="Skip `make install` in the new worktree.")
+    actions.add_parser("list", help="Show every client worktree.")
+    for name, text in (("sync", "Rebase a client branch onto main."),
+                       ("deliver", "Tag, merge into main, push and remove a client worktree.")):
+        action = actions.add_parser(name, help=text)
+        action.add_argument("client", nargs="?")
+        action.add_argument("survey", nargs="?")
+    deliver = actions.choices["deliver"]
+    deliver.add_argument("--no-push", action="store_true")
+    deliver.add_argument("--keep", action="store_true", help="Keep the worktree afterwards.")
+    deliver.add_argument("--skip-checks", action="store_true",
+                         help="Skip validate-config and the test suite.")
+    deliver.add_argument("--no-archive", action="store_true",
+                         help="Do not archive output/<survey>/ before removing the worktree.")
 
     return parser
 
@@ -319,7 +347,47 @@ def _surveyless(args: argparse.Namespace, settings: Settings) -> int:
         print(f"  4. write the population/scales/constructs, then validate-config")
         return 0
 
+    if args.command == "client":
+        return _client(args, settings)
+
     raise AssertionError(f"unhandled command {args.command}")
+
+
+def _client(args: argparse.Namespace, settings: Settings) -> int:
+    from personabot.application import clients
+
+    base = clients.base_checkout()
+
+    if args.action == "new":
+        worktree = clients.create_client(
+            settings, base, args.client, args.survey,
+            source=args.source, keys=args.keys, install=not args.no_install,
+        )
+        print(f"\nClient worktree ready: {worktree.path}  (branch {worktree.branch})")
+        print(f"  cd {worktree.path}")
+        print("  edit surveys/%s/survey.yaml: form.provider, form.url" % worktree.survey)
+        print("  make schema && make inspect ARGS=\"--full --ids\" && make validate")
+        print("  make run-all … ; make sync to pick up fixes from main; make deliver when done")
+        return 0
+
+    if args.action == "list":
+        print(clients.render_clients(clients.list_clients(settings, base)))
+        return 0
+
+    worktree = clients.locate(settings, base, args.client, args.survey)
+    if args.action == "sync":
+        print(f"{worktree.label}: {clients.sync_client(settings, base, worktree)}")
+        return 0
+
+    result = clients.deliver_client(
+        settings, base, worktree,
+        push=not args.no_push, keep=args.keep,
+        checks=not args.skip_checks, archive=not args.no_archive,
+    )
+    print(result.render())
+    if result.removed:
+        print(f"\nThe worktree is gone; continue from {base}.")
+    return 0
 
 
 def main(argv: list[str] | None = None) -> int:
