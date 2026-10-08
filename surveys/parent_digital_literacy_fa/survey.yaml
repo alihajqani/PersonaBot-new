@@ -376,7 +376,9 @@ static_answers:
   - {name: role, match: {question_id: "element_4"}, value: "{{ persona.demographics.role }}", exclude_from_psychometrics: true}
   - name: child_age
     match: {question_id: "element_5"}
-    value: "{% set y = persona.demographics.child_age_years %}{{ y if y >= 1 else persona.demographics.child_age_months ~ ' ماه' }}"
+    # A NUMBER field (the server rejects «10 ماه»): whole years from 1, and one
+    # decimal below a year (10 months -> 0.8).
+    value: "{% set y = persona.demographics.child_age_years %}{{ y if y >= 1 else (persona.demographics.child_age_months / 12) | round(1) }}"
     exclude_from_psychometrics: true
   - {name: child_gender, match: {question_id: "element_6"}, value: "{{ persona.demographics.child_gender }}", exclude_from_psychometrics: true}
   - {name: caregiver_age, match: {question_id: "element_7"}, value: "{{ persona.demographics.caregiver_age }}", exclude_from_psychometrics: true}
