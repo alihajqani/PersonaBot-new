@@ -358,3 +358,35 @@ class TestQuotaCooldownChoice:
         """
         error = LLMQuotaError("Resource has been exhausted", scope="unknown")
         assert self._client()._cooldown_for(error, 1) == 60.0
+
+
+class TestTransportErrorsAreTransient:
+    """httpx's `ConnectError` was missing from the leaf-name list, so a dropped
+    connection read as a rejected key in `check-keys` and was never retried."""
+
+    @pytest.mark.parametrize("name", ["ConnectError", "ReadError", "PoolTimeout", "ReadTimeout"])
+    def test_httpx_transport_errors(self, name):
+        import httpx
+
+        from personabot.errors import LLMTransientError
+        from personabot.infrastructure.llm.client import classify_error
+
+        error = getattr(httpx, name)("")
+        assert isinstance(classify_error(error), LLMTransientError)
+
+    def test_a_subclass_of_a_transient_type_is_transient(self):
+        from personabot.errors import LLMTransientError
+        from personabot.infrastructure.llm.client import classify_error
+
+        class VendorDisconnect(ConnectionResetError):
+            pass
+
+        assert isinstance(classify_error(VendorDisconnect("")), LLMTransientError)
+
+    def test_a_check_keys_connect_failure_is_unreachable_not_invalid(self):
+        import httpx
+
+        from personabot.application.check_keys import _verdict
+
+        status, _ = _verdict(httpx.ConnectError(""))
+        assert status == "unreachable"

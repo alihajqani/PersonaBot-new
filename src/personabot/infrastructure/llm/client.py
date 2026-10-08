@@ -110,6 +110,19 @@ def _as_quota_error(error: BaseException, message: str) -> LLMQuotaError:
     return LLMQuotaError(message, retry_after=retry_after, scope=scope)
 
 
+# Exception class names (anywhere in the MRO) that mean "the transport failed,
+# try again": google-api-core, the openai SDK, httpx, aiohttp and builtins.
+_TRANSIENT_TYPES: Final = frozenset({
+    "ServiceUnavailable", "DeadlineExceeded", "InternalServerError",
+    "APIConnectionError", "APITimeoutError",
+    "TransportError", "TimeoutException", "NetworkError", "ProtocolError",
+    "ConnectError", "ReadError", "WriteError", "ConnectTimeout", "ReadTimeout",
+    "PoolTimeout", "RemoteProtocolError",
+    "ClientConnectionError", "ServerDisconnectedError", "ClientConnectorError",
+    "ConnectionError", "TimeoutError",
+})
+
+
 def _status_code(error: BaseException) -> int | None:
     """Pull an HTTP status off an SDK exception, whatever it calls the field."""
     for attribute in ("status_code", "code", "http_status"):
@@ -133,11 +146,13 @@ def classify_error(error: BaseException) -> LLMError:
     type_name = type(error).__name__
     if type_name in ("ResourceExhausted", "RateLimitError", "TooManyRequests"):
         return _as_quota_error(error, str(error))
-    if type_name in (
-        "ServiceUnavailable", "DeadlineExceeded", "InternalServerError",
-        "APIConnectionError", "APITimeoutError", "ConnectionError", "TimeoutError",
-        "ReadTimeout", "ConnectTimeout", "RemoteProtocolError",
-    ):
+    # Matched against the whole class hierarchy, not just the leaf name.
+    # httpx raises `ConnectError`, `ReadError`, `PoolTimeout`… — all subclasses
+    # of `TransportError` — and the leaf-name list missed `ConnectError`, so a
+    # dropped connection was reported as a rejected key by `check-keys` and
+    # treated as a permanent failure (no retry) by the real client.
+    lineage = {cls.__name__ for cls in type(error).__mro__}
+    if lineage & _TRANSIENT_TYPES:
         return LLMTransientError(f"{type_name}: {error}")
 
     status = _status_code(error)

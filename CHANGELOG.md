@@ -14,6 +14,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   prompt customisation, providers, key pools and quotas, Tor, output formats,
   quality checks, troubleshooting and development.
 
+### Fixed
+
+- A dropped connection (`httpx.ConnectError` and other transport errors) was
+  classified as a permanent error: `check-keys` reported working keys as
+  "invalid", and generation gave up instead of retrying. Transient errors are
+  now recognised anywhere in the exception's class hierarchy.
+
 ### Removed
 
 - `docs/HOWTO_NEW_SURVEY.md` — merged into the README (section 7). The survey
