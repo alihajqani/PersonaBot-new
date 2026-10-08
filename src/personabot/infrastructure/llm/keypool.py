@@ -131,6 +131,7 @@ class KeyLease:
         self._pool = pool
         self._key = key
         self._cooldown: float | None = None
+        self._reason = "a quota error"
         self._input_tokens = 0
         self._started = time.monotonic()
 
@@ -146,9 +147,10 @@ class KeyLease:
     def started_at(self) -> float:
         return self._started
 
-    def penalize(self, cooldown_seconds: float) -> None:
-        """Park this key on release — it reported quota exhaustion."""
+    def penalize(self, cooldown_seconds: float, *, reason: str = "a quota error") -> None:
+        """Park this key on release, for ``reason`` (shown in the log)."""
         self._cooldown = cooldown_seconds
+        self._reason = reason
 
     def record_input_tokens(self, tokens: int) -> None:
         """Charge this request's prompt against the key's minute budget.
@@ -166,6 +168,7 @@ class KeyLease:
         await self._pool.release(
             self._key,
             cooldown=self._cooldown,
+            reason=self._reason,
             input_tokens=self._input_tokens,
             spent_at=self._started,
         )
@@ -254,6 +257,7 @@ class AsyncKeyPool:
         key: _Key,
         *,
         cooldown: float | None = None,
+        reason: str = "a quota error",
         input_tokens: int = 0,
         spent_at: float | None = None,
     ) -> None:
@@ -271,7 +275,7 @@ class AsyncKeyPool:
         if cooldown is not None:
             key.available_at = now + cooldown
             log.warning(
-                "Key %s parked for %.0fs after a quota error.", key.tail, cooldown
+                "Key %s parked for %.0fs after %s.", key.tail, cooldown, reason
             )
         elif key.ledger is not None:
             key.available_at = key.ledger.ready_at(self._expected_tokens, now=now)

@@ -174,7 +174,7 @@ class GeminiClient(LLMClient):
                         # not come back, so the input tokens were spent. Charge
                         # them, or the retry storm becomes a quota storm.
                         lease.record_input_tokens(self._pool.expected_input_tokens)
-                        lease.penalize(delay)
+                        lease.penalize(delay, reason="a transient error")
                         log.warning(
                             "Transient failure (%s). Retry %d/%d on another key in %.1fs.",
                             error, transient_failures, max_transient_failures, delay,

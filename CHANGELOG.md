@@ -8,6 +8,9 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ### Fixed
 
+- A key parked after a transient error (500/503, dropped connection) was
+  logged as "parked … after a quota error", which sent you looking at quotas
+  during a provider outage. The log now names the real reason.
 - **Avalform extraction submitted the form.** The extractor clicked the last
   page's «ارسال» before checking whether it was the last page, posting a
   placeholder response into the survey owner's data. The page position is now
