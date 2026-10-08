@@ -747,7 +747,7 @@ Keep those output instructions if you replace the user templates.
 | is on Porsline with matrix tables, grouped pages or voice questions | `porsline_v2` | Reads the survey definition from Porsline's API (this registers one responder session — extract once). Matrix rows become questions `<matrix id>#<row>`. Supports `transcripts` |
 | is on porsa.irandoc.ac.ir | `porsa` | Reads every page at once; matrix rows become questions; every question is required, so use `completeness.min_ratio: 1.0`. Detects "already answered" and closed-survey pages |
 | is a Google Form | `google_forms` | Waits for hydration; detects a rejected page and names the empty fields |
-| is on form.avalform.com | `avalform` | Server-paginated; matrix rows become questions; a checkbox group is one question answered `"A | B"`. Extraction fills placeholders to page forward but never posts the last page |
+| is on form.avalform.com | `avalform` | Server-paginated; matrix rows become questions; a checkbox group is one question answered `"A \| B"`. Extraction fills placeholders to page forward but never posts the last page |
 | is on DigiSurvey | `digisurvey` | Carried over from 2.x unchanged |
 
 If `porsline` refuses a schema with "each report all N of the page's radios",
