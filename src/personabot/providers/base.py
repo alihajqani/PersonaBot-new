@@ -278,10 +278,15 @@ class FormSubmitter(ABC):
     def _ledger(self) -> ExitIpLedger:
         """This survey's used exit IPs, loaded on first use."""
         if self._ip_ledger is None:
-            self._ip_ledger = ExitIpLedger(self.workspace.output_dir / "exit_ips.jsonl")
+            self._ip_ledger = ExitIpLedger(
+                self.workspace.output_dir / "exit_ips.jsonl",
+                min_gap=self.settings.exit_ip_min_gap,
+            )
             if len(self._ip_ledger):
-                log.info("%d exit IP(s) already used for this survey will be avoided.",
-                         len(self._ip_ledger))
+                gap = self.settings.exit_ip_min_gap
+                log.info("%d exit IP(s) already used for this survey will be avoided%s.",
+                         len(self._ip_ledger),
+                         f" until {gap} other submission(s) follow their last use" if gap else "")
         return self._ip_ledger
 
     @property
@@ -364,6 +369,8 @@ class FormSubmitter(ABC):
             if self.settings.unique_exit_ips and not self._ledger().reserve(exit_ip):
                 raise CircuitError(
                     f"exit IP {exit_ip} has already been used for this survey"
+                    + (f" within the last {self.settings.exit_ip_min_gap} submission(s)"
+                       if self.settings.exit_ip_min_gap else "")
                 )
 
         page = await circuit.context.new_page()

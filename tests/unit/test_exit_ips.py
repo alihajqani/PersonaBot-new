@@ -33,6 +33,23 @@ class TestLedger:
         assert "1.1.1.1" in again and len(again) == 1
         assert json.loads(path.read_text())["label"] == "x-000"
 
+    def test_a_gap_frees_an_ip_after_enough_other_submissions(self, tmp_path):
+        path = tmp_path / "exit_ips.jsonl"
+        path.write_text('{"ip": "1.1.1.1"}\n{"ip": "2.2.2.2"}\n')
+        ledger = ExitIpLedger(path, min_gap=2)
+        assert not ledger.reserve("1.1.1.1")      # only one submission since
+        assert not ledger.reserve("2.2.2.2")      # it was the last one
+        ledger.record("3.3.3.3", label="x")
+        assert ledger.reserve("1.1.1.1")          # two since: free again
+        assert not ledger.reserve("1.1.1.1")      # but not while in flight
+
+    def test_gap_one_only_forbids_consecutive_use(self, tmp_path):
+        ledger = ExitIpLedger(tmp_path / "exit_ips.jsonl", min_gap=1)
+        ledger.record("1.1.1.1", label="a")
+        assert not ledger.reserve("1.1.1.1")
+        ledger.record("2.2.2.2", label="b")
+        assert ledger.reserve("1.1.1.1")
+
     def test_a_damaged_line_is_skipped(self, tmp_path):
         path = tmp_path / "exit_ips.jsonl"
         path.write_text('{"ip": "1.1.1.1"}\nnot json\n')
@@ -85,14 +102,15 @@ class _Submitter(FormSubmitter):
 
 @pytest.fixture
 def submitter(tmp_path, monkeypatch):
-    def make(exits: list[str]):
+    def make(exits: list[str], **overrides):
         script = iter(exits)
 
         async def fake_verify(context, *, label=""):
             return next(script)
 
         monkeypatch.setattr(base, "verify_circuit", fake_verify)
-        settings = Settings(_env_file=None, gemini_api_keys=(), use_tor=True, browser_max_attempts=3)
+        settings = Settings(_env_file=None, gemini_api_keys=(), use_tor=True, browser_max_attempts=3,
+                            **overrides)
         workspace = SimpleNamespace(
             settings=settings, output_dir=tmp_path, receipts_dir=tmp_path / "r",
             max_pages=5, require_form_url=lambda: "https://form.example/x",
@@ -129,3 +147,12 @@ class TestSubmission:
         s = submitter(["5.5.5.5"] * 3)
         with pytest.raises(CircuitError, match="already been used"):
             await s.submit_one({"q": "a"}, "fake-000")
+
+    @pytest.mark.asyncio
+    async def test_with_a_gap_an_ip_returns_but_never_back_to_back(self, submitter, tmp_path):
+        s = submitter(["6.6.6.6", "6.6.6.6", "7.7.7.7", "6.6.6.6"], exit_ip_min_gap=1)
+        for n in range(3):
+            await s.submit_one({"q": "a"}, f"fake-00{n}")
+
+        lines = [json.loads(l)["ip"] for l in (tmp_path / "exit_ips.jsonl").read_text().splitlines()]
+        assert lines == ["6.6.6.6", "7.7.7.7", "6.6.6.6"]

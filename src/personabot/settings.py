@@ -194,6 +194,14 @@ class Settings(BaseSettings):
             "IP is already in it is burned and another one is tried."
         ),
     )
+    exit_ip_min_gap: int = Field(
+        default=0, ge=0,
+        description=(
+            "With UNIQUE_EXIT_IPS: 0 = an exit IP is used once per survey. N > 0 "
+            "= it may be reused after N other submissions (1 = never twice in a "
+            "row). Large surveys run out of fresh exits; a gap keeps them moving."
+        ),
+    )
     tor_circuit_cooldown_seconds: float = Field(
         default=60.0, ge=0,
         description=(

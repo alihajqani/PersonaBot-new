@@ -105,6 +105,9 @@ Format: **symptom** → cause → what the code does now (where).
   its port rotation at the first SocksPort, and a port keeps its circuit until
   it ages out → per-survey ledger `exit_ips.jsonl`; a repeated IP is a
   `CircuitError` raised before the form loads.
+- **More circuits burned than forms sent (~1.2 per submission at 150)** → six
+  ports keep returning to exits already in the ledger → `EXIT_IP_MIN_GAP`
+  allows reuse after N other submissions.
 - Dead circuits discovered late → preflight IP echo (20 s) before the form.
 - Slow direct link → block images/fonts/media; one retry of a hung navigation
   even without Tor.

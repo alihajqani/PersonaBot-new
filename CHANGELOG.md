@@ -15,6 +15,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
   is loaded and the submission retried on another circuit. Port rotation alone
   restarted with every process, and two runs a minute apart left from the same
   address.
+- `EXIT_IP_MIN_GAP`: with `N > 0` an exit IP may be reused once N other
+  submissions of the survey followed its last use (`1` = never twice in a
+  row). At 150 submissions on six SocksPorts strict uniqueness was already
+  rejecting more circuits than it accepted. Default `0` keeps the strict rule.
 - Avalform logs the confirmation text after each submission.
 
 ### Fixed

@@ -251,13 +251,19 @@ class ExitIpLedger:
     sessions cannot share it) and *recorded* — persisted — once a submission
     through it succeeds. A reservation is never released within a run: an
     attempt that failed after the form was opened may still have posted.
+
+    ``min_gap`` relaxes "never twice": with ``min_gap=N`` an IP is free again
+    once N other submissions were recorded after its last use (``N=1`` = never
+    twice in a row). ``0`` keeps every recorded IP spent for good.
     """
 
-    def __init__(self, path: Path) -> None:
+    def __init__(self, path: Path, *, min_gap: int = 0) -> None:
         import json
 
         self.path = path
-        self._used: set[str] = set()
+        self.min_gap = min_gap
+        self._last_use: dict[str, int] = {}     # ip -> position of its last record
+        self._count = 0
         self._reserved: set[str] = set()
         if path.is_file():
             for line in path.read_text(encoding="utf-8").splitlines():
@@ -266,17 +272,27 @@ class ExitIpLedger:
                 except ValueError:
                     continue
                 if ip:
-                    self._used.add(ip)
+                    self._last_use[ip] = self._count
+                    self._count += 1
 
     def __contains__(self, ip: str) -> bool:
-        return ip in self._used or ip in self._reserved
+        return ip in self._last_use or ip in self._reserved
 
     def __len__(self) -> int:
-        return len(self._used)
+        return len(self._last_use)
+
+    def available(self, ip: str) -> bool:
+        """Whether a new session may leave from ``ip`` now."""
+        if ip in self._reserved:
+            return False
+        last = self._last_use.get(ip)
+        if last is None:
+            return True
+        return self.min_gap > 0 and self._count - last - 1 >= self.min_gap
 
     def reserve(self, ip: str) -> bool:
-        """Claim ``ip`` for one session. False if it was already used or taken."""
-        if ip in self:
+        """Claim ``ip`` for one session. False if it is in flight or too recent."""
+        if not self.available(ip):
             return False
         self._reserved.add(ip)
         return True
@@ -289,5 +305,6 @@ class ExitIpLedger:
         entry = {"ip": ip, "label": label, "at": datetime.now(timezone.utc).isoformat(timespec="seconds")}
         with self.path.open("a", encoding="utf-8") as handle:
             handle.write(json.dumps(entry) + "\n")
-        self._used.add(ip)
+        self._last_use[ip] = self._count
+        self._count += 1
         self._reserved.discard(ip)
