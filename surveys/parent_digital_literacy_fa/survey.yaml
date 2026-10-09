@@ -123,7 +123,9 @@ population:
         - {when: "role == 'پدربزرگ'", dist: normal, mu: 60, sigma: 6, round: int, clip: [48, 76]}
         - {default: true, dist: normal, mu: 30, sigma: 9, round: int, clip: [18, 60]}
 
-    - {name: child_age_months, dist: uniform_int, low: 3, high: 83}
+    # From 12 months: the client wants the child's age as a whole number of
+    # years, so infants (who would be «0.8») are not sampled.
+    - {name: child_age_months, dist: uniform_int, low: 12, high: 83}
     - {name: child_age_years, dist: derived, expr: "floor(child_age_months / 12)"}
     - name: child_gender
       dist: categorical
@@ -376,9 +378,8 @@ static_answers:
   - {name: role, match: {question_id: "element_4"}, value: "{{ persona.demographics.role }}", exclude_from_psychometrics: true}
   - name: child_age
     match: {question_id: "element_5"}
-    # A NUMBER field (the server rejects «10 ماه»): whole years from 1, and one
-    # decimal below a year (10 months -> 0.8).
-    value: "{% set y = persona.demographics.child_age_years %}{{ y if y >= 1 else (persona.demographics.child_age_months / 12) | round(1) }}"
+    # A NUMBER field (the server rejects «10 ماه»): whole years, 1-6.
+    value: "{{ persona.demographics.child_age_years }}"
     exclude_from_psychometrics: true
   - {name: child_gender, match: {question_id: "element_6"}, value: "{{ persona.demographics.child_gender }}", exclude_from_psychometrics: true}
   - {name: caregiver_age, match: {question_id: "element_7"}, value: "{{ persona.demographics.caregiver_age }}", exclude_from_psychometrics: true}
