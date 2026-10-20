@@ -6,6 +6,13 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Fixed
+
+- `make deliver CLIENT=… SURVEY=…` failed its test step: make exports
+  command-line variables, so SURVEY reached the test run and selected the
+  client's survey in tests asserting that nothing is selected. Tests now clear
+  every Settings variable from the environment, as they already ignored `.env`.
+
 ## [3.2.0] — 2026-10-20
 
 Safer Avalform extraction and one exit IP per submission behind Tor.

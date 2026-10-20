@@ -40,6 +40,18 @@ def make_workspace(tmp_path: Path, survey: str = "sexual_intimacy_fa", **overrid
     return Workspace(settings=settings, spec=load_spec(spec_path), spec_path=spec_path)
 
 
+@pytest.fixture(autouse=True)
+def _settings_ignore_the_shell(monkeypatch):
+    """Keep the shell's variables out of Settings, as `_env_file=None` keeps .env out.
+
+    `make deliver CLIENT=x SURVEY=y` exports SURVEY to the test run, and inside
+    the client's worktree that survey exists — so tests asserting that nothing
+    is selected found it selected.
+    """
+    for name in Settings.model_fields:
+        monkeypatch.delenv(name.upper(), raising=False)
+
+
 @pytest.fixture(scope="session")
 def schema() -> FormSchema:
     """The live Porsline form as extracted by phase 1 (51 questions)."""
