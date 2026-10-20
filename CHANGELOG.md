@@ -6,6 +6,10 @@ adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [3.2.0] — 2026-10-20
+
+Safer Avalform extraction and one exit IP per submission behind Tor.
+
 ### Added
 
 - **Unique exit IPs per survey** (`UNIQUE_EXIT_IPS`, on by default with Tor).
